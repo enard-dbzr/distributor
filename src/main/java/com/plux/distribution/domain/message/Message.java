@@ -7,17 +7,23 @@ import com.plux.distribution.domain.message.state.MessageState;
 import com.plux.distribution.domain.message.state.PendingState;
 import com.plux.distribution.domain.message.state.TransferredState;
 import java.util.Date;
+import org.jetbrains.annotations.NotNull;
 
 public class Message {
 
     private final MessageId id;
+    @NotNull
     private final Participant sender;
+    @NotNull
     private Participant recipient;
+    @NotNull
     private MessageState state;
+    @NotNull
     private final MessageContent content;
 
-    public Message(MessageId id, Participant sender, Participant recipient, MessageState state,
-            MessageContent content) {
+    public Message(MessageId id, @NotNull Participant sender, @NotNull Participant recipient,
+            @NotNull MessageState state,
+            @NotNull MessageContent content) {
         this.id = id;
         this.sender = sender;
         this.recipient = recipient;
@@ -25,15 +31,16 @@ public class Message {
         this.content = content;
     }
 
-    public Message(Participant sender, Participant recipient, MessageState state, MessageContent content) {
+    public Message(@NotNull Participant sender, @NotNull Participant recipient, @NotNull MessageState state,
+            @NotNull MessageContent content) {
         this(null, sender, recipient, state, content);
     }
 
-    public Message(Participant recipient, MessageContent content) {
+    public Message(@NotNull Participant recipient, @NotNull MessageContent content) {
         this(null, new SelfParticipant(), recipient, new PendingState(), content);
     }
 
-    public void markSent(Date time) {
+    public void markSent(@NotNull Date time) {
         this.state = new TransferredState(time);
     }
 
@@ -41,22 +48,26 @@ public class Message {
         return id;
     }
 
+    @NotNull
     public Participant getSender() {
         return sender;
     }
 
+    @NotNull
     public Participant getRecipient() {
         return recipient;
     }
 
-    public void setRecipient(Participant recipient) {
+    public void setRecipient(@NotNull Participant recipient) {
         this.recipient = recipient;
     }
 
+    @NotNull
     public MessageState getState() {
         return state;
     }
 
+    @NotNull
     public MessageContent getContent() {
         return content;
     }

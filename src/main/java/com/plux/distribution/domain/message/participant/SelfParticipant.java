@@ -1,9 +1,11 @@
 package com.plux.distribution.domain.message.participant;
 
+import org.jetbrains.annotations.NotNull;
+
 public class SelfParticipant implements  Participant {
 
     @Override
-    public void accept(ParticipantVisitor visitor) {
+    public void accept(@NotNull ParticipantVisitor visitor) {
         visitor.visit(this);
     }
 }
