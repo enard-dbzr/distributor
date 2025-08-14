@@ -1,5 +1,5 @@
 package com.plux.distribution.domain.user;
 
-public record UserId(Integer value) {
+public record UserId(Long value) {
 
 }

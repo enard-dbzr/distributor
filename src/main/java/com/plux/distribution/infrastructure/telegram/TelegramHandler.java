@@ -23,7 +23,7 @@ public class TelegramHandler implements LongPollingSingleThreadUpdateConsumer {
     public void consume(Update update) {
         System.out.println(update.toString());
 
-        var msg = new Message(new UserParticipant(new UserId(1)),
+        var msg = new Message(new UserParticipant(new UserId(1L)),
                 new SimpleMessageContent(
                         "test",
                         List.of(

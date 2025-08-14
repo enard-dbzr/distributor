@@ -14,11 +14,11 @@ public class MemoryMessageRepository implements CreateMessagePort, UpdateMessage
     @Override
     public @NotNull MessageId create(@NotNull Message message) {
         messages.add(message);
-        return new MessageId(messages.size() - 1);
+        return new MessageId((long) (messages.size() - 1));
     }
 
     @Override
     public void update(@NotNull MessageId id, @NotNull Message message) {
-        messages.set(id.value(), message);
+        messages.set(Math.toIntExact(id.value()), message);
     }
 }

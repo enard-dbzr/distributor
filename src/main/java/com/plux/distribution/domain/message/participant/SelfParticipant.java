@@ -2,7 +2,7 @@ package com.plux.distribution.domain.message.participant;
 
 import org.jetbrains.annotations.NotNull;
 
-public class SelfParticipant implements  Participant {
+public record SelfParticipant() implements Participant {
 
     @Override
     public void accept(@NotNull ParticipantVisitor visitor) {

@@ -1,5 +1,5 @@
 package com.plux.distribution.domain.service;
 
-public record ServiceId(Integer value) {
+public record ServiceId(Long value) {
 
 }
