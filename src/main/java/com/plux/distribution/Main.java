@@ -1,6 +1,8 @@
 package com.plux.distribution;
 
+import com.plux.distribution.application.service.MessageDeliveryService;
 import com.plux.distribution.infrastructure.persistence.ConstUserTgLinker;
+import com.plux.distribution.infrastructure.persistence.MemoryMessageRepository;
 import com.plux.distribution.infrastructure.telegram.TelegramHandler;
 import com.plux.distribution.infrastructure.telegram.sender.TelegramMessageSender;
 import org.apache.logging.log4j.LogManager;
@@ -19,10 +21,15 @@ public class Main {
         var tgUserLinker = new ConstUserTgLinker(tgUserId);
 
         var tgClient = new OkHttpTelegramClient(botToken);
+
         var sender = new TelegramMessageSender(tgClient, tgUserLinker, null);
 
+        var messageRepo = new MemoryMessageRepository();
+
+        var messageDeliveryService = new MessageDeliveryService(sender, messageRepo, messageRepo);
+
         try (var botsApplication = new TelegramBotsLongPollingApplication()) {
-            botsApplication.registerBot(botToken, new TelegramHandler(sender));
+            botsApplication.registerBot(botToken, new TelegramHandler(messageDeliveryService));
 
             System.out.println("Bot successfully started!");
             Thread.currentThread().join();

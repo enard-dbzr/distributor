@@ -11,7 +11,6 @@ import org.jetbrains.annotations.NotNull;
 
 public class Message {
 
-    private final MessageId id;
     @NotNull
     private final Participant sender;
     @NotNull
@@ -21,31 +20,21 @@ public class Message {
     @NotNull
     private final MessageContent content;
 
-    public Message(MessageId id, @NotNull Participant sender, @NotNull Participant recipient,
+    public Message(@NotNull Participant sender, @NotNull Participant recipient,
             @NotNull MessageState state,
             @NotNull MessageContent content) {
-        this.id = id;
         this.sender = sender;
         this.recipient = recipient;
         this.state = state;
         this.content = content;
     }
 
-    public Message(@NotNull Participant sender, @NotNull Participant recipient, @NotNull MessageState state,
-            @NotNull MessageContent content) {
-        this(null, sender, recipient, state, content);
-    }
-
     public Message(@NotNull Participant recipient, @NotNull MessageContent content) {
-        this(null, new SelfParticipant(), recipient, new PendingState(), content);
+        this(new SelfParticipant(), recipient, new PendingState(), content);
     }
 
     public void markSent(@NotNull Date time) {
         this.state = new TransferredState(time);
-    }
-
-    public MessageId getId() {
-        return id;
     }
 
     @NotNull
