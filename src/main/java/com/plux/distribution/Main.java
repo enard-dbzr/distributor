@@ -1,18 +1,34 @@
 package com.plux.distribution;
 
-//TIP To <b>Run</b> code, press <shortcut actionId="Run"/> or
-// click the <icon src="AllIcons.Actions.Execute"/> icon in the gutter.
+import com.plux.distribution.infrastructure.persistence.ConstUserTgLinker;
+import com.plux.distribution.infrastructure.telegram.TelegramHandler;
+import com.plux.distribution.infrastructure.telegram.sender.TelegramMessageSender;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
+import org.telegram.telegrambots.client.okhttp.OkHttpTelegramClient;
+import org.telegram.telegrambots.longpolling.TelegramBotsLongPollingApplication;
+
 public class Main {
 
-    public static void main(String[] args) {
-        //TIP Press <shortcut actionId="ShowIntentionActions"/> with your caret at the highlighted text
-        // to see how IntelliJ IDEA suggests fixing it.
-        System.out.print("Hello and welcome!");
+    private static final Logger log = LogManager.getLogger(Main.class);
 
-        for (int i = 1; i <= 5; i++) {
-            //TIP Press <shortcut actionId="Debug"/> to start debugging your code. We have set one <icon src="AllIcons.Debugger.Db_set_breakpoint"/> breakpoint
-            // for you, but you can always add more by pressing <shortcut actionId="ToggleLineBreakpoint"/>.
-            System.out.println("i = " + i);
+    public static void main(String[] args) {
+        var botToken = System.getenv("TG_TOKEN");
+        var tgUserId = Long.parseLong(System.getenv("TG_USER_ID"));
+
+        var tgUserLinker = new ConstUserTgLinker(tgUserId);
+
+        var tgClient = new OkHttpTelegramClient(botToken);
+        var sender = new TelegramMessageSender(tgClient, tgUserLinker, null);
+
+        try (var botsApplication = new TelegramBotsLongPollingApplication()) {
+            botsApplication.registerBot(botToken, new TelegramHandler(sender));
+
+            System.out.println("Bot successfully started!");
+            Thread.currentThread().join();
+        } catch (Exception e) {
+            log.error("e: ", e);
         }
+
     }
 }
