@@ -2,9 +2,11 @@ package com.plux.distribution.application.port.in.dto;
 
 import com.plux.distribution.domain.message.MessageId;
 import com.plux.distribution.domain.user.UserId;
+import java.util.Date;
 import org.jetbrains.annotations.NotNull;
 
-public record MessageData(@NotNull UserId userId, MessageId replyTo, @NotNull String text) {
+public record MessageData(@NotNull UserId userId, MessageId replyTo, @NotNull String text,
+                          @NotNull Date timestamp) {
 
     public static MessageDataBuilder builder() {
         return new MessageDataBuilder();
@@ -15,6 +17,7 @@ public record MessageData(@NotNull UserId userId, MessageId replyTo, @NotNull St
         private UserId userId;
         private MessageId replyTo;
         private String text;
+        private Date timestamp;
 
         public MessageDataBuilder setUserId(@NotNull UserId userId) {
             this.userId = userId;
@@ -31,15 +34,13 @@ public record MessageData(@NotNull UserId userId, MessageId replyTo, @NotNull St
             return this;
         }
 
-        public MessageData build() {
-            if (userId == null) {
-                throw new IllegalArgumentException("userId is required");
-            }
-            if (text == null) {
-                throw new IllegalArgumentException("text is required");
-            }
+        public MessageDataBuilder setTimestamp(@NotNull Date timestamp) {
+            this.timestamp = timestamp;
+            return this;
+        }
 
-            return new MessageData(userId, replyTo, text);
+        public MessageData build() {
+            return new MessageData(userId, replyTo, text, timestamp);
         }
     }
 }

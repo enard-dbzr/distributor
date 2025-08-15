@@ -6,6 +6,7 @@ import com.plux.distribution.application.port.in.dto.MessageData;
 import com.plux.distribution.application.port.out.specific.telegram.GetMessageIdByTgPort;
 import com.plux.distribution.application.port.out.specific.telegram.GetUserIdByTgPort;
 import com.plux.distribution.application.port.out.specific.telegram.TgMessageLinker;
+import java.util.Date;
 import org.jetbrains.annotations.NotNull;
 import org.telegram.telegrambots.longpolling.util.LongPollingSingleThreadUpdateConsumer;
 import org.telegram.telegrambots.meta.api.objects.Update;
@@ -37,6 +38,7 @@ public class TelegramHandler implements LongPollingSingleThreadUpdateConsumer {
 
             builder.setText(message.getText());
             builder.setUserId(getUserIdByTgPort.getUserId(message.getChatId()));
+            builder.setTimestamp(new Date(message.getDate() * 1000L));
 
             if (message.isReply()) {
                 builder.setReplyTo(

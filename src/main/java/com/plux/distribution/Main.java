@@ -2,8 +2,10 @@ package com.plux.distribution;
 
 import com.plux.distribution.application.service.MessageDeliveryService;
 import com.plux.distribution.application.service.RegisterFeedbackService;
+import com.plux.distribution.application.service.SequenceFeedbackProcessor;
 import com.plux.distribution.infrastructure.persistence.ConstUserTgLinker;
 import com.plux.distribution.infrastructure.persistence.DbMessageRepository;
+import com.plux.distribution.infrastructure.persistence.MemoryFeedbackRepository;
 import com.plux.distribution.infrastructure.persistence.MemoryMessageLinker;
 import com.plux.distribution.infrastructure.persistence.config.HibernateConfig;
 import com.plux.distribution.infrastructure.telegram.TelegramHandler;
@@ -35,9 +37,12 @@ public class Main {
 
         var messageRepo = new DbMessageRepository(hibernateConfig.getSessionFactory());
 //        var messageRepo = new MemoryMessageRepository();
+        var feedbackRepo = new MemoryFeedbackRepository();
+
+        var mainFeedbackProcessor = new SequenceFeedbackProcessor();
 
         var messageDeliveryService = new MessageDeliveryService(sender, messageRepo, messageRepo);
-        var registerFeedbackService = new RegisterFeedbackService();
+        var registerFeedbackService = new RegisterFeedbackService(messageRepo, feedbackRepo, mainFeedbackProcessor);
 
         var tgMessageLinker = new MemoryMessageLinker();
 
