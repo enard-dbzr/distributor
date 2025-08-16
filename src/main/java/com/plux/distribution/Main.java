@@ -3,10 +3,11 @@ package com.plux.distribution;
 import com.plux.distribution.application.service.MessageDeliveryService;
 import com.plux.distribution.application.service.RegisterFeedbackService;
 import com.plux.distribution.application.service.SequenceFeedbackProcessor;
-import com.plux.distribution.infrastructure.persistence.ConstUserTgLinker;
 import com.plux.distribution.infrastructure.persistence.DbFeedbackRepository;
 import com.plux.distribution.infrastructure.persistence.DbMessageRepository;
 import com.plux.distribution.infrastructure.persistence.MemoryMessageLinker;
+import com.plux.distribution.infrastructure.persistence.MemoryUserLinker;
+import com.plux.distribution.infrastructure.persistence.MemoryUserRepository;
 import com.plux.distribution.infrastructure.persistence.config.HibernateConfig;
 import com.plux.distribution.infrastructure.telegram.TelegramHandler;
 import com.plux.distribution.infrastructure.telegram.sender.TelegramMessageSender;
@@ -29,7 +30,8 @@ public class Main {
                 System.getenv("DB_PASSWORD")
         );
 
-        var tgUserLinker = new ConstUserTgLinker(tgUserId);
+        var tgUserLinker = new MemoryUserLinker();
+        var tgMessageLinker = new MemoryMessageLinker();
 
         var tgClient = new OkHttpTelegramClient(botToken);
 
@@ -37,16 +39,16 @@ public class Main {
 
         var messageRepo = new DbMessageRepository(hibernateConfig.getSessionFactory());
         var feedbackRepo = new DbFeedbackRepository(hibernateConfig.getSessionFactory());
+        var userRepo = new MemoryUserRepository();
 
         var mainFeedbackProcessor = new SequenceFeedbackProcessor();
 
         var messageDeliveryService = new MessageDeliveryService(sender, messageRepo, messageRepo);
-        var registerFeedbackService = new RegisterFeedbackService(messageRepo, feedbackRepo, mainFeedbackProcessor);
-
-        var tgMessageLinker = new MemoryMessageLinker();
+        var registerFeedbackService = new RegisterFeedbackService(messageRepo, feedbackRepo,
+                userRepo, mainFeedbackProcessor);
 
         var tgHandler = new TelegramHandler(registerFeedbackService, tgMessageLinker,
-                tgMessageLinker, tgUserLinker);
+                tgMessageLinker, tgUserLinker, tgUserLinker);
 
         try (var botsApplication = new TelegramBotsLongPollingApplication()) {
             botsApplication.registerBot(botToken, tgHandler);

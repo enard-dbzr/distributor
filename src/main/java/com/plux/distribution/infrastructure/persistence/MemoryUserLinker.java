@@ -5,32 +5,31 @@ import com.plux.distribution.application.port.out.specific.telegram.GetTgUserIdP
 import com.plux.distribution.application.port.out.specific.telegram.GetUserIdByTgPort;
 import com.plux.distribution.application.port.out.specific.telegram.TgUserLinker;
 import com.plux.distribution.domain.user.UserId;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import org.jetbrains.annotations.NotNull;
 
-public class ConstUserTgLinker implements GetTgUserIdPort, GetUserIdByTgPort, TgUserLinker {
-
-    private final Long tgId;
-
-    public ConstUserTgLinker(Long userId) {
-        this.tgId = userId;
-    }
+public class MemoryUserLinker implements GetTgUserIdPort, GetUserIdByTgPort, TgUserLinker {
+    Map<Long, UserId> tgToUserId = new ConcurrentHashMap<>();
+    Map<UserId, Long> userToTg = new ConcurrentHashMap<>();
 
     @Override
     public @NotNull Long getTgUserId(@NotNull UserId userId) {
-        return tgId;
+        return userToTg.get(userId);
     }
 
     @Override
     public @NotNull UserId getUserId(@NotNull Long tgUserId) throws UserIdNotFound {
-        if (!tgUserId.equals(tgId)) {
-            throw new UserIdNotFound("User with tgId " + tgUserId + " not found");
+        if (!tgToUserId.containsKey(tgUserId)) {
+            throw new UserIdNotFound("UserId not found");
         }
 
-        return new UserId(1L);
+        return tgToUserId.get(tgUserId);
     }
 
     @Override
     public void link(@NotNull UserId internal, @NotNull Long external) {
-
+        tgToUserId.put(external, internal);
+        userToTg.put(internal, external);
     }
 }

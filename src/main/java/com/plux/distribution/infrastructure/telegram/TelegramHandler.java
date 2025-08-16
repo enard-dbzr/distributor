@@ -3,9 +3,11 @@ package com.plux.distribution.infrastructure.telegram;
 import com.plux.distribution.application.port.in.RegisterFeedbackUseCase;
 import com.plux.distribution.application.port.in.context.ButtonContext;
 import com.plux.distribution.application.port.in.context.MessageContext;
+import com.plux.distribution.application.port.exception.UserIdNotFound;
 import com.plux.distribution.application.port.out.specific.telegram.GetMessageIdByTgPort;
 import com.plux.distribution.application.port.out.specific.telegram.GetUserIdByTgPort;
 import com.plux.distribution.application.port.out.specific.telegram.TgMessageLinker;
+import com.plux.distribution.application.port.out.specific.telegram.TgUserLinker;
 import com.plux.distribution.domain.message.MessageId;
 import com.plux.distribution.domain.user.UserId;
 import java.util.Date;
@@ -21,15 +23,17 @@ public class TelegramHandler implements LongPollingSingleThreadUpdateConsumer {
     private final @NotNull GetMessageIdByTgPort getMessageIdByTgPort;
     private final @NotNull TgMessageLinker messageLinker;
     private final @NotNull GetUserIdByTgPort getUserIdByTgPort;
+    private final @NotNull TgUserLinker tgUserLinker;
 
     public TelegramHandler(@NotNull RegisterFeedbackUseCase registerFeedbackUseCase,
             @NotNull GetMessageIdByTgPort getMessageIdByTgPort,
             @NotNull TgMessageLinker messageLinker,
-            @NotNull GetUserIdByTgPort getUserIdByTgPort) {
+            @NotNull GetUserIdByTgPort getUserIdByTgPort, @NotNull TgUserLinker tgUserLinker) {
         this.registerFeedbackUseCase = registerFeedbackUseCase;
         this.getMessageIdByTgPort = getMessageIdByTgPort;
         this.messageLinker = messageLinker;
         this.getUserIdByTgPort = getUserIdByTgPort;
+        this.tgUserLinker = tgUserLinker;
     }
 
 
@@ -50,7 +54,7 @@ public class TelegramHandler implements LongPollingSingleThreadUpdateConsumer {
     private void processMessage(Message message) {
         var data_context = new MessageContext() {
             @Override
-            public @NotNull UserId getUserId() {
+            public @NotNull UserId getUserId() throws UserIdNotFound {
                 return getUserIdByTgPort.getUserId(message.getChatId());
             }
 
@@ -79,6 +83,11 @@ public class TelegramHandler implements LongPollingSingleThreadUpdateConsumer {
             public void onMessageCreated(@NotNull MessageId messageId) {
                 messageLinker.link(messageId, message.getMessageId());
             }
+
+            @Override
+            public void onUserCreated(@NotNull UserId userId) {
+                tgUserLinker.link(userId, message.getChatId());
+            }
         };
 
         registerFeedbackUseCase.handle_message(data_context);
@@ -91,7 +100,7 @@ public class TelegramHandler implements LongPollingSingleThreadUpdateConsumer {
 
         var data_context = new ButtonContext() {
             @Override
-            public @NotNull UserId getUserId() {
+            public @NotNull UserId getUserId() throws UserIdNotFound {
                 return getUserIdByTgPort.getUserId(tgUserId);
             }
 
