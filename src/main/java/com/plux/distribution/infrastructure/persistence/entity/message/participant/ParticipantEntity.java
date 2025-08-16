@@ -1,6 +1,11 @@
 package com.plux.distribution.infrastructure.persistence.entity.message.participant;
 
 import com.plux.distribution.domain.message.participant.Participant;
+import com.plux.distribution.domain.message.participant.ParticipantVisitor;
+import com.plux.distribution.domain.message.participant.SelfParticipant;
+import com.plux.distribution.domain.message.participant.ServiceParticipant;
+import com.plux.distribution.domain.message.participant.UnknownServiceParticipant;
+import com.plux.distribution.domain.message.participant.UserParticipant;
 import jakarta.persistence.DiscriminatorColumn;
 import jakarta.persistence.DiscriminatorType;
 import jakarta.persistence.Entity;
@@ -10,6 +15,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Inheritance;
 import jakarta.persistence.InheritanceType;
 import jakarta.persistence.Table;
+import java.util.concurrent.atomic.AtomicReference;
 
 @Entity
 @Table(name = "participants")
@@ -24,9 +30,30 @@ public abstract class ParticipantEntity {
     public abstract Participant toModel();
 
     public static ParticipantEntity fromModel(Participant participant) {
-        var constructor = new EntityConstructor();
-        participant.accept(constructor);
+        var holder = new AtomicReference<ParticipantEntity>();
 
-        return constructor.result;
+        participant.accept(new ParticipantVisitor() {
+            @Override
+            public void visit(ServiceParticipant participant) {
+                holder.set(ServiceParticipantEntity.fromModel(participant));
+            }
+
+            @Override
+            public void visit(UnknownServiceParticipant participant) {
+                holder.set(UnkServiceParticipantEntity.fromModel(participant));
+            }
+
+            @Override
+            public void visit(UserParticipant participant) {
+                holder.set(UserParticipantEntity.fromModel(participant));
+            }
+
+            @Override
+            public void visit(SelfParticipant participant) {
+                holder.set(SelfParticipantEntity.fromModel(participant));
+            }
+        });
+
+        return holder.get();
     }
 }
