@@ -1,15 +1,19 @@
 package com.plux.distribution.infrastructure.telegram;
 
 import com.plux.distribution.application.port.in.RegisterFeedbackUseCase;
-import com.plux.distribution.application.port.in.dto.ButtonData;
-import com.plux.distribution.application.port.in.dto.MessageData;
+import com.plux.distribution.application.port.in.context.ButtonContext;
+import com.plux.distribution.application.port.in.context.MessageContext;
 import com.plux.distribution.application.port.out.specific.telegram.GetMessageIdByTgPort;
 import com.plux.distribution.application.port.out.specific.telegram.GetUserIdByTgPort;
 import com.plux.distribution.application.port.out.specific.telegram.TgMessageLinker;
+import com.plux.distribution.domain.message.MessageId;
+import com.plux.distribution.domain.user.UserId;
 import java.util.Date;
 import org.jetbrains.annotations.NotNull;
 import org.telegram.telegrambots.longpolling.util.LongPollingSingleThreadUpdateConsumer;
+import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Update;
+import org.telegram.telegrambots.meta.api.objects.message.Message;
 
 public class TelegramHandler implements LongPollingSingleThreadUpdateConsumer {
 
@@ -33,40 +37,75 @@ public class TelegramHandler implements LongPollingSingleThreadUpdateConsumer {
     public void consume(Update update) {
 
         if (update.hasMessage()) {
-            var message = update.getMessage();
-            var builder = MessageData.builder();
-
-            builder.setText(message.getText());
-            builder.setUserId(getUserIdByTgPort.getUserId(message.getChatId()));
-            builder.setTimestamp(new Date(message.getDate() * 1000L));
-
-            if (message.isReply()) {
-                builder.setReplyTo(
-                        getMessageIdByTgPort.getMessageId(
-                                message.getReplyToMessage().getMessageId()
-                        )
-                );
-            }
-
-            var userMessageId = registerFeedbackUseCase.handle_message(builder.build());
-            messageLinker.link(userMessageId, message.getMessageId());
+            processMessage(update.getMessage());
 
             return;
         }
 
         if (update.hasCallbackQuery()) {
-            var tag = update.getCallbackQuery().getData();
-            var tgUserId = update.getCallbackQuery().getMessage().getChatId();
-            var tgMessageId = update.getCallbackQuery().getMessage().getMessageId();
-
-            var data = ButtonData
-                    .builder()
-                    .setUserId(getUserIdByTgPort.getUserId(tgUserId))
-                    .setReplyTo(getMessageIdByTgPort.getMessageId(tgMessageId))
-                    .setTag(tag)
-                    .build();
-
-            registerFeedbackUseCase.handle_button(data);
+            processCallback(update.getCallbackQuery());
         }
+    }
+
+    private void processMessage(Message message) {
+        var data_context = new MessageContext() {
+            @Override
+            public @NotNull UserId getUserId() {
+                return getUserIdByTgPort.getUserId(message.getChatId());
+            }
+
+            @Override
+            public MessageId getReplyTo() {
+                if (message.isReply()) {
+                    return getMessageIdByTgPort.getMessageId(
+                            message.getReplyToMessage().getMessageId()
+                    );
+                }
+
+                return null;
+            }
+
+            @Override
+            public @NotNull String getText() {
+                return message.getText();
+            }
+
+            @Override
+            public @NotNull Date getTimestamp() {
+                return new Date(message.getDate() * 1000L);
+            }
+
+            @Override
+            public void onMessageCreated(@NotNull MessageId messageId) {
+                messageLinker.link(messageId, message.getMessageId());
+            }
+        };
+
+        registerFeedbackUseCase.handle_message(data_context);
+    }
+
+    private void processCallback(CallbackQuery callbackQuery) {
+        var tag = callbackQuery.getData();
+        var tgUserId = callbackQuery.getMessage().getChatId();
+        var tgMessageId = callbackQuery.getMessage().getMessageId();
+
+        var data_context = new ButtonContext() {
+            @Override
+            public @NotNull UserId getUserId() {
+                return getUserIdByTgPort.getUserId(tgUserId);
+            }
+
+            @Override
+            public @NotNull MessageId getReplyTo() {
+                return getMessageIdByTgPort.getMessageId(tgMessageId);
+            }
+
+            @Override
+            public @NotNull String getTag() {
+                return tag;
+            }
+        };
+
+        registerFeedbackUseCase.handle_button(data_context);
     }
 }

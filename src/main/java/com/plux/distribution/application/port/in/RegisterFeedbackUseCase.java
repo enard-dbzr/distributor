@@ -1,13 +1,12 @@
 package com.plux.distribution.application.port.in;
 
-import com.plux.distribution.application.port.in.dto.ButtonData;
-import com.plux.distribution.application.port.in.dto.MessageData;
-import com.plux.distribution.domain.message.MessageId;
+import com.plux.distribution.application.port.in.context.ButtonContext;
+import com.plux.distribution.application.port.in.context.MessageContext;
 import org.jetbrains.annotations.NotNull;
 
 public interface RegisterFeedbackUseCase {
 
-    @NotNull MessageId handle_message(@NotNull MessageData messageData);
+    void handle_message(@NotNull MessageContext context);
 
-    void handle_button(@NotNull ButtonData buttonData);
+    void handle_button(@NotNull ButtonContext context);
 }

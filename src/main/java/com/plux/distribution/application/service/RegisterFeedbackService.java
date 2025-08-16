@@ -2,8 +2,8 @@ package com.plux.distribution.application.service;
 
 import com.plux.distribution.application.port.in.FeedbackProcessor;
 import com.plux.distribution.application.port.in.RegisterFeedbackUseCase;
-import com.plux.distribution.application.port.in.dto.ButtonData;
-import com.plux.distribution.application.port.in.dto.MessageData;
+import com.plux.distribution.application.port.in.context.ButtonContext;
+import com.plux.distribution.application.port.in.context.MessageContext;
 import com.plux.distribution.application.port.out.feedback.CreateFeedbackPort;
 import com.plux.distribution.application.port.out.message.CreateMessagePort;
 import com.plux.distribution.domain.feedback.Feedback;
@@ -34,60 +34,59 @@ public class RegisterFeedbackService implements RegisterFeedbackUseCase {
     }
 
     @Override
-    public @NotNull MessageId handle_message(@NotNull MessageData data) {
+    public void handle_message(@NotNull MessageContext context) {
         var receiveTime = new Date();
 
-        var message = makeMessage(data);
+        var message = makeMessage(context);
         var messageId = createMessagePort.create(message);
+        context.onMessageCreated(messageId);
 
-        var feedback = makeFeedback(data, messageId, receiveTime);
+        var feedback = makeFeedback(context, messageId, receiveTime);
         createFeedbackPort.create(feedback);
 
         feedbackProcessor.process(feedback);
-
-        return messageId;
     }
 
     @Override
-    public void handle_button(@NotNull ButtonData data) {
+    public void handle_button(@NotNull ButtonContext context) {
         var receiveTime = new Date();
 
-        var feedback = makeFeedback(data, receiveTime);
+        var feedback = makeFeedback(context, receiveTime);
         createFeedbackPort.create(feedback);
 
         feedbackProcessor.process(feedback);
     }
 
-    private static @NotNull Message makeMessage(MessageData data) {
+    private static @NotNull Message makeMessage(MessageContext context) {
         return new Message(
-                new UserParticipant(data.userId()),
+                new UserParticipant(context.getUserId()),
                 new UnknownServiceParticipant(),
-                new ReceivedState(data.timestamp()),
-                new SimpleMessageContent(data.text(), List.of())
+                new ReceivedState(context.getTimestamp()),
+                new SimpleMessageContent(context.getText(), List.of())
         );
     }
 
-    private static Feedback makeFeedback(MessageData data, MessageId content, Date receivedAt) {
-        if (data.replyTo() == null) {
+    private static Feedback makeFeedback(MessageContext context, MessageId content, Date receivedAt) {
+        if (context.getReplyTo() == null) {
             return new Feedback(
                     receivedAt,
-                    data.userId(),
+                    context.getUserId(),
                     new MessagePayload(content)
             );
         }
 
         return new Feedback(
                 receivedAt,
-                data.userId(),
-                new ReplyPayload(data.replyTo(), content)
+                context.getUserId(),
+                new ReplyPayload(context.getReplyTo(), content)
         );
     }
 
-    private static Feedback makeFeedback(ButtonData data, Date receivedAt) {
+    private static Feedback makeFeedback(ButtonContext context, Date receivedAt) {
         return new Feedback(
                 receivedAt,
-                data.userId(),
-                new ButtonPayload(data.replyTo(), data.tag())
+                context.getUserId(),
+                new ButtonPayload(context.getReplyTo(), context.getTag())
         );
     }
 }
