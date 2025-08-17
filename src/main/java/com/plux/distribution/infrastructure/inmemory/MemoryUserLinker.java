@@ -1,4 +1,4 @@
-package com.plux.distribution.infrastructure.persistence;
+package com.plux.distribution.infrastructure.inmemory;
 
 import com.plux.distribution.application.port.exception.UserIdNotFound;
 import com.plux.distribution.application.port.out.specific.telegram.GetTgUserIdPort;

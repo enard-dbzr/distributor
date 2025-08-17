@@ -1,4 +1,4 @@
-package com.plux.distribution.infrastructure.persistence;
+package com.plux.distribution.infrastructure.inmemory;
 
 import com.plux.distribution.application.port.out.user.CreateUserPort;
 import com.plux.distribution.domain.user.User;
