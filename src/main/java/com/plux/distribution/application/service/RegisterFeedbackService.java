@@ -22,6 +22,7 @@ import com.plux.distribution.domain.user.User;
 import com.plux.distribution.domain.user.UserId;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import org.jetbrains.annotations.NotNull;
 
 public class RegisterFeedbackService implements RegisterFeedbackUseCase {
@@ -60,7 +61,9 @@ public class RegisterFeedbackService implements RegisterFeedbackUseCase {
         var feedback = makeFeedback(context, messageId, receiveTime, userId);
         createFeedbackPort.create(feedback);
 
-        feedbackProcessor.process(feedback);
+        var feedbackContext = new FeedbackContext(feedback, Optional.of(message));
+
+        feedbackProcessor.process(feedbackContext);
 
     }
 
@@ -71,7 +74,9 @@ public class RegisterFeedbackService implements RegisterFeedbackUseCase {
         var feedback = makeFeedback(context, receiveTime);
         createFeedbackPort.create(feedback);
 
-        feedbackProcessor.process(feedback);
+        var feedbackContext = new FeedbackContext(feedback, Optional.empty());
+
+        feedbackProcessor.process(feedbackContext);
     }
 
     private static @NotNull Message makeMessage(MessageContext context, UserId userId) {

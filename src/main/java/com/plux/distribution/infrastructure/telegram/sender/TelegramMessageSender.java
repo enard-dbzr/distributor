@@ -12,15 +12,13 @@ import org.telegram.telegrambots.meta.generics.TelegramClient;
 
 public class TelegramMessageSender implements MessageSenderPort {
 
-    @NotNull
-    private final TelegramClient client;
-    @NotNull
-    private final GetTgUserIdPort getTgUserIdPort;
-    private final TgMessageLinker tgMessageLinker;
+    private final @NotNull TelegramClient client;
+    private final @NotNull GetTgUserIdPort getTgUserIdPort;
+    private final @NotNull TgMessageLinker tgMessageLinker;
 
 
     public TelegramMessageSender(@NotNull TelegramClient client,
-            @NotNull GetTgUserIdPort getTgUserIdPort, TgMessageLinker tgMessageLinker) {
+            @NotNull GetTgUserIdPort getTgUserIdPort, @NotNull TgMessageLinker tgMessageLinker) {
         this.client = client;
         this.getTgUserIdPort = getTgUserIdPort;
         this.tgMessageLinker = tgMessageLinker;
@@ -47,10 +45,7 @@ public class TelegramMessageSender implements MessageSenderPort {
         try {
             var res = client.execute(tgMessage);
 
-            if (tgMessageLinker != null) {
-                tgMessageLinker.link(messageId, res.getMessageId());
-            }
-
+            tgMessageLinker.link(messageId, res.getMessageId());
         } catch (TelegramApiException e) {
             throw new RuntimeException(e);
         }

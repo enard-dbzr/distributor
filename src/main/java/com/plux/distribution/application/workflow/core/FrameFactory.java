@@ -1,4 +1,4 @@
-package com.plux.distribution.domain.workflow;
+package com.plux.distribution.application.workflow.core;
 
 import org.jetbrains.annotations.NotNull;
 

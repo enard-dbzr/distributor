@@ -1,14 +1,14 @@
-package com.plux.distribution.domain.workflow;
+package com.plux.distribution.application.workflow.core;
 
-import com.plux.distribution.domain.feedback.Feedback;
 import com.plux.distribution.domain.message.Message;
 import com.plux.distribution.domain.user.UserId;
 import java.util.List;
 import java.util.Stack;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 
 public class FrameContext {
-
     private final @NotNull FrameContextManager manager;
 
     private final @NotNull FrameFactory factory;
@@ -25,19 +25,46 @@ public class FrameContext {
     }
 
     public void exec() {
-        frames.peek().frame().exec(this);
-    }
-
-    public void handle(@NotNull Feedback feedback) {
-        frames.pop().frame().handle(this, feedback);
-
         if (!frames.isEmpty() && frames.peek().execute()) {
             frames.peek().frame().exec(this);
         }
     }
 
-    public void send(@NotNull Frame frame, @NotNull Message message) {
+    public void handle(@NotNull FrameFeedback feedback) {
+        if (frames.isEmpty()) {
+            return;
+        }
+
+        frames.peek().frame().handle(this, feedback);
+    }
+
+    public void send(@NotNull Message message, @NotNull Frame frame) {
         manager.send(this, frame, message);
+    }
+
+    public void send(@NotNull Message message) {
+        send(message, frames.peek().frame());
+    }
+
+    public void changeState(@NotNull Frame frame, boolean execute) {
+        frames.pop();
+        frames.push(new FrameEntry(frame, execute));
+        exec();
+    }
+
+    public void changeState(@NotNull Frame frame) {
+        frames.pop();
+        frames.push(new FrameEntry(frame, true));
+        exec();
+    }
+
+    public void changeState() {
+        frames.pop();
+        exec();
+    }
+
+    public void pop() {
+        frames.pop();
     }
 
     public void push(@NotNull Frame frame, boolean execute) {
