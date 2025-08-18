@@ -5,7 +5,7 @@ import com.plux.distribution.application.workflow.core.FrameContext;
 import com.plux.distribution.application.workflow.core.FrameFeedback;
 import com.plux.distribution.domain.message.Message;
 import com.plux.distribution.domain.message.content.SimpleMessageContent;
-import com.plux.distribution.domain.message.participant.UserParticipant;
+import com.plux.distribution.domain.message.participant.ChatParticipant;
 import java.util.List;
 import org.jetbrains.annotations.NotNull;
 
@@ -23,7 +23,7 @@ public class InorrectPasswordFrame implements Frame {
         context.changeState(masterFrame, false);
 
         context.send(new Message(
-                new UserParticipant(context.getUserId()),
+                new ChatParticipant(context.getChatId()),
                 new SimpleMessageContent("Неверный пароль \n(ง ͠▧. ͡▧)ง", List.of())
         ), masterFrame);
     }

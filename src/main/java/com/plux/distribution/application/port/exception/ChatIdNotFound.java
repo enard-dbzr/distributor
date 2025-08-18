@@ -1,8 +1,8 @@
 package com.plux.distribution.application.port.exception;
 
-public class UserIdNotFound extends Exception {
+public class ChatIdNotFound extends Exception {
 
-    public UserIdNotFound(String message) {
+    public ChatIdNotFound(String message) {
         super(message);
     }
 }

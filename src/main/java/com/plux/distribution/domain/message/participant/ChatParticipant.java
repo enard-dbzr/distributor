@@ -1,9 +1,9 @@
 package com.plux.distribution.domain.message.participant;
 
-import com.plux.distribution.domain.user.UserId;
+import com.plux.distribution.domain.chat.ChatId;
 import org.jetbrains.annotations.NotNull;
 
-public record UserParticipant(@NotNull UserId userId) implements Participant {
+public record ChatParticipant(@NotNull ChatId chatId) implements Participant {
 
     @Override
     public void accept(@NotNull ParticipantVisitor visitor) {

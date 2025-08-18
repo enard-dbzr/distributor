@@ -4,7 +4,7 @@ import com.plux.distribution.application.workflow.core.FrameFeedback;
 import com.plux.distribution.domain.message.Message;
 import com.plux.distribution.domain.message.attachment.ButtonAttachment;
 import com.plux.distribution.domain.message.content.SimpleMessageContent;
-import com.plux.distribution.domain.message.participant.UserParticipant;
+import com.plux.distribution.domain.message.participant.ChatParticipant;
 import com.plux.distribution.application.workflow.core.Frame;
 import com.plux.distribution.application.workflow.core.FrameContext;
 import java.util.List;
@@ -20,7 +20,7 @@ public class HelloFrame implements Frame {
     @Override
     public void exec(@NotNull FrameContext context) {
         var message = new Message(
-                new UserParticipant(context.getUserId()),
+                new ChatParticipant(context.getChatId()),
                 new SimpleMessageContent(
                         "Добро пожаловать в бота компании 3DiVi! Я здесь, "
                                 + "чтобы помочь вам оценить и развить ваши профессиональные навыки. "

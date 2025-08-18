@@ -23,7 +23,7 @@ public class FeedbackEntity {
 
     private Date actionTime;
 
-    private Long userId;
+    private Long chatId;
 
     @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     @JoinColumn(name = "payload_id")
@@ -33,7 +33,7 @@ public class FeedbackEntity {
         var entity = new FeedbackEntity();
 
         entity.actionTime = model.actionTime();
-        entity.userId = model.userId().value();
+        entity.chatId = model.chatId().value();
         entity.payload = FeedbackPayloadEntity.fromModel(model.payload());
 
         return entity;

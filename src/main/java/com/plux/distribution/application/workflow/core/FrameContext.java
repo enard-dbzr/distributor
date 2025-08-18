@@ -1,27 +1,25 @@
 package com.plux.distribution.application.workflow.core;
 
+import com.plux.distribution.domain.chat.ChatId;
 import com.plux.distribution.domain.message.Message;
-import com.plux.distribution.domain.user.UserId;
 import java.util.List;
 import java.util.Stack;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 
 public class FrameContext {
     private final @NotNull FrameContextManager manager;
 
     private final @NotNull FrameFactory factory;
-    private final @NotNull UserId userId;
+    private final @NotNull ChatId chatId;
 
     private final @NotNull FlowData data = new FlowData();
     private final @NotNull Stack<FrameEntry> frames = new Stack<>();
 
     public FrameContext(@NotNull FrameContextManager manager, @NotNull FrameFactory factory,
-            @NotNull UserId userId) {
+            @NotNull ChatId chatId) {
         this.manager = manager;
         this.factory = factory;
-        this.userId = userId;
+        this.chatId = chatId;
     }
 
     public void exec() {
@@ -90,8 +88,8 @@ public class FrameContext {
         return factory;
     }
 
-    public @NotNull UserId getUserId() {
-        return userId;
+    public @NotNull ChatId getChatId() {
+        return chatId;
     }
 
     public @NotNull FlowData getData() {

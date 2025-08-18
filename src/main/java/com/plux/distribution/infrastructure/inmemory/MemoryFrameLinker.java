@@ -3,8 +3,8 @@ package com.plux.distribution.infrastructure.inmemory;
 import com.plux.distribution.application.port.out.workflow.ContextLinkerPort;
 import com.plux.distribution.application.port.out.workflow.ContextLoaderPort;
 import com.plux.distribution.application.workflow.DefaultContextManager;
+import com.plux.distribution.domain.chat.ChatId;
 import com.plux.distribution.domain.message.MessageId;
-import com.plux.distribution.domain.user.UserId;
 import com.plux.distribution.application.workflow.core.FrameContext;
 import com.plux.distribution.application.workflow.core.FrameFactory;
 import java.util.Map;
@@ -27,8 +27,8 @@ public class MemoryFrameLinker implements ContextLinkerPort, ContextLoaderPort {
     }
 
     @Override
-    public @NotNull FrameContext load(UserId userId, MessageId messageId) {
-        var context = new FrameContext(manager, frameFactory, userId);
+    public @NotNull FrameContext load(ChatId chatId, MessageId messageId) {
+        var context = new FrameContext(manager, frameFactory, chatId);
 
         context.restore(states.get(messageId));
 
@@ -36,8 +36,8 @@ public class MemoryFrameLinker implements ContextLinkerPort, ContextLoaderPort {
     }
 
     @Override
-    public @NotNull FrameContext init(UserId userId) {
-        return new FrameContext(manager, frameFactory, userId);
+    public @NotNull FrameContext init(ChatId chatId) {
+        return new FrameContext(manager, frameFactory, chatId);
     }
 
     public void setManager(DefaultContextManager manager) {

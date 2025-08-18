@@ -4,10 +4,11 @@ import com.plux.distribution.application.port.in.FeedbackProcessor;
 import com.plux.distribution.application.port.in.RegisterFeedbackUseCase;
 import com.plux.distribution.application.port.in.context.ButtonContext;
 import com.plux.distribution.application.port.in.context.MessageContext;
-import com.plux.distribution.application.port.exception.UserIdNotFound;
+import com.plux.distribution.application.port.exception.ChatIdNotFound;
 import com.plux.distribution.application.port.out.feedback.CreateFeedbackPort;
 import com.plux.distribution.application.port.out.message.CreateMessagePort;
-import com.plux.distribution.application.port.out.user.CreateUserPort;
+import com.plux.distribution.application.port.out.chat.CreateChatPort;
+import com.plux.distribution.domain.chat.ChatId;
 import com.plux.distribution.domain.feedback.Feedback;
 import com.plux.distribution.domain.feedback.payload.ButtonPayload;
 import com.plux.distribution.domain.feedback.payload.MessagePayload;
@@ -16,10 +17,9 @@ import com.plux.distribution.domain.message.Message;
 import com.plux.distribution.domain.message.MessageId;
 import com.plux.distribution.domain.message.content.SimpleMessageContent;
 import com.plux.distribution.domain.message.participant.UnknownServiceParticipant;
-import com.plux.distribution.domain.message.participant.UserParticipant;
+import com.plux.distribution.domain.message.participant.ChatParticipant;
 import com.plux.distribution.domain.message.state.ReceivedState;
-import com.plux.distribution.domain.user.User;
-import com.plux.distribution.domain.user.UserId;
+import com.plux.distribution.domain.chat.Chat;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -29,15 +29,15 @@ public class RegisterFeedbackService implements RegisterFeedbackUseCase {
 
     private final CreateMessagePort createMessagePort;
     private final CreateFeedbackPort createFeedbackPort;
-    private final CreateUserPort createUserPort;
+    private final CreateChatPort createChatPort;
     private final FeedbackProcessor feedbackProcessor;
 
     public RegisterFeedbackService(CreateMessagePort createMessagePort,
-            CreateFeedbackPort createFeedbackPort, CreateUserPort createUserPort,
+            CreateFeedbackPort createFeedbackPort, CreateChatPort createChatPort,
             FeedbackProcessor feedbackProcessor) {
         this.createMessagePort = createMessagePort;
         this.createFeedbackPort = createFeedbackPort;
-        this.createUserPort = createUserPort;
+        this.createChatPort = createChatPort;
         this.feedbackProcessor = feedbackProcessor;
     }
 
@@ -45,20 +45,20 @@ public class RegisterFeedbackService implements RegisterFeedbackUseCase {
     public void handle_message(@NotNull MessageContext context) {
         var receiveTime = new Date();
 
-        UserId userId;
+        ChatId chatId;
         try {
-            userId = context.getUserId();
-        } catch (UserIdNotFound e) {
-            userId = createUserPort.create(new User());
-            context.onUserCreated(userId);
-            System.out.println("Created new user");
+            chatId = context.getChatId();
+        } catch (ChatIdNotFound e) {
+            chatId = createChatPort.create(new Chat());
+            context.onChatCreated(chatId);
+            System.out.println("Created new chat");
         }
 
-        var message = makeMessage(context, userId);
+        var message = makeMessage(context, chatId);
         var messageId = createMessagePort.create(message);
         context.onMessageCreated(messageId);
 
-        var feedback = makeFeedback(context, messageId, receiveTime, userId);
+        var feedback = makeFeedback(context, messageId, receiveTime, chatId);
         createFeedbackPort.create(feedback);
 
         var feedbackContext = new FeedbackContext(feedback, Optional.of(message));
@@ -79,9 +79,9 @@ public class RegisterFeedbackService implements RegisterFeedbackUseCase {
         feedbackProcessor.process(feedbackContext);
     }
 
-    private static @NotNull Message makeMessage(MessageContext context, UserId userId) {
+    private static @NotNull Message makeMessage(MessageContext context, ChatId chatId) {
         return new Message(
-                new UserParticipant(userId),
+                new ChatParticipant(chatId),
                 new UnknownServiceParticipant(),
                 new ReceivedState(context.getTimestamp()),
                 new SimpleMessageContent(context.getText(), List.of())
@@ -89,18 +89,18 @@ public class RegisterFeedbackService implements RegisterFeedbackUseCase {
     }
 
     private static Feedback makeFeedback(MessageContext context, MessageId content,
-            Date receivedAt, UserId userId) {
+            Date receivedAt, ChatId chatId) {
         if (context.getReplyTo() == null) {
             return new Feedback(
                     receivedAt,
-                    userId,
+                    chatId,
                     new MessagePayload(content)
             );
         }
 
         return new Feedback(
                 receivedAt,
-                userId,
+                chatId,
                 new ReplyPayload(context.getReplyTo(), content)
         );
 
@@ -110,11 +110,11 @@ public class RegisterFeedbackService implements RegisterFeedbackUseCase {
         try {
             return new Feedback(
                     receivedAt,
-                    context.getUserId(),
+                    context.getChatId(),
                     new ButtonPayload(context.getReplyTo(), context.getTag())
             );
-        } catch (UserIdNotFound userIdNotFound) {
-            throw new RuntimeException(userIdNotFound);
+        } catch (ChatIdNotFound chatIdNotFound) {
+            throw new RuntimeException(chatIdNotFound);
         }
     }
 }

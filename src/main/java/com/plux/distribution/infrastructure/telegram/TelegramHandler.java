@@ -3,13 +3,13 @@ package com.plux.distribution.infrastructure.telegram;
 import com.plux.distribution.application.port.in.RegisterFeedbackUseCase;
 import com.plux.distribution.application.port.in.context.ButtonContext;
 import com.plux.distribution.application.port.in.context.MessageContext;
-import com.plux.distribution.application.port.exception.UserIdNotFound;
+import com.plux.distribution.application.port.exception.ChatIdNotFound;
 import com.plux.distribution.application.port.out.specific.telegram.GetMessageIdByTgPort;
-import com.plux.distribution.application.port.out.specific.telegram.GetUserIdByTgPort;
+import com.plux.distribution.application.port.out.specific.telegram.GetChatIdByTgPort;
 import com.plux.distribution.application.port.out.specific.telegram.TgMessageLinker;
-import com.plux.distribution.application.port.out.specific.telegram.TgUserLinker;
+import com.plux.distribution.application.port.out.specific.telegram.TgChatLinker;
 import com.plux.distribution.domain.message.MessageId;
-import com.plux.distribution.domain.user.UserId;
+import com.plux.distribution.domain.chat.ChatId;
 import java.util.Date;
 import org.jetbrains.annotations.NotNull;
 import org.telegram.telegrambots.longpolling.util.LongPollingSingleThreadUpdateConsumer;
@@ -22,18 +22,18 @@ public class TelegramHandler implements LongPollingSingleThreadUpdateConsumer {
     private final @NotNull RegisterFeedbackUseCase registerFeedbackUseCase;
     private final @NotNull GetMessageIdByTgPort getMessageIdByTgPort;
     private final @NotNull TgMessageLinker messageLinker;
-    private final @NotNull GetUserIdByTgPort getUserIdByTgPort;
-    private final @NotNull TgUserLinker tgUserLinker;
+    private final @NotNull GetChatIdByTgPort getChatIdByTgPort;
+    private final @NotNull TgChatLinker tgChatLinker;
 
     public TelegramHandler(@NotNull RegisterFeedbackUseCase registerFeedbackUseCase,
             @NotNull GetMessageIdByTgPort getMessageIdByTgPort,
             @NotNull TgMessageLinker messageLinker,
-            @NotNull GetUserIdByTgPort getUserIdByTgPort, @NotNull TgUserLinker tgUserLinker) {
+            @NotNull GetChatIdByTgPort getChatIdByTgPort, @NotNull TgChatLinker tgChatLinker) {
         this.registerFeedbackUseCase = registerFeedbackUseCase;
         this.getMessageIdByTgPort = getMessageIdByTgPort;
         this.messageLinker = messageLinker;
-        this.getUserIdByTgPort = getUserIdByTgPort;
-        this.tgUserLinker = tgUserLinker;
+        this.getChatIdByTgPort = getChatIdByTgPort;
+        this.tgChatLinker = tgChatLinker;
     }
 
 
@@ -54,8 +54,8 @@ public class TelegramHandler implements LongPollingSingleThreadUpdateConsumer {
     private void processMessage(Message message) {
         var data_context = new MessageContext() {
             @Override
-            public @NotNull UserId getUserId() throws UserIdNotFound {
-                return getUserIdByTgPort.getUserId(message.getChatId());
+            public @NotNull ChatId getChatId() throws ChatIdNotFound {
+                return getChatIdByTgPort.getChatId(message.getChatId());
             }
 
             @Override
@@ -85,8 +85,8 @@ public class TelegramHandler implements LongPollingSingleThreadUpdateConsumer {
             }
 
             @Override
-            public void onUserCreated(@NotNull UserId userId) {
-                tgUserLinker.link(userId, message.getChatId());
+            public void onChatCreated(@NotNull ChatId chatId) {
+                tgChatLinker.link(chatId, message.getChatId());
             }
         };
 
@@ -95,13 +95,13 @@ public class TelegramHandler implements LongPollingSingleThreadUpdateConsumer {
 
     private void processCallback(CallbackQuery callbackQuery) {
         var tag = callbackQuery.getData();
-        var tgUserId = callbackQuery.getMessage().getChatId();
+        var tgChatId = callbackQuery.getMessage().getChatId();
         var tgMessageId = callbackQuery.getMessage().getMessageId();
 
         var data_context = new ButtonContext() {
             @Override
-            public @NotNull UserId getUserId() throws UserIdNotFound {
-                return getUserIdByTgPort.getUserId(tgUserId);
+            public @NotNull ChatId getChatId() throws ChatIdNotFound {
+                return getChatIdByTgPort.getChatId(tgChatId);
             }
 
             @Override

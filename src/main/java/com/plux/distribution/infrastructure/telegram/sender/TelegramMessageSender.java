@@ -1,6 +1,6 @@
 package com.plux.distribution.infrastructure.telegram.sender;
 
-import com.plux.distribution.application.port.out.specific.telegram.GetTgUserIdPort;
+import com.plux.distribution.application.port.out.specific.telegram.GetTgChatIdPort;
 import com.plux.distribution.application.port.out.MessageSenderPort;
 import com.plux.distribution.application.port.out.specific.telegram.TgMessageLinker;
 import com.plux.distribution.domain.message.MessageId;
@@ -13,14 +13,14 @@ import org.telegram.telegrambots.meta.generics.TelegramClient;
 public class TelegramMessageSender implements MessageSenderPort {
 
     private final @NotNull TelegramClient client;
-    private final @NotNull GetTgUserIdPort getTgUserIdPort;
+    private final @NotNull GetTgChatIdPort getTgChatIdPort;
     private final @NotNull TgMessageLinker tgMessageLinker;
 
 
     public TelegramMessageSender(@NotNull TelegramClient client,
-            @NotNull GetTgUserIdPort getTgUserIdPort, @NotNull TgMessageLinker tgMessageLinker) {
+            @NotNull GetTgChatIdPort getTgChatIdPort, @NotNull TgMessageLinker tgMessageLinker) {
         this.client = client;
-        this.getTgUserIdPort = getTgUserIdPort;
+        this.getTgChatIdPort = getTgChatIdPort;
         this.tgMessageLinker = tgMessageLinker;
     }
 
@@ -29,10 +29,10 @@ public class TelegramMessageSender implements MessageSenderPort {
             @NotNull MessageContent messageContent) {
         var context = new RenderingContext();
 
-        var uidExtractor = new UserIdExtractor();
+        var uidExtractor = new ChatIdExtractor();
         recipient.accept(uidExtractor);
 
-        var tgId = getTgUserIdPort.getTgUserId(uidExtractor.getUserId());
+        var tgId = getTgChatIdPort.getTgChatId(uidExtractor.getChatId());
 
         context.sendMessageBuilder.chatId(tgId);
 

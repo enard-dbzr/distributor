@@ -1,14 +1,14 @@
 package com.plux.distribution.application.port.in.context;
 
-import com.plux.distribution.application.port.exception.UserIdNotFound;
+import com.plux.distribution.application.port.exception.ChatIdNotFound;
 import com.plux.distribution.domain.message.MessageId;
-import com.plux.distribution.domain.user.UserId;
+import com.plux.distribution.domain.chat.ChatId;
 import java.util.Date;
 import org.jetbrains.annotations.NotNull;
 
 public interface MessageContext {
 
-    @NotNull UserId getUserId() throws UserIdNotFound;
+    @NotNull ChatId getChatId() throws ChatIdNotFound;
 
     MessageId getReplyTo();
 
@@ -18,5 +18,5 @@ public interface MessageContext {
 
     void onMessageCreated(@NotNull MessageId messageId);
 
-    void onUserCreated(@NotNull UserId userId);
+    void onChatCreated(@NotNull ChatId chatId);
 }

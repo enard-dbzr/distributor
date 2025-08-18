@@ -5,7 +5,7 @@ import com.plux.distribution.domain.message.participant.ParticipantVisitor;
 import com.plux.distribution.domain.message.participant.SelfParticipant;
 import com.plux.distribution.domain.message.participant.ServiceParticipant;
 import com.plux.distribution.domain.message.participant.UnknownServiceParticipant;
-import com.plux.distribution.domain.message.participant.UserParticipant;
+import com.plux.distribution.domain.message.participant.ChatParticipant;
 import jakarta.persistence.DiscriminatorColumn;
 import jakarta.persistence.DiscriminatorType;
 import jakarta.persistence.Entity;
@@ -44,8 +44,8 @@ public abstract class ParticipantEntity {
             }
 
             @Override
-            public void visit(UserParticipant participant) {
-                holder.set(UserParticipantEntity.fromModel(participant));
+            public void visit(ChatParticipant participant) {
+                holder.set(ChatParticipantEntity.fromModel(participant));
             }
 
             @Override

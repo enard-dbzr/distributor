@@ -11,8 +11,8 @@ import com.plux.distribution.infrastructure.inmemory.MemoryFrameLinker;
 import com.plux.distribution.infrastructure.persistence.DbFeedbackRepository;
 import com.plux.distribution.infrastructure.persistence.DbMessageRepository;
 import com.plux.distribution.infrastructure.inmemory.MemoryMessageLinker;
-import com.plux.distribution.infrastructure.inmemory.MemoryUserLinker;
-import com.plux.distribution.infrastructure.inmemory.MemoryUserRepository;
+import com.plux.distribution.infrastructure.inmemory.MemoryChatLinker;
+import com.plux.distribution.infrastructure.inmemory.MemoryChatRepository;
 import com.plux.distribution.infrastructure.persistence.config.HibernateConfig;
 import com.plux.distribution.infrastructure.telegram.TelegramHandler;
 import com.plux.distribution.infrastructure.telegram.sender.TelegramMessageSender;
@@ -35,7 +35,7 @@ public class Main {
                 System.getenv("DB_PASSWORD")
         );
 
-        var tgUserLinker = new MemoryUserLinker();
+        var tgUserLinker = new MemoryChatLinker();
         var tgMessageLinker = new MemoryMessageLinker();
 
         var tgClient = new OkHttpTelegramClient(botToken);
@@ -44,7 +44,7 @@ public class Main {
 
         var messageRepo = new DbMessageRepository(hibernateConfig.getSessionFactory());
         var feedbackRepo = new DbFeedbackRepository(hibernateConfig.getSessionFactory());
-        var userRepo = new MemoryUserRepository();
+        var userRepo = new MemoryChatRepository();
 
         var messageDeliveryService = new MessageDeliveryService(sender, messageRepo, messageRepo);
 

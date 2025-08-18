@@ -28,11 +28,11 @@ public class FlowFeedbackProcessor implements FeedbackProcessor {
         System.out.printf("Got feedback: %s%n", context);
 
         if (messageId == null) {
-            var frameContext = contextLoader.init(context.feedback().userId());
+            var frameContext = contextLoader.init(context.feedback().chatId());
             frameContext.push(frameContext.getFactory().get("flow.registration"), true);
             frameContext.exec();
         } else {
-            var frameContext = contextLoader.load(context.feedback().userId(), messageId);
+            var frameContext = contextLoader.load(context.feedback().chatId(), messageId);
             frameContext.handle(createFrameFeedback(context));
         }
     }
