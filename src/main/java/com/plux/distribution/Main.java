@@ -8,9 +8,9 @@ import com.plux.distribution.application.workflow.DefaultContextManager;
 import com.plux.distribution.application.workflow.frame.FrameRegistry;
 import com.plux.distribution.application.workflow.core.FrameFactory;
 import com.plux.distribution.application.workflow.frame.utils.SequenceFrame;
-import com.plux.distribution.infrastructure.inmemory.MemoryFrameLinker;
 import com.plux.distribution.infrastructure.persistence.DbChatRepository;
 import com.plux.distribution.infrastructure.persistence.DbFeedbackRepository;
+import com.plux.distribution.infrastructure.persistence.DbFrameLinker;
 import com.plux.distribution.infrastructure.persistence.DbMessageRepository;
 import com.plux.distribution.infrastructure.persistence.DbTgChatLinker;
 import com.plux.distribution.infrastructure.persistence.DbTgMessageLinker;
@@ -53,7 +53,7 @@ public class Main {
         var executeActionService = new ExecuteActionService(executor);
 
         var frameFactory = makeFrameFactory();
-        var frameLinker = new MemoryFrameLinker(frameFactory);
+        var frameLinker = new DbFrameLinker(hibernateConfig.getSessionFactory(), frameFactory);
         var frameContextManager = new DefaultContextManager(frameLinker, messageDeliveryService, executeActionService);
         frameLinker.setManager(frameContextManager);
 
