@@ -9,11 +9,11 @@ import com.plux.distribution.application.workflow.frame.FrameRegistry;
 import com.plux.distribution.application.workflow.core.FrameFactory;
 import com.plux.distribution.application.workflow.frame.utils.SequenceFrame;
 import com.plux.distribution.infrastructure.inmemory.MemoryFrameLinker;
+import com.plux.distribution.infrastructure.persistence.DbChatRepository;
 import com.plux.distribution.infrastructure.persistence.DbFeedbackRepository;
 import com.plux.distribution.infrastructure.persistence.DbMessageRepository;
 import com.plux.distribution.infrastructure.inmemory.MemoryMessageLinker;
 import com.plux.distribution.infrastructure.inmemory.MemoryChatLinker;
-import com.plux.distribution.infrastructure.inmemory.MemoryChatRepository;
 import com.plux.distribution.infrastructure.persistence.config.HibernateConfig;
 import com.plux.distribution.infrastructure.telegram.TelegramActionExecutor;
 import com.plux.distribution.infrastructure.telegram.TelegramHandler;
@@ -47,7 +47,7 @@ public class Main {
 
         var messageRepo = new DbMessageRepository(hibernateConfig.getSessionFactory());
         var feedbackRepo = new DbFeedbackRepository(hibernateConfig.getSessionFactory());
-        var userRepo = new MemoryChatRepository();
+        var chatRepo = new DbChatRepository(hibernateConfig.getSessionFactory());
 
         var messageDeliveryService = new MessageDeliveryService(sender, messageRepo, messageRepo);
         var executeActionService = new ExecuteActionService(executor);
@@ -60,7 +60,7 @@ public class Main {
         var mainFeedbackProcessor = new FlowFeedbackProcessor(frameLinker);
 
         var registerFeedbackService = new RegisterFeedbackService(messageRepo, feedbackRepo,
-                userRepo, mainFeedbackProcessor);
+                chatRepo, mainFeedbackProcessor);
 
         var tgHandler = new TelegramHandler(registerFeedbackService, tgMessageLinker,
                 tgMessageLinker, tgChatLinker, tgChatLinker);

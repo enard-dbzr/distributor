@@ -11,7 +11,7 @@ import org.reflections.Reflections;
 
 public class HibernateConfig {
 
-    private SessionFactory sessionFactory;
+    private final SessionFactory sessionFactory;
 
     public HibernateConfig(String dbUrl, String dbUser, String dbPassword) {
         try {
@@ -44,7 +44,7 @@ public class HibernateConfig {
         settings.put("hibernate.connection.username", dbUser);
         settings.put("hibernate.connection.password", dbPassword);
         settings.put("hibernate.dialect", "org.hibernate.dialect.PostgreSQLDialect");
-        settings.put("hibernate.show_sql", "true");
+        settings.put("hibernate.show_sql", "false");
         settings.put("hibernate.format_sql", "true");
         settings.put("hibernate.hbm2ddl.auto", "update");
 
