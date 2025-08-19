@@ -31,7 +31,7 @@ public class TelegramActionExecutor implements ActionExecutorPort {
         chatAction.accept(new ChatActionVisitor() {
             @Override
             public void visit(ClearButtonsAction entity) {
-                var tgMessageId = getTgMessageIdPort.getTgMessageId(entity.getMessageId());
+                var tgMessageId = getTgMessageIdPort.getTgMessageId(entity.getMessageId()).messageId();
 
                 var command = EditMessageReplyMarkup.builder().chatId(tgChatId).messageId(tgMessageId).build();
                 try {

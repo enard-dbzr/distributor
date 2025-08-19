@@ -4,5 +4,5 @@ import com.plux.distribution.domain.message.MessageId;
 import org.jetbrains.annotations.NotNull;
 
 public interface TgMessageLinker {
-    void link(@NotNull MessageId internal, @NotNull Integer external);
+    void link(@NotNull MessageId internal, @NotNull TgMessageGlobalId external);
 }

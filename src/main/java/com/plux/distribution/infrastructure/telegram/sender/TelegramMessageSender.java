@@ -2,6 +2,7 @@ package com.plux.distribution.infrastructure.telegram.sender;
 
 import com.plux.distribution.application.port.out.specific.telegram.chat.GetTgChatIdPort;
 import com.plux.distribution.application.port.out.MessageSenderPort;
+import com.plux.distribution.application.port.out.specific.telegram.message.TgMessageGlobalId;
 import com.plux.distribution.application.port.out.specific.telegram.message.TgMessageLinker;
 import com.plux.distribution.domain.message.MessageId;
 import com.plux.distribution.domain.message.content.MessageContent;
@@ -45,7 +46,7 @@ public class TelegramMessageSender implements MessageSenderPort {
         try {
             var res = client.execute(tgMessage);
 
-            tgMessageLinker.link(messageId, res.getMessageId());
+            tgMessageLinker.link(messageId, new TgMessageGlobalId(res.getMessageId(), tgId));
         } catch (TelegramApiException e) {
             throw new RuntimeException(e);
         }

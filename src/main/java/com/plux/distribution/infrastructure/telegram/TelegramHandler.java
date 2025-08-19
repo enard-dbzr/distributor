@@ -6,6 +6,7 @@ import com.plux.distribution.application.port.in.context.MessageContext;
 import com.plux.distribution.application.port.exception.ChatIdNotFound;
 import com.plux.distribution.application.port.out.specific.telegram.message.GetMessageIdByTgPort;
 import com.plux.distribution.application.port.out.specific.telegram.chat.GetChatIdByTgPort;
+import com.plux.distribution.application.port.out.specific.telegram.message.TgMessageGlobalId;
 import com.plux.distribution.application.port.out.specific.telegram.message.TgMessageLinker;
 import com.plux.distribution.application.port.out.specific.telegram.chat.TgChatLinker;
 import com.plux.distribution.domain.message.MessageId;
@@ -62,7 +63,10 @@ public class TelegramHandler implements LongPollingSingleThreadUpdateConsumer {
             public MessageId getReplyTo() {
                 if (message.isReply()) {
                     return getMessageIdByTgPort.getMessageId(
-                            message.getReplyToMessage().getMessageId()
+                            new TgMessageGlobalId(
+                                    message.getReplyToMessage().getMessageId(),
+                                    message.getChatId()
+                            )
                     );
                 }
 
@@ -81,7 +85,7 @@ public class TelegramHandler implements LongPollingSingleThreadUpdateConsumer {
 
             @Override
             public void onMessageCreated(@NotNull MessageId messageId) {
-                messageLinker.link(messageId, message.getMessageId());
+                messageLinker.link(messageId, new TgMessageGlobalId(message.getMessageId(), message.getChatId()));
             }
 
             @Override
@@ -106,7 +110,7 @@ public class TelegramHandler implements LongPollingSingleThreadUpdateConsumer {
 
             @Override
             public @NotNull MessageId getReplyTo() {
-                return getMessageIdByTgPort.getMessageId(tgMessageId);
+                return getMessageIdByTgPort.getMessageId(new TgMessageGlobalId(tgMessageId, tgChatId));
             }
 
             @Override
