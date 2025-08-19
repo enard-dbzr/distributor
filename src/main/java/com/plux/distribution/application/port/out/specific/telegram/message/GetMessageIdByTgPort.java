@@ -5,5 +5,5 @@ import org.jetbrains.annotations.NotNull;
 
 public interface GetMessageIdByTgPort {
 
-    @NotNull MessageId getMessageId(TgMessageGlobalId messageGlobalId);
+    @NotNull MessageId getMessageId(@NotNull TgMessageGlobalId messageGlobalId);
 }

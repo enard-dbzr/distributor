@@ -15,7 +15,7 @@ public class MemoryMessageLinker implements TgMessageLinker, GetMessageIdByTgPor
 
 
     @Override
-    public @NotNull MessageId getMessageId(TgMessageGlobalId messageGlobalId) {
+    public @NotNull MessageId getMessageId(@NotNull TgMessageGlobalId messageGlobalId) {
         var value = forwardMap.get(messageGlobalId);
         return value != null ? value : new MessageId(1L);
     }
@@ -27,7 +27,7 @@ public class MemoryMessageLinker implements TgMessageLinker, GetMessageIdByTgPor
     }
 
     @Override
-    public TgMessageGlobalId getTgMessageId(MessageId messageId) {
+    public TgMessageGlobalId getTgMessageId(@NotNull MessageId messageId) {
         return backwardMap.get(messageId);
     }
 }

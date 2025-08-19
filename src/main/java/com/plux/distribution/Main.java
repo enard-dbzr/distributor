@@ -12,8 +12,8 @@ import com.plux.distribution.infrastructure.inmemory.MemoryFrameLinker;
 import com.plux.distribution.infrastructure.persistence.DbChatRepository;
 import com.plux.distribution.infrastructure.persistence.DbFeedbackRepository;
 import com.plux.distribution.infrastructure.persistence.DbMessageRepository;
-import com.plux.distribution.infrastructure.inmemory.MemoryMessageLinker;
 import com.plux.distribution.infrastructure.persistence.DbTgChatLinker;
+import com.plux.distribution.infrastructure.persistence.DbTgMessageLinker;
 import com.plux.distribution.infrastructure.persistence.config.HibernateConfig;
 import com.plux.distribution.infrastructure.telegram.TelegramActionExecutor;
 import com.plux.distribution.infrastructure.telegram.TelegramHandler;
@@ -42,7 +42,7 @@ public class Main {
         var chatRepo = new DbChatRepository(hibernateConfig.getSessionFactory());
 
         var tgChatLinker = new DbTgChatLinker(hibernateConfig.getSessionFactory());
-        var tgMessageLinker = new MemoryMessageLinker();
+        var tgMessageLinker = new DbTgMessageLinker(hibernateConfig.getSessionFactory());
 
         var tgClient = new OkHttpTelegramClient(botToken);
 
