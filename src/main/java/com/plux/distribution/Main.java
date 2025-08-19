@@ -13,7 +13,7 @@ import com.plux.distribution.infrastructure.persistence.DbChatRepository;
 import com.plux.distribution.infrastructure.persistence.DbFeedbackRepository;
 import com.plux.distribution.infrastructure.persistence.DbMessageRepository;
 import com.plux.distribution.infrastructure.inmemory.MemoryMessageLinker;
-import com.plux.distribution.infrastructure.inmemory.MemoryChatLinker;
+import com.plux.distribution.infrastructure.persistence.DbTgChatLinker;
 import com.plux.distribution.infrastructure.persistence.config.HibernateConfig;
 import com.plux.distribution.infrastructure.telegram.TelegramActionExecutor;
 import com.plux.distribution.infrastructure.telegram.TelegramHandler;
@@ -37,17 +37,17 @@ public class Main {
                 System.getenv("DB_PASSWORD")
         );
 
-        var tgChatLinker = new MemoryChatLinker();
+        var messageRepo = new DbMessageRepository(hibernateConfig.getSessionFactory());
+        var feedbackRepo = new DbFeedbackRepository(hibernateConfig.getSessionFactory());
+        var chatRepo = new DbChatRepository(hibernateConfig.getSessionFactory());
+
+        var tgChatLinker = new DbTgChatLinker(hibernateConfig.getSessionFactory());
         var tgMessageLinker = new MemoryMessageLinker();
 
         var tgClient = new OkHttpTelegramClient(botToken);
 
         var sender = new TelegramMessageSender(tgClient, tgChatLinker, tgMessageLinker);
         var executor = new TelegramActionExecutor(tgClient, tgChatLinker, tgMessageLinker);
-
-        var messageRepo = new DbMessageRepository(hibernateConfig.getSessionFactory());
-        var feedbackRepo = new DbFeedbackRepository(hibernateConfig.getSessionFactory());
-        var chatRepo = new DbChatRepository(hibernateConfig.getSessionFactory());
 
         var messageDeliveryService = new MessageDeliveryService(sender, messageRepo, messageRepo);
         var executeActionService = new ExecuteActionService(executor);

@@ -6,5 +6,5 @@ import org.jetbrains.annotations.NotNull;
 
 public interface GetChatIdByTgPort {
 
-    @NotNull ChatId getChatId(@NotNull Long tgUserId) throws ChatIdNotFound;
+    @NotNull ChatId getChatId(@NotNull Long tgChatId) throws ChatIdNotFound;
 }
