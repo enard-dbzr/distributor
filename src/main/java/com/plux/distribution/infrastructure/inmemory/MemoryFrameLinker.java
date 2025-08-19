@@ -8,12 +8,13 @@ import com.plux.distribution.domain.message.MessageId;
 import com.plux.distribution.application.workflow.core.FrameContext;
 import com.plux.distribution.application.workflow.core.FrameFactory;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 import org.jetbrains.annotations.NotNull;
 
 public class MemoryFrameLinker implements ContextLinkerPort, ContextLoaderPort {
 
-    private final Map<MessageId, FrameContext.ContextSnapshot> states = new ConcurrentHashMap<>();
+    private final Map<ChatId, FrameContext.ContextSnapshot> states = new ConcurrentHashMap<>();
     private DefaultContextManager manager;
     private final FrameFactory frameFactory;
 
@@ -23,16 +24,19 @@ public class MemoryFrameLinker implements ContextLinkerPort, ContextLoaderPort {
 
     @Override
     public void link(@NotNull FrameContext context, @NotNull MessageId messageId) {
-        states.put(messageId, context.save());
+        states.put(context.getChatId(), context.save());
     }
 
     @Override
-    public @NotNull FrameContext load(ChatId chatId, MessageId messageId) {
+    public @NotNull Optional<FrameContext> load(@NotNull ChatId chatId) {
+        if (!states.containsKey(chatId)) {
+            return Optional.empty();
+        }
+
         var context = new FrameContext(manager, frameFactory, chatId);
+        context.restore(states.get(chatId));
 
-        context.restore(states.get(messageId));
-
-        return context;
+        return Optional.of(context);
     }
 
     @Override

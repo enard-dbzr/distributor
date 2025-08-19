@@ -3,6 +3,7 @@ package com.plux.distribution.application.service;
 import com.plux.distribution.application.port.in.FeedbackProcessor;
 import com.plux.distribution.application.port.out.workflow.ContextLoaderPort;
 import com.plux.distribution.application.workflow.core.FrameFeedback;
+import com.plux.distribution.domain.chat.ChatId;
 import com.plux.distribution.domain.feedback.payload.ButtonPayload;
 import com.plux.distribution.domain.feedback.payload.FeedbackPayloadVisitor;
 import com.plux.distribution.domain.feedback.payload.MessagePayload;
@@ -23,21 +24,23 @@ public class FlowFeedbackProcessor implements FeedbackProcessor {
 
     @Override
     public void process(@NotNull FeedbackContext context) {
-        var messageId = context.feedback().payload().getReplyTo();
+        var frameContext = contextLoader.load(context.feedback().chatId());
+        frameContext.ifPresent(value -> value.handle(createFrameFeedback(context)));
 
-        System.out.printf("Got feedback: %s%n", context);
-
-        if (messageId == null) {
-            var frameContext = contextLoader.init(context.feedback().chatId());
-            frameContext.push(frameContext.getFactory().get("flow.registration"), true);
-            frameContext.exec();
-        } else {
-            var frameContext = contextLoader.load(context.feedback().chatId(), messageId);
-            frameContext.handle(createFrameFeedback(context));
-        }
+        createFrameFeedback(context).text().ifPresent(text -> {
+            if (text.equals("/start")) {
+                startRegistration(context.feedback().chatId());
+            }
+        });
     }
 
-    public FrameFeedback createFrameFeedback(FeedbackContext context) {
+    private void startRegistration(ChatId chatId) {
+        var frameContext = contextLoader.init(chatId);
+        frameContext.push(frameContext.getFactory().get("flow.registration"), true);
+        frameContext.exec();
+    }
+
+    private FrameFeedback createFrameFeedback(FeedbackContext context) {
         var text = new AtomicReference<String>();
         var buttonTag = new AtomicReference<String>();
 
