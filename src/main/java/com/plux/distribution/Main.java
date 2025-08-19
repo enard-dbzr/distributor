@@ -1,5 +1,6 @@
 package com.plux.distribution;
 
+import com.plux.distribution.application.service.ExecuteActionService;
 import com.plux.distribution.application.service.FlowFeedbackProcessor;
 import com.plux.distribution.application.service.MessageDeliveryService;
 import com.plux.distribution.application.service.RegisterFeedbackService;
@@ -14,6 +15,7 @@ import com.plux.distribution.infrastructure.inmemory.MemoryMessageLinker;
 import com.plux.distribution.infrastructure.inmemory.MemoryChatLinker;
 import com.plux.distribution.infrastructure.inmemory.MemoryChatRepository;
 import com.plux.distribution.infrastructure.persistence.config.HibernateConfig;
+import com.plux.distribution.infrastructure.telegram.TelegramActionExecutor;
 import com.plux.distribution.infrastructure.telegram.TelegramHandler;
 import com.plux.distribution.infrastructure.telegram.sender.TelegramMessageSender;
 import java.util.List;
@@ -35,22 +37,24 @@ public class Main {
                 System.getenv("DB_PASSWORD")
         );
 
-        var tgUserLinker = new MemoryChatLinker();
+        var tgChatLinker = new MemoryChatLinker();
         var tgMessageLinker = new MemoryMessageLinker();
 
         var tgClient = new OkHttpTelegramClient(botToken);
 
-        var sender = new TelegramMessageSender(tgClient, tgUserLinker, tgMessageLinker);
+        var sender = new TelegramMessageSender(tgClient, tgChatLinker, tgMessageLinker);
+        var executor = new TelegramActionExecutor(tgClient, tgChatLinker, tgMessageLinker);
 
         var messageRepo = new DbMessageRepository(hibernateConfig.getSessionFactory());
         var feedbackRepo = new DbFeedbackRepository(hibernateConfig.getSessionFactory());
         var userRepo = new MemoryChatRepository();
 
         var messageDeliveryService = new MessageDeliveryService(sender, messageRepo, messageRepo);
+        var executeActionService = new ExecuteActionService(executor);
 
         var frameFactory = makeFrameFactory();
         var frameLinker = new MemoryFrameLinker(frameFactory);
-        var frameContextManager = new DefaultContextManager(frameLinker, messageDeliveryService);
+        var frameContextManager = new DefaultContextManager(frameLinker, messageDeliveryService, executeActionService);
         frameLinker.setManager(frameContextManager);
 
         var mainFeedbackProcessor = new FlowFeedbackProcessor(frameLinker);
@@ -59,7 +63,7 @@ public class Main {
                 userRepo, mainFeedbackProcessor);
 
         var tgHandler = new TelegramHandler(registerFeedbackService, tgMessageLinker,
-                tgMessageLinker, tgUserLinker, tgUserLinker);
+                tgMessageLinker, tgChatLinker, tgChatLinker);
 
         try (var botsApplication = new TelegramBotsLongPollingApplication()) {
             botsApplication.registerBot(botToken, tgHandler);

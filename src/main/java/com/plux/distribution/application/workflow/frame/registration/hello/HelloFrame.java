@@ -1,7 +1,9 @@
 package com.plux.distribution.application.workflow.frame.registration.hello;
 
 import com.plux.distribution.application.workflow.core.FrameFeedback;
+import com.plux.distribution.domain.action.ClearButtonsAction;
 import com.plux.distribution.domain.message.Message;
+import com.plux.distribution.domain.message.MessageId;
 import com.plux.distribution.domain.message.attachment.ButtonAttachment;
 import com.plux.distribution.domain.message.content.SimpleMessageContent;
 import com.plux.distribution.domain.message.participant.ChatParticipant;
@@ -32,11 +34,23 @@ public class HelloFrame implements Frame {
                 )
         );
 
-        context.send(message);
+        var messageId = context.send(message);
+        context.getData().put(HelloFrameData.class, new HelloFrameData(messageId));
     }
 
     @Override
     public void handle(@NotNull FrameContext context, @NotNull FrameFeedback feedback) {
+        if (context.getData().contains(HelloFrameData.class)) {
+            var data = context.getData().get(HelloFrameData.class);
+            context.dispatch(new ClearButtonsAction(
+                    context.getChatId(),
+                    data.messageId()
+            ));
+            context.getData().remove(HelloFrameData.class);
+        }
+
         context.changeState(new PostHelloFrame());
     }
+
+    private record HelloFrameData(@NotNull MessageId messageId) {}
 }

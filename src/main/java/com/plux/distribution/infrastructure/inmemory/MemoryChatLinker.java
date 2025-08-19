@@ -1,9 +1,9 @@
 package com.plux.distribution.infrastructure.inmemory;
 
 import com.plux.distribution.application.port.exception.ChatIdNotFound;
-import com.plux.distribution.application.port.out.specific.telegram.GetTgChatIdPort;
-import com.plux.distribution.application.port.out.specific.telegram.GetChatIdByTgPort;
-import com.plux.distribution.application.port.out.specific.telegram.TgChatLinker;
+import com.plux.distribution.application.port.out.specific.telegram.chat.GetTgChatIdPort;
+import com.plux.distribution.application.port.out.specific.telegram.chat.GetChatIdByTgPort;
+import com.plux.distribution.application.port.out.specific.telegram.chat.TgChatLinker;
 import com.plux.distribution.domain.chat.ChatId;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
