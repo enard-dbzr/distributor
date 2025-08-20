@@ -71,6 +71,10 @@ public class FrameContext {
         frames.pop();
     }
 
+    public void clear() {
+        frames.clear();
+    }
+
     public void push(@NotNull Frame frame, boolean execute) {
         frames.push(new FrameEntry(frame, execute));
     }

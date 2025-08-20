@@ -12,6 +12,7 @@ import com.plux.distribution.application.port.out.specific.telegram.chat.TgChatL
 import com.plux.distribution.domain.message.MessageId;
 import com.plux.distribution.domain.chat.ChatId;
 import java.util.Date;
+import java.util.Optional;
 import org.jetbrains.annotations.NotNull;
 import org.telegram.telegrambots.longpolling.util.LongPollingSingleThreadUpdateConsumer;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
@@ -75,7 +76,7 @@ public class TelegramHandler implements LongPollingSingleThreadUpdateConsumer {
 
             @Override
             public @NotNull String getText() {
-                return message.getText();
+                return Optional.ofNullable(message.getText()).orElse("");
             }
 
             @Override
