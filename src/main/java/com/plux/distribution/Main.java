@@ -60,7 +60,7 @@ public class Main {
         var messageDeliveryService = new MessageDeliveryService(sender, messageRepo, messageRepo);
         var executeActionService = new ExecuteActionService(executor);
 
-        var frameFactory = makeFrameFactory(userService);
+        var frameFactory = makeFrameFactory(userService, chatService);
         var frameContextManager = new DefaultContextManager(messageDeliveryService, executeActionService);
         var mainFeedbackProcessor = new FlowFeedbackProcessor(frameRepo, frameRepo, frameContextManager, frameFactory);
 
@@ -81,7 +81,7 @@ public class Main {
 
     }
 
-    private static FrameFactory makeFrameFactory(UserService userService) {
+    private static FrameFactory makeFrameFactory(UserService userService, ChatService chatService) {
         var pin = System.getenv("BOT_PIN");
 
         var factory = new FrameRegistry();
@@ -99,7 +99,8 @@ public class Main {
         factory.register(new com.plux.distribution.application.workflow.frame.registration.user.AskCityFrame());
         factory.register(new com.plux.distribution.application.workflow.frame.registration.user.AskHobbyFrame());
         factory.register(
-                new com.plux.distribution.application.workflow.frame.registration.user.FinalizeFrame(userService));
+                new com.plux.distribution.application.workflow.frame.registration.user.FinalizeFrame(userService,
+                        chatService));
 
         factory.register(new SequenceFrame("flow.registration", List.of(
                 factory.get("registration.hello_frame"),

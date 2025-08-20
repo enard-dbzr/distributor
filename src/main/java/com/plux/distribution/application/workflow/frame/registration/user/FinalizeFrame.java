@@ -1,6 +1,7 @@
 package com.plux.distribution.application.workflow.frame.registration.user;
 
 import com.plux.distribution.application.dto.user.CreateUserCommand;
+import com.plux.distribution.application.port.in.chat.AssignUserToChatUseCase;
 import com.plux.distribution.application.port.in.user.CreateUserUseCase;
 import com.plux.distribution.application.workflow.core.Frame;
 import com.plux.distribution.application.workflow.core.FrameContext;
@@ -14,9 +15,11 @@ import org.jetbrains.annotations.NotNull;
 public class FinalizeFrame implements Frame {
 
     private final CreateUserUseCase createUserUseCase;
+    private final AssignUserToChatUseCase userToChatUseCase;
 
-    public FinalizeFrame(CreateUserUseCase createUserUseCase) {
+    public FinalizeFrame(CreateUserUseCase createUserUseCase, AssignUserToChatUseCase userToChatUseCase) {
         this.createUserUseCase = createUserUseCase;
+        this.userToChatUseCase = userToChatUseCase;
     }
 
     @Override
@@ -28,7 +31,8 @@ public class FinalizeFrame implements Frame {
     public void exec(@NotNull FrameContext context) {
         var userBuilder = context.getData().get(UserBuilder.class);
 
-        createUserUseCase.create(new CreateUserCommand(userBuilder.buildUserInfo()));
+        var user = createUserUseCase.create(new CreateUserCommand(userBuilder.buildUserInfo()));
+        userToChatUseCase.assignUser(context.getChatId(), user.id());
 
         context.getData().remove(UserBuilder.class);
 
