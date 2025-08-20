@@ -2,12 +2,12 @@ package com.plux.distribution.application.service;
 
 import com.plux.distribution.application.port.in.FeedbackProcessor;
 import com.plux.distribution.application.port.in.RegisterFeedbackUseCase;
+import com.plux.distribution.application.port.in.chat.CreateChatUseCase;
 import com.plux.distribution.application.port.in.context.ButtonContext;
 import com.plux.distribution.application.port.in.context.MessageContext;
 import com.plux.distribution.application.port.exception.ChatIdNotFound;
 import com.plux.distribution.application.port.out.feedback.CreateFeedbackPort;
 import com.plux.distribution.application.port.out.message.CreateMessagePort;
-import com.plux.distribution.application.port.out.chat.CreateChatPort;
 import com.plux.distribution.domain.chat.ChatId;
 import com.plux.distribution.domain.feedback.Feedback;
 import com.plux.distribution.domain.feedback.payload.ButtonPayload;
@@ -19,7 +19,6 @@ import com.plux.distribution.domain.message.content.SimpleMessageContent;
 import com.plux.distribution.domain.message.participant.UnknownServiceParticipant;
 import com.plux.distribution.domain.message.participant.ChatParticipant;
 import com.plux.distribution.domain.message.state.ReceivedState;
-import com.plux.distribution.domain.chat.Chat;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -29,15 +28,15 @@ public class RegisterFeedbackService implements RegisterFeedbackUseCase {
 
     private final CreateMessagePort createMessagePort;
     private final CreateFeedbackPort createFeedbackPort;
-    private final CreateChatPort createChatPort;
+    private final CreateChatUseCase createChatUseCase;
     private final FeedbackProcessor feedbackProcessor;
 
     public RegisterFeedbackService(CreateMessagePort createMessagePort,
-            CreateFeedbackPort createFeedbackPort, CreateChatPort createChatPort,
+            CreateFeedbackPort createFeedbackPort, CreateChatUseCase createChatUseCase,
             FeedbackProcessor feedbackProcessor) {
         this.createMessagePort = createMessagePort;
         this.createFeedbackPort = createFeedbackPort;
-        this.createChatPort = createChatPort;
+        this.createChatUseCase = createChatUseCase;
         this.feedbackProcessor = feedbackProcessor;
     }
 
@@ -49,7 +48,7 @@ public class RegisterFeedbackService implements RegisterFeedbackUseCase {
         try {
             chatId = context.getChatId();
         } catch (ChatIdNotFound e) {
-            chatId = createChatPort.create(new Chat());
+            chatId = createChatUseCase.create().id();
             context.onChatCreated(chatId);
             System.out.println("Created new chat");
         }

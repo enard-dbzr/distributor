@@ -11,8 +11,9 @@ public class MemoryChatRepository implements CreateChatPort {
     private final List<Chat> chats = new ArrayList<>();
 
     @Override
-    public @NotNull ChatId create(@NotNull Chat chat) {
-        chats.add(chat);
-        return new ChatId((long) (chats.size() - 1));
+    public @NotNull Chat create() {
+        var newChat = new Chat(new ChatId((long) chats.size()), null);
+        chats.add(newChat);
+        return newChat;
     }
 }

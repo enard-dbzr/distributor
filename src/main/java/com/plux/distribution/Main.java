@@ -1,10 +1,11 @@
 package com.plux.distribution;
 
-import com.plux.distribution.application.port.out.user.CreateUserPort;
+import com.plux.distribution.application.service.ChatService;
 import com.plux.distribution.application.service.ExecuteActionService;
 import com.plux.distribution.application.service.FlowFeedbackProcessor;
 import com.plux.distribution.application.service.MessageDeliveryService;
 import com.plux.distribution.application.service.RegisterFeedbackService;
+import com.plux.distribution.application.service.UserService;
 import com.plux.distribution.application.workflow.DefaultContextManager;
 import com.plux.distribution.application.workflow.frame.FrameRegistry;
 import com.plux.distribution.application.workflow.core.FrameFactory;
@@ -48,6 +49,9 @@ public class Main {
         var tgChatLinker = new DbTgChatLinker(hibernateConfig.getSessionFactory());
         var tgMessageLinker = new DbTgMessageLinker(hibernateConfig.getSessionFactory());
 
+        var chatService = new ChatService(chatRepo, chatRepo, chatRepo);
+        var userService = new UserService(userRepo);
+
         var tgClient = new OkHttpTelegramClient(botToken);
 
         var sender = new TelegramMessageSender(tgClient, tgChatLinker, tgMessageLinker);
@@ -56,12 +60,12 @@ public class Main {
         var messageDeliveryService = new MessageDeliveryService(sender, messageRepo, messageRepo);
         var executeActionService = new ExecuteActionService(executor);
 
-        var frameFactory = makeFrameFactory(userRepo);
+        var frameFactory = makeFrameFactory(userService);
         var frameContextManager = new DefaultContextManager(messageDeliveryService, executeActionService);
         var mainFeedbackProcessor = new FlowFeedbackProcessor(frameRepo, frameRepo, frameContextManager, frameFactory);
 
         var registerFeedbackService = new RegisterFeedbackService(messageRepo, feedbackRepo,
-                chatRepo, mainFeedbackProcessor);
+                chatService, mainFeedbackProcessor);
 
         var tgHandler = new TelegramHandler(registerFeedbackService, tgMessageLinker,
                 tgMessageLinker, tgChatLinker, tgChatLinker);
@@ -77,7 +81,7 @@ public class Main {
 
     }
 
-    private static FrameFactory makeFrameFactory(CreateUserPort createUserPort) {
+    private static FrameFactory makeFrameFactory(UserService userService) {
         var pin = System.getenv("BOT_PIN");
 
         var factory = new FrameRegistry();
@@ -95,7 +99,7 @@ public class Main {
         factory.register(new com.plux.distribution.application.workflow.frame.registration.user.AskCityFrame());
         factory.register(new com.plux.distribution.application.workflow.frame.registration.user.AskHobbyFrame());
         factory.register(
-                new com.plux.distribution.application.workflow.frame.registration.user.FinalizeFrame(createUserPort));
+                new com.plux.distribution.application.workflow.frame.registration.user.FinalizeFrame(userService));
 
         factory.register(new SequenceFrame("flow.registration", List.of(
                 factory.get("registration.hello_frame"),

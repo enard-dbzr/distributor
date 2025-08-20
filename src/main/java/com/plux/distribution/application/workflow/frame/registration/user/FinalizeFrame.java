@@ -1,6 +1,7 @@
 package com.plux.distribution.application.workflow.frame.registration.user;
 
-import com.plux.distribution.application.port.out.user.CreateUserPort;
+import com.plux.distribution.application.dto.user.CreateUserCommand;
+import com.plux.distribution.application.port.in.user.CreateUserUseCase;
 import com.plux.distribution.application.workflow.core.Frame;
 import com.plux.distribution.application.workflow.core.FrameContext;
 import com.plux.distribution.application.workflow.core.FrameFeedback;
@@ -11,10 +12,11 @@ import java.util.List;
 import org.jetbrains.annotations.NotNull;
 
 public class FinalizeFrame implements Frame {
-    private final CreateUserPort createUserPort;
 
-    public FinalizeFrame(CreateUserPort createUserPort) {
-        this.createUserPort = createUserPort;
+    private final CreateUserUseCase createUserUseCase;
+
+    public FinalizeFrame(CreateUserUseCase createUserUseCase) {
+        this.createUserUseCase = createUserUseCase;
     }
 
     @Override
@@ -26,7 +28,7 @@ public class FinalizeFrame implements Frame {
     public void exec(@NotNull FrameContext context) {
         var userBuilder = context.getData().get(UserBuilder.class);
 
-        createUserPort.create(userBuilder.buildUserInfo());
+        createUserUseCase.create(new CreateUserCommand(userBuilder.buildUserInfo()));
 
         context.getData().remove(UserBuilder.class);
 

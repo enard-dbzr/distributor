@@ -1,8 +1,8 @@
 package com.plux.distribution.infrastructure.persistence;
 
+import com.plux.distribution.application.dto.user.CreateUserCommand;
 import com.plux.distribution.application.port.out.user.CreateUserPort;
 import com.plux.distribution.domain.user.User;
-import com.plux.distribution.domain.user.UserInfo;
 import com.plux.distribution.infrastructure.persistence.entity.user.UserEntity;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
@@ -15,12 +15,13 @@ public class DbUserRepository implements CreateUserPort {
         this.sessionFactory = sessionFactory;
     }
 
+
     @Override
-    public User create(UserInfo userInfo) {
+    public User create(CreateUserCommand createUserCommand) {
         try (var session = sessionFactory.openSession()) {
             Transaction transaction = session.beginTransaction();
 
-            var entity = UserEntity.create(userInfo);
+            var entity = UserEntity.create(createUserCommand.userInfo());
             session.persist(entity);
 
             transaction.commit();

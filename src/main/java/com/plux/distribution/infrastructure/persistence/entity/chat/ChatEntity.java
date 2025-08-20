@@ -1,12 +1,13 @@
 package com.plux.distribution.infrastructure.persistence.entity.chat;
 
 import com.plux.distribution.domain.chat.Chat;
+import com.plux.distribution.domain.chat.ChatId;
+import com.plux.distribution.domain.user.UserId;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
-import org.jetbrains.annotations.NotNull;
 
 @Entity
 @Table(name = "chats")
@@ -16,12 +17,19 @@ public class ChatEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    public Long getId() {
-        return id;
+    private Long userId;
+
+    public ChatEntity(Chat model) {
+        id = model.getId().value();
+        userId = model.getUserId() == null ? null : model.getUserId().value();
     }
 
-    public static @NotNull ChatEntity fromModel(@NotNull Chat model) {
-        return new ChatEntity();
+    public ChatEntity() {
+
     }
 
+    public Chat toModel() {
+        var resultUserId = userId == null ? null : new UserId(userId);
+        return new Chat(new ChatId(id), resultUserId);
+    }
 }
