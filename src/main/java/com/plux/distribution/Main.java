@@ -1,5 +1,6 @@
 package com.plux.distribution;
 
+import com.plux.distribution.application.port.out.user.CreateUserPort;
 import com.plux.distribution.application.service.ExecuteActionService;
 import com.plux.distribution.application.service.FlowFeedbackProcessor;
 import com.plux.distribution.application.service.MessageDeliveryService;
@@ -14,6 +15,7 @@ import com.plux.distribution.infrastructure.persistence.DbFrameRepository;
 import com.plux.distribution.infrastructure.persistence.DbMessageRepository;
 import com.plux.distribution.infrastructure.persistence.DbTgChatLinker;
 import com.plux.distribution.infrastructure.persistence.DbTgMessageLinker;
+import com.plux.distribution.infrastructure.persistence.DbUserRepository;
 import com.plux.distribution.infrastructure.persistence.config.HibernateConfig;
 import com.plux.distribution.infrastructure.telegram.TelegramActionExecutor;
 import com.plux.distribution.infrastructure.telegram.TelegramHandler;
@@ -41,6 +43,7 @@ public class Main {
         var feedbackRepo = new DbFeedbackRepository(hibernateConfig.getSessionFactory());
         var chatRepo = new DbChatRepository(hibernateConfig.getSessionFactory());
         var frameRepo = new DbFrameRepository(hibernateConfig.getSessionFactory());
+        var userRepo = new DbUserRepository(hibernateConfig.getSessionFactory());
 
         var tgChatLinker = new DbTgChatLinker(hibernateConfig.getSessionFactory());
         var tgMessageLinker = new DbTgMessageLinker(hibernateConfig.getSessionFactory());
@@ -53,7 +56,7 @@ public class Main {
         var messageDeliveryService = new MessageDeliveryService(sender, messageRepo, messageRepo);
         var executeActionService = new ExecuteActionService(executor);
 
-        var frameFactory = makeFrameFactory();
+        var frameFactory = makeFrameFactory(userRepo);
         var frameContextManager = new DefaultContextManager(messageDeliveryService, executeActionService);
         var mainFeedbackProcessor = new FlowFeedbackProcessor(frameRepo, frameRepo, frameContextManager, frameFactory);
 
@@ -74,7 +77,7 @@ public class Main {
 
     }
 
-    private static FrameFactory makeFrameFactory() {
+    private static FrameFactory makeFrameFactory(CreateUserPort createUserPort) {
         var pin = System.getenv("BOT_PIN");
 
         var factory = new FrameRegistry();
@@ -84,13 +87,15 @@ public class Main {
         factory.register(new com.plux.distribution.application.workflow.frame.registration.pin.CheckPasswordFrame(pin));
         factory.register(new com.plux.distribution.application.workflow.frame.registration.pin.CorrectPasswordFrame());
         factory.register(new com.plux.distribution.application.workflow.frame.registration.pin.InorrectPasswordFrame());
-        factory.register(new com.plux.distribution.application.workflow.frame.registration.user.StartUserBuildingFrame());
+        factory.register(
+                new com.plux.distribution.application.workflow.frame.registration.user.StartUserBuildingFrame());
         factory.register(new com.plux.distribution.application.workflow.frame.registration.user.AskNameFrame());
         factory.register(new com.plux.distribution.application.workflow.frame.registration.user.AskEmailFrame());
         factory.register(new com.plux.distribution.application.workflow.frame.registration.user.AskAgeFrame());
         factory.register(new com.plux.distribution.application.workflow.frame.registration.user.AskCityFrame());
         factory.register(new com.plux.distribution.application.workflow.frame.registration.user.AskHobbyFrame());
-        factory.register(new com.plux.distribution.application.workflow.frame.registration.user.FinalizeFrame());
+        factory.register(
+                new com.plux.distribution.application.workflow.frame.registration.user.FinalizeFrame(createUserPort));
 
         factory.register(new SequenceFrame("flow.registration", List.of(
                 factory.get("registration.hello_frame"),

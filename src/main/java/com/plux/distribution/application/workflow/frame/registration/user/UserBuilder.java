@@ -1,5 +1,6 @@
 package com.plux.distribution.application.workflow.frame.registration.user;
 
+import com.plux.distribution.domain.user.UserInfo;
 import org.apache.commons.validator.routines.EmailValidator;
 
 public class UserBuilder {
@@ -51,5 +52,13 @@ public class UserBuilder {
 
     public void setHobby(String hobby) {
         this.hobby = hobby;
+    }
+
+    public UserInfo buildUserInfo() {
+        if (name == null) {
+            throw new IllegalStateException("name is null");
+        }
+
+        return new UserInfo(name, email, age, city, hobby);
     }
 }

@@ -23,7 +23,7 @@ public class StartUserBuildingFrame extends SequenceFrame {
                 new AskAgeFrame(),
                 new AskCityFrame(),
                 new AskHobbyFrame(),
-                new FinalizeFrame()
+                context.getFactory().get("registration.user.finalize")
         );
     }
 }
