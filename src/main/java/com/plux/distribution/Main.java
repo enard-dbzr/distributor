@@ -84,10 +84,18 @@ public class Main {
         factory.register(new com.plux.distribution.application.workflow.frame.registration.pin.CheckPasswordFrame(pin));
         factory.register(new com.plux.distribution.application.workflow.frame.registration.pin.CorrectPasswordFrame());
         factory.register(new com.plux.distribution.application.workflow.frame.registration.pin.InorrectPasswordFrame());
+        factory.register(new com.plux.distribution.application.workflow.frame.registration.user.StartUserBuildingFrame());
+        factory.register(new com.plux.distribution.application.workflow.frame.registration.user.AskNameFrame());
+        factory.register(new com.plux.distribution.application.workflow.frame.registration.user.AskEmailFrame());
+        factory.register(new com.plux.distribution.application.workflow.frame.registration.user.AskAgeFrame());
+        factory.register(new com.plux.distribution.application.workflow.frame.registration.user.AskCityFrame());
+        factory.register(new com.plux.distribution.application.workflow.frame.registration.user.AskHobbyFrame());
+        factory.register(new com.plux.distribution.application.workflow.frame.registration.user.FinalizeFrame());
 
         factory.register(new SequenceFrame("flow.registration", List.of(
                 factory.get("registration.hello_frame"),
-                factory.get("registration.check_pin")
+                factory.get("registration.check_pin"),
+                factory.get("registration.user.start_building")
         )));
 
         return factory;
