@@ -1,9 +1,9 @@
 package com.plux.distribution.infrastructure.persistence;
 
+import com.plux.distribution.application.dto.message.CreateMessageCommand;
 import com.plux.distribution.application.port.out.message.CreateMessagePort;
 import com.plux.distribution.application.port.out.message.UpdateMessagePort;
 import com.plux.distribution.domain.message.Message;
-import com.plux.distribution.domain.message.MessageId;
 import com.plux.distribution.infrastructure.persistence.entity.message.MessageEntity;
 import com.plux.distribution.infrastructure.persistence.entity.message.participant.ParticipantEntity;
 import com.plux.distribution.infrastructure.persistence.entity.message.state.MessageStateEntity;
@@ -19,25 +19,25 @@ public class DbMessageRepository implements CreateMessagePort, UpdateMessagePort
     }
 
     @Override
-    public @NotNull MessageId create(@NotNull Message message) {
+    public @NotNull Message create(@NotNull CreateMessageCommand command) {
         try (var session = sessionFactory.openSession()) {
             Transaction transaction = session.beginTransaction();
 
-            var entity = MessageEntity.fromModel(message);
+            var entity = new MessageEntity(command);
             session.persist(entity);
 
             transaction.commit();
 
-            return new MessageId(entity.getId());
+            return entity.toModel();
         }
     }
 
     @Override
-    public void update(@NotNull MessageId id, @NotNull Message message) {
+    public void update(@NotNull Message message) {
         try (var session = sessionFactory.openSession()) {
             Transaction transaction = session.beginTransaction();
 
-            var entity = session.find(MessageEntity.class, id.value());
+            var entity = session.find(MessageEntity.class, message.getId().value());
 
             if (!entity.getRecipient().toModel().equals(message.getRecipient())) {
                 entity.setRecipient(ParticipantEntity.fromModel(message.getRecipient()));

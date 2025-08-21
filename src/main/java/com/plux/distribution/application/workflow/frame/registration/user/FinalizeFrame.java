@@ -6,9 +6,7 @@ import com.plux.distribution.application.port.in.user.CreateUserUseCase;
 import com.plux.distribution.application.workflow.core.Frame;
 import com.plux.distribution.application.workflow.core.FrameContext;
 import com.plux.distribution.application.workflow.core.FrameFeedback;
-import com.plux.distribution.domain.message.Message;
 import com.plux.distribution.domain.message.content.SimpleMessageContent;
-import com.plux.distribution.domain.message.participant.ChatParticipant;
 import java.util.List;
 import org.jetbrains.annotations.NotNull;
 
@@ -36,12 +34,9 @@ public class FinalizeFrame implements Frame {
 
         context.getData().remove(UserBuilder.class);
 
-        context.send(new Message(
-                new ChatParticipant(context.getChatId()),
-                new SimpleMessageContent(
-                        "Регистрация прошла успешно ✅\nРад тебя видеть здесь 🤗",
-                        List.of()
-                )
+        context.send(new SimpleMessageContent(
+                "Регистрация прошла успешно ✅\nРад тебя видеть здесь 🤗",
+                List.of()
         ));
         context.changeState();
     }

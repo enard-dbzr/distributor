@@ -36,4 +36,6 @@ public abstract class MessageContentEntity {
         return holder.get();
     }
 
+    public abstract MessageContent toModel();
+
 }

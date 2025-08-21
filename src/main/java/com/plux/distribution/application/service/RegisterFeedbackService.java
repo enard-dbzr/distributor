@@ -1,19 +1,19 @@
 package com.plux.distribution.application.service;
 
+import com.plux.distribution.application.dto.message.CreateMessageCommand;
 import com.plux.distribution.application.port.in.FeedbackProcessor;
 import com.plux.distribution.application.port.in.RegisterFeedbackUseCase;
 import com.plux.distribution.application.port.in.chat.CreateChatUseCase;
 import com.plux.distribution.application.port.in.context.ButtonContext;
 import com.plux.distribution.application.port.in.context.MessageContext;
 import com.plux.distribution.application.port.exception.ChatIdNotFound;
+import com.plux.distribution.application.port.in.message.CreateMessageUseCase;
 import com.plux.distribution.application.port.out.feedback.CreateFeedbackPort;
-import com.plux.distribution.application.port.out.message.CreateMessagePort;
 import com.plux.distribution.domain.chat.ChatId;
 import com.plux.distribution.domain.feedback.Feedback;
 import com.plux.distribution.domain.feedback.payload.ButtonPayload;
 import com.plux.distribution.domain.feedback.payload.MessagePayload;
 import com.plux.distribution.domain.feedback.payload.ReplyPayload;
-import com.plux.distribution.domain.message.Message;
 import com.plux.distribution.domain.message.MessageId;
 import com.plux.distribution.domain.message.content.SimpleMessageContent;
 import com.plux.distribution.domain.message.participant.UnknownServiceParticipant;
@@ -26,15 +26,15 @@ import org.jetbrains.annotations.NotNull;
 
 public class RegisterFeedbackService implements RegisterFeedbackUseCase {
 
-    private final CreateMessagePort createMessagePort;
+    private final CreateMessageUseCase createMessageUseCase;
     private final CreateFeedbackPort createFeedbackPort;
     private final CreateChatUseCase createChatUseCase;
     private final FeedbackProcessor feedbackProcessor;
 
-    public RegisterFeedbackService(CreateMessagePort createMessagePort,
+    public RegisterFeedbackService(CreateMessageUseCase createMessageUseCase,
             CreateFeedbackPort createFeedbackPort, CreateChatUseCase createChatUseCase,
             FeedbackProcessor feedbackProcessor) {
-        this.createMessagePort = createMessagePort;
+        this.createMessageUseCase = createMessageUseCase;
         this.createFeedbackPort = createFeedbackPort;
         this.createChatUseCase = createChatUseCase;
         this.feedbackProcessor = feedbackProcessor;
@@ -53,14 +53,19 @@ public class RegisterFeedbackService implements RegisterFeedbackUseCase {
             System.out.println("Created new chat");
         }
 
-        var message = makeMessage(context, chatId);
-        var messageId = createMessagePort.create(message);
+        var content = new SimpleMessageContent(context.getText(), List.of());
+        var messageId = createMessageUseCase.create(new CreateMessageCommand(
+                new ChatParticipant(chatId),
+                new UnknownServiceParticipant(),
+                new ReceivedState(new Date()),
+                content
+        ));
         context.onMessageCreated(messageId);
 
         var feedback = makeFeedback(context, messageId, receiveTime, chatId);
         createFeedbackPort.create(feedback);
 
-        var feedbackContext = new FeedbackContext(feedback, Optional.of(message));
+        var feedbackContext = new FeedbackContext(feedback, Optional.of(content));
 
         feedbackProcessor.process(feedbackContext);
 
@@ -76,15 +81,6 @@ public class RegisterFeedbackService implements RegisterFeedbackUseCase {
         var feedbackContext = new FeedbackContext(feedback, Optional.empty());
 
         feedbackProcessor.process(feedbackContext);
-    }
-
-    private static @NotNull Message makeMessage(MessageContext context, ChatId chatId) {
-        return new Message(
-                new ChatParticipant(chatId),
-                new UnknownServiceParticipant(),
-                new ReceivedState(context.getTimestamp()),
-                new SimpleMessageContent(context.getText(), List.of())
-        );
     }
 
     private static Feedback makeFeedback(MessageContext context, MessageId content,

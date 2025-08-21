@@ -1,9 +1,7 @@
 package com.plux.distribution.application.workflow.frame.registration.pin;
 
 import com.plux.distribution.application.workflow.core.FrameFeedback;
-import com.plux.distribution.domain.message.Message;
 import com.plux.distribution.domain.message.content.SimpleMessageContent;
-import com.plux.distribution.domain.message.participant.ChatParticipant;
 import com.plux.distribution.application.workflow.core.Frame;
 import com.plux.distribution.application.workflow.core.FrameContext;
 import java.util.List;
@@ -24,10 +22,7 @@ public class CheckPasswordFrame implements Frame {
 
     @Override
     public void exec(@NotNull FrameContext context) {
-        var message = new Message(
-                new ChatParticipant(context.getChatId()),
-                new SimpleMessageContent("Для продолжения необходимо ввести пароль", List.of())
-        );
+        var message = new SimpleMessageContent("Для продолжения необходимо ввести пароль", List.of());
 
         context.send(message);
     }

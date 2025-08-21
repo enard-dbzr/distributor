@@ -1,5 +1,6 @@
 package com.plux.distribution.domain.message.attachment;
 
-public interface MessageAttachment {
+public sealed interface MessageAttachment permits ButtonAttachment {
+
     void accept(AttachmentVisitor visitor);
 }

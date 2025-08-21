@@ -5,11 +5,9 @@ import com.plux.distribution.application.workflow.core.FrameContext;
 import com.plux.distribution.application.workflow.core.FrameFeedback;
 import com.plux.distribution.application.workflow.frame.utils.InfoMessageFrame;
 import com.plux.distribution.domain.action.ClearButtonsAction;
-import com.plux.distribution.domain.message.Message;
 import com.plux.distribution.domain.message.MessageId;
 import com.plux.distribution.domain.message.attachment.ButtonAttachment;
 import com.plux.distribution.domain.message.content.SimpleMessageContent;
-import com.plux.distribution.domain.message.participant.ChatParticipant;
 import java.util.List;
 import org.jetbrains.annotations.NotNull;
 
@@ -22,12 +20,9 @@ public class AskAgeFrame implements Frame {
 
     @Override
     public void exec(@NotNull FrameContext context) {
-        var messageId = context.send(new Message(
-                new ChatParticipant(context.getChatId()),
-                new SimpleMessageContent(
-                        "Сколько тебе лет? 😉",
-                        List.of(new ButtonAttachment("Пропустить", "skip"))
-                )
+        var messageId = context.send(new SimpleMessageContent(
+                "Сколько тебе лет? 😉",
+                List.of(new ButtonAttachment("Пропустить", "skip"))
         ));
 
         context.getData().put(AskAgeMessageId.class, new AskAgeMessageId(messageId));

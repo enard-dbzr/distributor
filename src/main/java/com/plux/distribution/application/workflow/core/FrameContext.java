@@ -2,8 +2,8 @@ package com.plux.distribution.application.workflow.core;
 
 import com.plux.distribution.domain.action.ChatAction;
 import com.plux.distribution.domain.chat.ChatId;
-import com.plux.distribution.domain.message.Message;
 import com.plux.distribution.domain.message.MessageId;
+import com.plux.distribution.domain.message.content.MessageContent;
 import java.util.List;
 import java.util.Stack;
 import org.jetbrains.annotations.NotNull;
@@ -38,11 +38,11 @@ public class FrameContext {
         frames.peek().frame().handle(this, feedback);
     }
 
-    public @NotNull MessageId send(@NotNull Message message, @NotNull Frame frame) {
+    public @NotNull MessageId send(@NotNull MessageContent message, @NotNull Frame frame) {
         return manager.send(this, frame, message);
     }
 
-    public @NotNull MessageId send(@NotNull Message message) {
+    public @NotNull MessageId send(@NotNull MessageContent message) {
         return send(message, frames.peek().frame());
     }
 

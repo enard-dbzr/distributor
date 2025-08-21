@@ -3,9 +3,7 @@ package com.plux.distribution.application.workflow.frame.registration.pin;
 import com.plux.distribution.application.workflow.core.Frame;
 import com.plux.distribution.application.workflow.core.FrameContext;
 import com.plux.distribution.application.workflow.core.FrameFeedback;
-import com.plux.distribution.domain.message.Message;
 import com.plux.distribution.domain.message.content.SimpleMessageContent;
-import com.plux.distribution.domain.message.participant.ChatParticipant;
 import java.util.List;
 import org.jetbrains.annotations.NotNull;
 
@@ -18,10 +16,7 @@ public class CorrectPasswordFrame implements Frame {
 
     @Override
     public void exec(@NotNull FrameContext context) {
-        context.send(new Message(
-                new ChatParticipant(context.getChatId()),
-                new SimpleMessageContent("Отлично, можем продолжить \n(っ◔◡◔)っ❤", List.of())
-        ));
+        context.send(new SimpleMessageContent("Отлично, можем продолжить \n(っ◔◡◔)っ❤", List.of()));
         context.changeState();
     }
 

@@ -1,5 +1,6 @@
 package com.plux.distribution.infrastructure.persistence.entity.message.content;
 
+import com.plux.distribution.domain.message.content.MessageContent;
 import com.plux.distribution.domain.message.content.SimpleMessageContent;
 import com.plux.distribution.infrastructure.persistence.entity.message.attachment.AttachmentEntity;
 import jakarta.persistence.CascadeType;
@@ -28,5 +29,13 @@ public class SimpleContentEntity extends MessageContentEntity {
         entity.attachments = model.attachments().stream().map(AttachmentEntity::fromModel).toList();
 
         return entity;
+    }
+
+    @Override
+    public MessageContent toModel() {
+        return new SimpleMessageContent(
+                text,
+                attachments.stream().map(AttachmentEntity::toModel).toList()
+        );
     }
 }

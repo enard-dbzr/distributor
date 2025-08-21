@@ -36,4 +36,6 @@ public abstract class AttachmentEntity {
 
         return holder.get();
     }
+
+    public abstract MessageAttachment toModel();
 }

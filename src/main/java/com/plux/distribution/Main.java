@@ -3,7 +3,7 @@ package com.plux.distribution;
 import com.plux.distribution.application.service.ChatService;
 import com.plux.distribution.application.service.ExecuteActionService;
 import com.plux.distribution.application.service.FlowFeedbackProcessor;
-import com.plux.distribution.application.service.MessageDeliveryService;
+import com.plux.distribution.application.service.MessageService;
 import com.plux.distribution.application.service.RegisterFeedbackService;
 import com.plux.distribution.application.service.UserService;
 import com.plux.distribution.application.workflow.DefaultContextManager;
@@ -57,14 +57,14 @@ public class Main {
         var sender = new TelegramMessageSender(tgClient, tgChatLinker, tgMessageLinker);
         var executor = new TelegramActionExecutor(tgClient, tgChatLinker, tgMessageLinker);
 
-        var messageDeliveryService = new MessageDeliveryService(sender, messageRepo, messageRepo);
+        var messageService = new MessageService(sender, messageRepo, messageRepo);
         var executeActionService = new ExecuteActionService(executor);
 
         var frameFactory = makeFrameFactory(userService, chatService);
-        var frameContextManager = new DefaultContextManager(messageDeliveryService, executeActionService);
+        var frameContextManager = new DefaultContextManager(messageService, executeActionService);
         var mainFeedbackProcessor = new FlowFeedbackProcessor(frameRepo, frameRepo, frameContextManager, frameFactory);
 
-        var registerFeedbackService = new RegisterFeedbackService(messageRepo, feedbackRepo,
+        var registerFeedbackService = new RegisterFeedbackService(messageService, feedbackRepo,
                 chatService, mainFeedbackProcessor);
 
         var tgHandler = new TelegramHandler(registerFeedbackService, tgMessageLinker,

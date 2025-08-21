@@ -1,9 +1,7 @@
 package com.plux.distribution.application.workflow.frame.registration.hello;
 
 import com.plux.distribution.application.workflow.core.FrameFeedback;
-import com.plux.distribution.domain.message.Message;
 import com.plux.distribution.domain.message.content.SimpleMessageContent;
-import com.plux.distribution.domain.message.participant.ChatParticipant;
 import com.plux.distribution.application.workflow.core.Frame;
 import com.plux.distribution.application.workflow.core.FrameContext;
 import java.util.List;
@@ -18,10 +16,7 @@ public class PostHelloFrame implements Frame {
 
     @Override
     public void exec(@NotNull FrameContext context) {
-        context.send(new Message(
-                new ChatParticipant(context.getChatId()),
-                new SimpleMessageContent("Хорошо, давай начнем", List.of())
-        ));
+        context.send(new SimpleMessageContent("Хорошо, давай начнем", List.of()));
 
         context.changeState();
     }

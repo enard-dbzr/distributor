@@ -1,6 +1,8 @@
 package com.plux.distribution.infrastructure.persistence.entity.message;
 
+import com.plux.distribution.application.dto.message.CreateMessageCommand;
 import com.plux.distribution.domain.message.Message;
+import com.plux.distribution.domain.message.MessageId;
 import com.plux.distribution.infrastructure.persistence.entity.message.content.MessageContentEntity;
 import com.plux.distribution.infrastructure.persistence.entity.message.participant.ParticipantEntity;
 import com.plux.distribution.infrastructure.persistence.entity.message.state.MessageStateEntity;
@@ -37,15 +39,33 @@ public class MessageEntity {
     @JoinColumn(name = "content_id")
     private MessageContentEntity content;
 
-    public static MessageEntity fromModel(Message model) {
-        var entity = new MessageEntity();
+    public MessageEntity(CreateMessageCommand command) {
+        sender = ParticipantEntity.fromModel(command.sender());
+        recipient = ParticipantEntity.fromModel(command.recipient());
+        state = MessageStateEntity.fromModel(command.state());
+        content = MessageContentEntity.fromModel(command.content());
+    }
 
-        entity.sender = ParticipantEntity.fromModel(model.getSender());
-        entity.recipient = ParticipantEntity.fromModel(model.getRecipient());
-        entity.state = MessageStateEntity.fromModel(model.getState());
-        entity.content = MessageContentEntity.fromModel(model.getContent());
+    public MessageEntity(Message model) {
+        id = model.getId().value();
+        sender = ParticipantEntity.fromModel(model.getSender());
+        recipient = ParticipantEntity.fromModel(model.getRecipient());
+        state = MessageStateEntity.fromModel(model.getState());
+        content = MessageContentEntity.fromModel(model.getContent());
+    }
 
-        return entity;
+    public MessageEntity() {
+
+    }
+
+    public Message toModel() {
+        return new Message(
+                new MessageId(id),
+                sender.toModel(),
+                recipient.toModel(),
+                state.toModel(),
+                content.toModel()
+        );
     }
 
     public Long getId() {
