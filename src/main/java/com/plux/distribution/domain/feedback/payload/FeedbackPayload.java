@@ -1,9 +1,8 @@
 package com.plux.distribution.domain.feedback.payload;
 
-import com.plux.distribution.domain.message.MessageId;
 import org.jetbrains.annotations.NotNull;
 
-public interface FeedbackPayload {
+public sealed interface FeedbackPayload permits ButtonPayload, MessagePayload, ReplyPayload {
+
     void accept(@NotNull FeedbackPayloadVisitor visitor);
-    MessageId getReplyTo();
 }

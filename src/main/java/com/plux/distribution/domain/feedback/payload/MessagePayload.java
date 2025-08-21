@@ -10,8 +10,4 @@ public record MessagePayload(MessageId content) implements FeedbackPayload {
         visitor.visit(this);
     }
 
-    @Override
-    public MessageId getReplyTo() {
-        return null;
-    }
 }

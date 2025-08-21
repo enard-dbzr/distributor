@@ -1,4 +1,4 @@
-package com.plux.distribution.application.port.in.context;
+package com.plux.distribution.application.dto.feedback;
 
 import com.plux.distribution.application.port.exception.ChatIdNotFound;
 import com.plux.distribution.domain.message.MessageId;

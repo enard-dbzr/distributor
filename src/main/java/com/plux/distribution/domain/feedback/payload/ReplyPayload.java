@@ -10,8 +10,4 @@ public record ReplyPayload(MessageId replyTo, MessageId content) implements Feed
         visitor.visit(this);
     }
 
-    @Override
-    public MessageId getReplyTo() {
-        return replyTo;
-    }
 }

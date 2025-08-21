@@ -10,8 +10,4 @@ public record ButtonPayload(MessageId replyTo, String tag) implements FeedbackPa
         visitor.visit(this);
     }
 
-    @Override
-    public MessageId getReplyTo() {
-        return replyTo;
-    }
 }

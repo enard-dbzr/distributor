@@ -1,5 +1,7 @@
 package com.plux.distribution.domain.feedback;
 
-public record FeedbackId(Long value) {
+import org.jetbrains.annotations.NotNull;
+
+public record FeedbackId(@NotNull Long value) {
 
 }

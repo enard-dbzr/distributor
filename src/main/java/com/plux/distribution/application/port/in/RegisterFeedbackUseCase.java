@@ -1,7 +1,7 @@
 package com.plux.distribution.application.port.in;
 
-import com.plux.distribution.application.port.in.context.ButtonContext;
-import com.plux.distribution.application.port.in.context.MessageContext;
+import com.plux.distribution.application.dto.feedback.ButtonContext;
+import com.plux.distribution.application.dto.feedback.MessageContext;
 import org.jetbrains.annotations.NotNull;
 
 public interface RegisterFeedbackUseCase {

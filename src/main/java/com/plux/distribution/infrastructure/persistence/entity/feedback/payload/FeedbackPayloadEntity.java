@@ -49,4 +49,6 @@ public abstract class FeedbackPayloadEntity {
         return payload[0];
     }
 
+    public abstract @NotNull FeedbackPayload toModel();
+
 }
