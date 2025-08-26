@@ -6,6 +6,7 @@ import com.plux.distribution.application.port.out.chat.UpdateChatPort;
 import com.plux.distribution.domain.chat.Chat;
 import com.plux.distribution.domain.chat.ChatId;
 import com.plux.distribution.infrastructure.persistence.entity.chat.ChatEntity;
+import java.util.List;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.jetbrains.annotations.NotNull;
@@ -38,6 +39,15 @@ public class DbChatRepository implements CreateChatPort, UpdateChatPort, GetChat
             var chat = session.find(ChatEntity.class, id.value());
 
             return chat.toModel();
+        }
+    }
+
+    @Override
+    public @NotNull List<ChatId> getAllChatIds() {
+        try (Session session = sessionFactory.openSession()) {
+            var ids = session.createQuery("select c.id from ChatEntity c", Long.class).getResultList();
+
+            return ids.stream().map(ChatId::new).toList();
         }
     }
 

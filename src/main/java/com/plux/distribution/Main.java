@@ -5,15 +5,20 @@ import com.plux.distribution.application.service.ExecuteActionService;
 import com.plux.distribution.application.service.FlowFeedbackProcessor;
 import com.plux.distribution.application.service.MessageService;
 import com.plux.distribution.application.service.RegisterFeedbackService;
+import com.plux.distribution.application.service.session.RandomSessionInitializer;
+import com.plux.distribution.application.service.session.SessionSchedulerRunner;
+import com.plux.distribution.application.service.session.SessionService;
 import com.plux.distribution.application.service.UserService;
 import com.plux.distribution.application.workflow.DefaultContextManager;
 import com.plux.distribution.application.workflow.frame.FrameRegistry;
 import com.plux.distribution.application.workflow.core.FrameFactory;
 import com.plux.distribution.application.workflow.frame.utils.SequenceFrame;
+import com.plux.distribution.domain.service.ServiceId;
 import com.plux.distribution.infrastructure.persistence.DbChatRepository;
 import com.plux.distribution.infrastructure.persistence.DbFeedbackRepository;
 import com.plux.distribution.infrastructure.persistence.DbFrameRepository;
 import com.plux.distribution.infrastructure.persistence.DbMessageRepository;
+import com.plux.distribution.infrastructure.persistence.DbSessionRepository;
 import com.plux.distribution.infrastructure.persistence.DbTgChatLinker;
 import com.plux.distribution.infrastructure.persistence.DbTgMessageLinker;
 import com.plux.distribution.infrastructure.persistence.DbUserRepository;
@@ -45,13 +50,10 @@ public class Main {
         var chatRepo = new DbChatRepository(hibernateConfig.getSessionFactory());
         var frameRepo = new DbFrameRepository(hibernateConfig.getSessionFactory());
         var userRepo = new DbUserRepository(hibernateConfig.getSessionFactory());
+        var sessionRepo = new DbSessionRepository(hibernateConfig.getSessionFactory());
 
         var tgChatLinker = new DbTgChatLinker(hibernateConfig.getSessionFactory());
         var tgMessageLinker = new DbTgMessageLinker(hibernateConfig.getSessionFactory());
-
-        var chatService = new ChatService(chatRepo, chatRepo, chatRepo);
-        var userService = new UserService(userRepo);
-
         var tgClient = new OkHttpTelegramClient(botToken);
 
         var sender = new TelegramMessageSender(tgClient, tgChatLinker, tgMessageLinker);
@@ -60,12 +62,21 @@ public class Main {
         var messageService = new MessageService(sender, messageRepo, messageRepo);
         var executeActionService = new ExecuteActionService(executor);
 
+        var chatService = new ChatService(chatRepo, chatRepo, chatRepo);
+        var userService = new UserService(userRepo);
+        var sessionService = new SessionService(sessionRepo);
+
         var frameFactory = makeFrameFactory(userService, chatService);
         var frameContextManager = new DefaultContextManager(messageService, executeActionService);
         var mainFeedbackProcessor = new FlowFeedbackProcessor(frameRepo, frameRepo, frameContextManager, frameFactory);
 
         var registerFeedbackService = new RegisterFeedbackService(messageService, feedbackRepo,
                 chatService, mainFeedbackProcessor);
+
+        var sessionInitializer = new RandomSessionInitializer(sessionService, chatService, new ServiceId(1L));
+
+        var schedulerRunner = new SessionSchedulerRunner(sessionInitializer, 60);
+        schedulerRunner.start();
 
         var tgHandler = new TelegramHandler(registerFeedbackService, tgMessageLinker,
                 tgMessageLinker, tgChatLinker, tgChatLinker);
@@ -78,7 +89,6 @@ public class Main {
         } catch (Exception e) {
             log.error("e: ", e);
         }
-
     }
 
     private static FrameFactory makeFrameFactory(UserService userService, ChatService chatService) {

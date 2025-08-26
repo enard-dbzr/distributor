@@ -3,14 +3,17 @@ package com.plux.distribution.application.service;
 import com.plux.distribution.application.dto.chat.ChatDto;
 import com.plux.distribution.application.port.in.chat.AssignUserToChatUseCase;
 import com.plux.distribution.application.port.in.chat.CreateChatUseCase;
+import com.plux.distribution.application.port.in.chat.GetAllChatsUseCase;
 import com.plux.distribution.application.port.out.chat.CreateChatPort;
 import com.plux.distribution.application.port.out.chat.GetChatPort;
 import com.plux.distribution.application.port.out.chat.UpdateChatPort;
 import com.plux.distribution.domain.chat.ChatId;
 import com.plux.distribution.domain.user.UserId;
+import java.util.List;
 import org.jetbrains.annotations.NotNull;
 
-public class ChatService implements CreateChatUseCase, AssignUserToChatUseCase {
+public class ChatService implements CreateChatUseCase, AssignUserToChatUseCase, GetAllChatsUseCase {
+
     private final @NotNull CreateChatPort createChatPort;
     private final @NotNull GetChatPort getChatPort;
     private final @NotNull UpdateChatPort updateChatPort;
@@ -32,5 +35,10 @@ public class ChatService implements CreateChatUseCase, AssignUserToChatUseCase {
     @Override
     public @NotNull ChatDto create() {
         return new ChatDto(createChatPort.create());
+    }
+
+    @Override
+    public @NotNull List<ChatId> getAllChatIds() {
+        return getChatPort.getAllChatIds();
     }
 }
