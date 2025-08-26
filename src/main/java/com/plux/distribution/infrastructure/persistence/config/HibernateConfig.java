@@ -43,7 +43,6 @@ public class HibernateConfig {
         settings.put("hibernate.connection.url", dbUrl);
         settings.put("hibernate.connection.username", dbUser);
         settings.put("hibernate.connection.password", dbPassword);
-        settings.put("hibernate.dialect", "org.hibernate.dialect.PostgreSQLDialect");
         settings.put("hibernate.show_sql", "false");
         settings.put("hibernate.format_sql", "true");
         settings.put("hibernate.hbm2ddl.auto", "update");

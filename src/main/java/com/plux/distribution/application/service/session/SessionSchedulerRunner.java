@@ -20,7 +20,6 @@ public class SessionSchedulerRunner {
 
     public void tick() {
         initSessionsStrategy.initSessions();
-        System.out.println("tick");
     }
 
     public void start() {

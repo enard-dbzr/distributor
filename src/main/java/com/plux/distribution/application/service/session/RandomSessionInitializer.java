@@ -13,9 +13,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 
 public class RandomSessionInitializer implements InitSessionsStrategy {
+
+    private static final Logger log = LogManager.getLogger(RandomSessionInitializer.class);
 
     private final @NotNull CreateSessionUseCase createSessionUseCase;
     private final @NotNull GetAllChatsUseCase getAllChatsUseCase;
@@ -55,7 +59,7 @@ public class RandomSessionInitializer implements InitSessionsStrategy {
                     }
                 }
                 scheduledSessions.put(chatId, newSchedule);
-                System.out.printf("Scheduled for %s: %s%n", chatId, newSchedule);
+                log.info("Scheduled for {}: {}", chatId, newSchedule);
             }
         }
     }

@@ -77,6 +77,7 @@ public class Main {
 
         var schedulerRunner = new SessionSchedulerRunner(sessionInitializer, 60);
         schedulerRunner.start();
+        log.info("Session scheduler successfully started");
 
         var tgHandler = new TelegramHandler(registerFeedbackService, tgMessageLinker,
                 tgMessageLinker, tgChatLinker, tgChatLinker);
@@ -84,7 +85,7 @@ public class Main {
         try (var botsApplication = new TelegramBotsLongPollingApplication()) {
             botsApplication.registerBot(botToken, tgHandler);
 
-            System.out.println("Bot successfully started!");
+            log.info("Bot successfully started");
             Thread.currentThread().join();
         } catch (Exception e) {
             log.error("e: ", e);
