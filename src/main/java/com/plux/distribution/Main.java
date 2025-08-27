@@ -3,6 +3,7 @@ package com.plux.distribution;
 import com.plux.distribution.application.service.ChatService;
 import com.plux.distribution.application.service.ExecuteActionService;
 import com.plux.distribution.application.service.FlowFeedbackProcessor;
+import com.plux.distribution.application.service.IntegrationService;
 import com.plux.distribution.application.service.MessageService;
 import com.plux.distribution.application.service.RegisterFeedbackService;
 import com.plux.distribution.application.service.session.RandomSessionInitializer;
@@ -14,6 +15,7 @@ import com.plux.distribution.application.workflow.frame.FrameRegistry;
 import com.plux.distribution.application.workflow.core.FrameFactory;
 import com.plux.distribution.application.workflow.frame.utils.SequenceFrame;
 import com.plux.distribution.domain.service.ServiceId;
+import com.plux.distribution.infrastructure.notifier.WebhookNotifier;
 import com.plux.distribution.infrastructure.persistence.DbChatRepository;
 import com.plux.distribution.infrastructure.persistence.DbFeedbackRepository;
 import com.plux.distribution.infrastructure.persistence.DbFrameRepository;
@@ -62,9 +64,14 @@ public class Main {
         var messageService = new MessageService(sender, messageRepo, messageRepo);
         var executeActionService = new ExecuteActionService(executor);
 
+
         var chatService = new ChatService(chatRepo, chatRepo, chatRepo);
         var userService = new UserService(userRepo);
-        var sessionService = new SessionService(sessionRepo);
+        var integrationService = new IntegrationService(System.getenv("WEBHOOK_URL"));
+
+        var sessionNotificator = new WebhookNotifier(integrationService);
+
+        var sessionService = new SessionService(sessionRepo, sessionNotificator);
 
         var frameFactory = makeFrameFactory(userService, chatService);
         var frameContextManager = new DefaultContextManager(messageService, executeActionService);
