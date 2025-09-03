@@ -1,5 +1,6 @@
 package com.plux.distribution;
 
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.plux.distribution.application.service.ChatService;
 import com.plux.distribution.application.service.ExecuteActionService;
 import com.plux.distribution.application.service.FlowFeedbackProcessor;
@@ -15,10 +16,12 @@ import com.plux.distribution.application.workflow.frame.FrameRegistry;
 import com.plux.distribution.application.workflow.core.FrameFactory;
 import com.plux.distribution.application.workflow.frame.utils.SequenceFrame;
 import com.plux.distribution.domain.service.ServiceId;
+import com.plux.distribution.infrastructure.api.message.MessageController;
 import com.plux.distribution.infrastructure.notifier.WebhookNotifier;
 import com.plux.distribution.infrastructure.persistence.DbChatRepository;
 import com.plux.distribution.infrastructure.persistence.DbFeedbackRepository;
 import com.plux.distribution.infrastructure.persistence.DbFrameRepository;
+import com.plux.distribution.infrastructure.persistence.DbIntegrationRepository;
 import com.plux.distribution.infrastructure.persistence.DbMessageRepository;
 import com.plux.distribution.infrastructure.persistence.DbSessionRepository;
 import com.plux.distribution.infrastructure.persistence.DbTgChatLinker;
@@ -28,6 +31,7 @@ import com.plux.distribution.infrastructure.persistence.config.HibernateConfig;
 import com.plux.distribution.infrastructure.telegram.TelegramActionExecutor;
 import com.plux.distribution.infrastructure.telegram.TelegramHandler;
 import com.plux.distribution.infrastructure.telegram.sender.TelegramMessageSender;
+import io.javalin.Javalin;
 import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -53,6 +57,7 @@ public class Main {
         var frameRepo = new DbFrameRepository(hibernateConfig.getSessionFactory());
         var userRepo = new DbUserRepository(hibernateConfig.getSessionFactory());
         var sessionRepo = new DbSessionRepository(hibernateConfig.getSessionFactory());
+        var integrationRepo = new DbIntegrationRepository(hibernateConfig.getSessionFactory());
 
         var tgChatLinker = new DbTgChatLinker(hibernateConfig.getSessionFactory());
         var tgMessageLinker = new DbTgMessageLinker(hibernateConfig.getSessionFactory());
@@ -64,10 +69,9 @@ public class Main {
         var messageService = new MessageService(sender, messageRepo, messageRepo);
         var executeActionService = new ExecuteActionService(executor);
 
-
         var chatService = new ChatService(chatRepo, chatRepo, chatRepo);
         var userService = new UserService(userRepo);
-        var integrationService = new IntegrationService(System.getenv("WEBHOOK_URL"));
+        var integrationService = new IntegrationService(messageService, integrationRepo);
 
         var sessionNotificator = new WebhookNotifier(integrationService);
 
@@ -88,6 +92,12 @@ public class Main {
 
         var tgHandler = new TelegramHandler(registerFeedbackService, tgMessageLinker,
                 tgMessageLinker, tgChatLinker, tgChatLinker);
+
+        Javalin apiApp = Javalin.create().start(8080);
+        apiApp.exception(JsonMappingException.class, (e, ctx) ->
+                ctx.status(400).json("JSON mapping error: " + e.getOriginalMessage()));
+
+        new MessageController(integrationService).register(apiApp);
 
         try (var botsApplication = new TelegramBotsLongPollingApplication()) {
             botsApplication.registerBot(botToken, tgHandler);
