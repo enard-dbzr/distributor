@@ -4,9 +4,10 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.plux.distribution.application.service.ChatService;
 import com.plux.distribution.application.service.ExecuteActionService;
 import com.plux.distribution.application.service.FlowFeedbackProcessor;
-import com.plux.distribution.application.service.IntegrationService;
+import com.plux.distribution.application.service.integration.IntegrationService;
 import com.plux.distribution.application.service.MessageService;
 import com.plux.distribution.application.service.RegisterFeedbackService;
+import com.plux.distribution.application.service.integration.SendServiceMessageService;
 import com.plux.distribution.application.service.session.RandomSessionInitializer;
 import com.plux.distribution.application.service.session.SessionSchedulerRunner;
 import com.plux.distribution.application.service.session.SessionService;
@@ -71,7 +72,9 @@ public class Main {
 
         var chatService = new ChatService(chatRepo, chatRepo, chatRepo);
         var userService = new UserService(userRepo);
-        var integrationService = new IntegrationService(messageService, integrationRepo);
+
+        var integrationService = new IntegrationService(integrationRepo);
+        var sendIntegrationMessageService = new SendServiceMessageService(messageService, integrationRepo);
 
         var sessionNotificator = new WebhookNotifier(integrationService);
 
@@ -97,7 +100,7 @@ public class Main {
         apiApp.exception(JsonMappingException.class, (e, ctx) ->
                 ctx.status(400).json("JSON mapping error: " + e.getOriginalMessage()));
 
-        new MessageController(integrationService).register(apiApp);
+        new MessageController(sendIntegrationMessageService).register(apiApp);
 
         try (var botsApplication = new TelegramBotsLongPollingApplication()) {
             botsApplication.registerBot(botToken, tgHandler);
