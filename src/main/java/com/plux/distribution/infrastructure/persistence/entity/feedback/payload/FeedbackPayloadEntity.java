@@ -1,10 +1,10 @@
 package com.plux.distribution.infrastructure.persistence.entity.feedback.payload;
 
-import com.plux.distribution.domain.feedback.payload.ButtonPayload;
-import com.plux.distribution.domain.feedback.payload.FeedbackPayload;
-import com.plux.distribution.domain.feedback.payload.FeedbackPayloadVisitor;
-import com.plux.distribution.domain.feedback.payload.MessagePayload;
-import com.plux.distribution.domain.feedback.payload.ReplyPayload;
+import com.plux.distribution.application.dto.feedback.dto.payload.ButtonPayload;
+import com.plux.distribution.application.dto.feedback.dto.payload.FeedbackPayload;
+import com.plux.distribution.application.dto.feedback.dto.payload.FeedbackPayloadVisitor;
+import com.plux.distribution.application.dto.feedback.dto.payload.MessagePayload;
+import com.plux.distribution.application.dto.feedback.dto.payload.ReplyPayload;
 import jakarta.persistence.DiscriminatorColumn;
 import jakarta.persistence.DiscriminatorType;
 import jakarta.persistence.Entity;
@@ -27,28 +27,21 @@ public abstract class FeedbackPayloadEntity {
     private Long id;
 
     public static FeedbackPayloadEntity fromModel(FeedbackPayload model) {
-        final FeedbackPayloadEntity[] payload = new FeedbackPayloadEntity[1];
-
-        model.accept(new FeedbackPayloadVisitor() {
+        return model.accept(new FeedbackPayloadVisitor<>() {
             @Override
-            public void visit(@NotNull ButtonPayload entity) {
-                payload[0] = ButtonPayloadEntity.fromModel(entity);
+            public FeedbackPayloadEntity visit(@NotNull ButtonPayload entity) {
+                return ButtonPayloadEntity.fromModel(entity);
             }
 
             @Override
-            public void visit(@NotNull MessagePayload entity) {
-                payload[0] = MessagePayloadEntity.fromModel(entity);
+            public FeedbackPayloadEntity visit(@NotNull MessagePayload entity) {
+                return MessagePayloadEntity.fromModel(entity);
             }
 
             @Override
-            public void visit(@NotNull ReplyPayload entity) {
-                payload[0] = ReplyPayloadEntity.fromModel(entity);
+            public FeedbackPayloadEntity visit(@NotNull ReplyPayload entity) {
+                return ReplyPayloadEntity.fromModel(entity);
             }
         });
-
-        return payload[0];
     }
-
-    public abstract @NotNull FeedbackPayload toModel();
-
 }

@@ -45,9 +45,9 @@ public class MessageService implements MessageDeliveryUseCase, CreateMessageUseC
     }
 
     @Override
-    public MessageId create(CreateMessageCommand command) {
+    public @NotNull MessageDto create(@NotNull CreateMessageCommand command) {
         var message = createMessagePort.create(command);
-        return message.getId();
+        return new MessageDto(message);
     }
 
     @Override

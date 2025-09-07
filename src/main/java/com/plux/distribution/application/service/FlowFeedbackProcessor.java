@@ -7,10 +7,10 @@ import com.plux.distribution.application.workflow.core.FrameContext;
 import com.plux.distribution.application.workflow.core.FrameContextManager;
 import com.plux.distribution.application.workflow.core.FrameFactory;
 import com.plux.distribution.application.workflow.core.FrameFeedback;
-import com.plux.distribution.domain.feedback.payload.ButtonPayload;
-import com.plux.distribution.domain.feedback.payload.FeedbackPayloadVisitor;
-import com.plux.distribution.domain.feedback.payload.MessagePayload;
-import com.plux.distribution.domain.feedback.payload.ReplyPayload;
+import com.plux.distribution.application.dto.feedback.dto.payload.ButtonPayload;
+import com.plux.distribution.application.dto.feedback.dto.payload.FeedbackPayloadVisitor;
+import com.plux.distribution.application.dto.feedback.dto.payload.MessagePayload;
+import com.plux.distribution.application.dto.feedback.dto.payload.ReplyPayload;
 import com.plux.distribution.domain.message.content.MessageContentVisitor;
 import com.plux.distribution.domain.message.content.SimpleMessageContent;
 import java.util.Optional;
@@ -65,20 +65,21 @@ public class FlowFeedbackProcessor implements FeedbackProcessor {
         var text = new AtomicReference<String>();
         var buttonTag = new AtomicReference<String>();
 
-        context.feedback().payload().accept(new FeedbackPayloadVisitor() {
+        context.feedback().payload().accept(new FeedbackPayloadVisitor<Void>() {
             @Override
-            public void visit(@NotNull ButtonPayload entity) {
+            public Void visit(@NotNull ButtonPayload entity) {
                 buttonTag.set(entity.tag());
+                return null;
             }
 
             @Override
-            public void visit(@NotNull MessagePayload entity) {
-
+            public Void visit(@NotNull MessagePayload entity) {
+                return null;
             }
 
             @Override
-            public void visit(@NotNull ReplyPayload entity) {
-
+            public Void visit(@NotNull ReplyPayload entity) {
+                return null;
             }
         });
 

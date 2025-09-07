@@ -6,7 +6,7 @@ import com.plux.distribution.application.dto.session.SessionDto;
 import com.plux.distribution.application.port.in.integration.GetWebhookUseCase;
 import com.plux.distribution.application.port.in.integration.NotifyServiceFeedbackPort;
 import com.plux.distribution.application.port.out.session.NotifySessionEventPort;
-import com.plux.distribution.domain.feedback.Feedback;
+import com.plux.distribution.application.dto.feedback.dto.Feedback;
 import com.plux.distribution.domain.service.ServiceId;
 import com.plux.distribution.infrastructure.notifier.view.EventType;
 import com.plux.distribution.infrastructure.notifier.view.EventView;

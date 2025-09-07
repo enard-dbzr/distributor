@@ -5,10 +5,10 @@ import com.plux.distribution.application.port.in.FeedbackProcessor;
 import com.plux.distribution.application.port.in.integration.NotifyServiceFeedbackPort;
 import com.plux.distribution.application.port.in.message.GetMessageUseCase;
 import com.plux.distribution.application.service.FeedbackContext;
-import com.plux.distribution.domain.feedback.payload.ButtonPayload;
-import com.plux.distribution.domain.feedback.payload.FeedbackPayloadVisitor;
-import com.plux.distribution.domain.feedback.payload.MessagePayload;
-import com.plux.distribution.domain.feedback.payload.ReplyPayload;
+import com.plux.distribution.application.dto.feedback.dto.payload.ButtonPayload;
+import com.plux.distribution.application.dto.feedback.dto.payload.FeedbackPayloadVisitor;
+import com.plux.distribution.application.dto.feedback.dto.payload.MessagePayload;
+import com.plux.distribution.application.dto.feedback.dto.payload.ReplyPayload;
 import com.plux.distribution.domain.message.MessageId;
 import com.plux.distribution.domain.message.participant.ChatParticipant;
 import com.plux.distribution.domain.message.participant.ServiceParticipant;
@@ -29,28 +29,26 @@ public class IntegrationFeedbackProcessor implements FeedbackProcessor {
 
     @Override
     public void process(@NotNull FeedbackContext feedback) {
-        var replyTo = new AtomicReference<MessageId>();
-
-        feedback.feedback().payload().accept(new FeedbackPayloadVisitor() {
+        var replyTo = feedback.feedback().payload().accept(new FeedbackPayloadVisitor<MessageId>() {
             @Override
-            public void visit(@NotNull ButtonPayload entity) {
-                replyTo.set(entity.replyTo());
+            public MessageId visit(@NotNull ButtonPayload entity) {
+                return entity.replyTo();
             }
 
             @Override
-            public void visit(@NotNull MessagePayload entity) {
-                replyTo.set(null);
+            public MessageId visit(@NotNull MessagePayload entity) {
+                return null;
             }
 
             @Override
-            public void visit(@NotNull ReplyPayload entity) {
-                replyTo.set(entity.replyTo());
+            public MessageId visit(@NotNull ReplyPayload entity) {
+                return entity.replyTo();
             }
         });
 
         AtomicReference<MessageDto> message = new AtomicReference<>();
-        if (replyTo.get() != null) {
-            message.set(getMessageUseCase.getMessage(replyTo.get()));
+        if (replyTo != null) {
+            message.set(getMessageUseCase.getMessage(replyTo));
         } else {
             getMessageUseCase.getLastOfRecipient(new ChatParticipant(feedback.feedback().chatId()))
                     .ifPresent(message::set);

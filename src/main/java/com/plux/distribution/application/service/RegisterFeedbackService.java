@@ -1,7 +1,8 @@
 package com.plux.distribution.application.service;
 
-import com.plux.distribution.application.dto.feedback.CreateFeedbackCommand;
+import com.plux.distribution.application.dto.feedback.command.CreateFeedbackCommand;
 import com.plux.distribution.application.dto.message.CreateMessageCommand;
+import com.plux.distribution.application.dto.message.MessageDto;
 import com.plux.distribution.application.port.in.FeedbackProcessor;
 import com.plux.distribution.application.port.in.RegisterFeedbackUseCase;
 import com.plux.distribution.application.port.in.chat.CreateChatUseCase;
@@ -11,10 +12,9 @@ import com.plux.distribution.application.port.exception.ChatIdNotFound;
 import com.plux.distribution.application.port.in.message.CreateMessageUseCase;
 import com.plux.distribution.application.port.out.feedback.CreateFeedbackPort;
 import com.plux.distribution.domain.chat.ChatId;
-import com.plux.distribution.domain.feedback.payload.ButtonPayload;
-import com.plux.distribution.domain.feedback.payload.MessagePayload;
-import com.plux.distribution.domain.feedback.payload.ReplyPayload;
-import com.plux.distribution.domain.message.MessageId;
+import com.plux.distribution.application.dto.feedback.dto.payload.ButtonPayload;
+import com.plux.distribution.application.dto.feedback.dto.payload.MessagePayload;
+import com.plux.distribution.application.dto.feedback.dto.payload.ReplyPayload;
 import com.plux.distribution.domain.message.content.MessageContent;
 import com.plux.distribution.domain.message.content.SimpleMessageContent;
 import com.plux.distribution.domain.message.participant.UnknownServiceParticipant;
@@ -63,15 +63,15 @@ public class RegisterFeedbackService implements RegisterFeedbackUseCase {
         }
 
         var content = new SimpleMessageContent(context.getText(), List.of());
-        var messageId = createMessageUseCase.create(new CreateMessageCommand(
+        var contentMessage = createMessageUseCase.create(new CreateMessageCommand(
                 new ChatParticipant(chatId),
                 new UnknownServiceParticipant(),
                 new ReceivedState(new Date()),
                 content
         ));
-        context.onMessageCreated(messageId);
+        context.onMessageCreated(contentMessage.id());
 
-        var createFeedbackCommand = makeFeedbackCommand(context, messageId, receiveTime, chatId);
+        var createFeedbackCommand = makeFeedbackCommand(context, contentMessage, receiveTime, chatId);
 
         registerAndProcess(createFeedbackCommand, content);
     }
@@ -85,7 +85,7 @@ public class RegisterFeedbackService implements RegisterFeedbackUseCase {
         registerAndProcess(createFeedbackCommand, null);
     }
 
-    private static CreateFeedbackCommand makeFeedbackCommand(MessageContext context, MessageId content,
+    private static CreateFeedbackCommand makeFeedbackCommand(MessageContext context, MessageDto content,
             Date receivedAt, ChatId chatId) {
         if (context.getReplyTo() == null) {
             return new CreateFeedbackCommand(

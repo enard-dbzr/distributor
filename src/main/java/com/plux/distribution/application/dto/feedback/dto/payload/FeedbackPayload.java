@@ -1,8 +1,8 @@
-package com.plux.distribution.domain.feedback.payload;
+package com.plux.distribution.application.dto.feedback.dto.payload;
 
 import org.jetbrains.annotations.NotNull;
 
 public sealed interface FeedbackPayload permits ButtonPayload, MessagePayload, ReplyPayload {
 
-    void accept(@NotNull FeedbackPayloadVisitor visitor);
+    <R> R accept(@NotNull FeedbackPayloadVisitor<R> visitor);
 }

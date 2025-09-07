@@ -1,8 +1,8 @@
 package com.plux.distribution.infrastructure.inmemory;
 
-import com.plux.distribution.application.dto.feedback.CreateFeedbackCommand;
+import com.plux.distribution.application.dto.feedback.command.CreateFeedbackCommand;
 import com.plux.distribution.application.port.out.feedback.CreateFeedbackPort;
-import com.plux.distribution.domain.feedback.Feedback;
+import com.plux.distribution.application.dto.feedback.dto.Feedback;
 import com.plux.distribution.domain.feedback.FeedbackId;
 import java.util.ArrayList;
 import java.util.List;

@@ -1,6 +1,6 @@
 package com.plux.distribution.application.port.in.integration;
 
-import com.plux.distribution.domain.feedback.Feedback;
+import com.plux.distribution.application.dto.feedback.dto.Feedback;
 import com.plux.distribution.domain.service.ServiceId;
 import org.jetbrains.annotations.NotNull;
 
