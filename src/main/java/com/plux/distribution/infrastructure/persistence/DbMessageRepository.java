@@ -15,7 +15,6 @@ import com.plux.distribution.domain.message.participant.UnknownServiceParticipan
 import com.plux.distribution.infrastructure.persistence.entity.message.MessageEntity;
 import com.plux.distribution.infrastructure.persistence.entity.message.participant.ParticipantEntity;
 import com.plux.distribution.infrastructure.persistence.entity.message.state.MessageStateEntity;
-import java.util.concurrent.atomic.AtomicReference;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.hibernate.SessionFactory;
@@ -79,49 +78,50 @@ public class DbMessageRepository implements CreateMessagePort, UpdateMessagePort
     public @Nullable Message getLastOfRecipient(@NotNull Participant recipient) {
 
         try (var session = sessionFactory.openSession()) {
-            var queryHolder = new AtomicReference<Query<MessageEntity>>();
-
-            recipient.accept(new ParticipantVisitor() {
+            var query = recipient.accept(new ParticipantVisitor<Query<MessageEntity>>() {
                 @Override
-                public void visit(ServiceParticipant participant) {
-                    queryHolder.set(session.createQuery("from MessageEntity m "
+                public Query<MessageEntity> visit(ServiceParticipant participant) {
+                    var q = session.createQuery("from MessageEntity m "
                             + "join ServiceParticipantEntity p on m.recipient = p "
                             + "where p.serviceId = :sid "
                             + "order by m.id desc "
-                            + "fetch first 1 rows only", MessageEntity.class));
+                            + "fetch first 1 rows only", MessageEntity.class);
 
-                    queryHolder.get().setParameter("sid", participant.serviceId().value());
+                    q.setParameter("sid", participant.serviceId().value());
+
+                    return q;
                 }
 
                 @Override
-                public void visit(UnknownServiceParticipant participant) {
-                    queryHolder.set(session.createQuery("from MessageEntity m "
+                public Query<MessageEntity> visit(UnknownServiceParticipant participant) {
+                    return session.createQuery("from MessageEntity m "
                             + "join UnkServiceParticipantEntity p on m.recipient = p "
                             + "order by m.id desc "
-                            + "fetch first 1 rows only", MessageEntity.class));
+                            + "fetch first 1 rows only", MessageEntity.class);
                 }
 
                 @Override
-                public void visit(ChatParticipant participant) {
-                    queryHolder.set(session.createQuery("from MessageEntity m "
+                public Query<MessageEntity> visit(ChatParticipant participant) {
+                    var q = session.createQuery("from MessageEntity m "
                             + "join ChatParticipantEntity p on m.recipient = p "
                             + "where p.chatId = :cid "
                             + "order by m.id desc "
-                            + "fetch first 1 rows only", MessageEntity.class));
+                            + "fetch first 1 rows only", MessageEntity.class);
 
-                    queryHolder.get().setParameter("cid", participant.chatId().value());
+                    q.setParameter("cid", participant.chatId().value());
+                    return q;
                 }
 
                 @Override
-                public void visit(SelfParticipant participant) {
-                    queryHolder.set(session.createQuery("from MessageEntity m "
+                public Query<MessageEntity> visit(SelfParticipant participant) {
+                    return session.createQuery("from MessageEntity m "
                             + "join SelfParticipantEntity p on m.recipient = p "
                             + "order by m.id desc "
-                            + "fetch first 1 rows only", MessageEntity.class));
+                            + "fetch first 1 rows only", MessageEntity.class);
                 }
             });
 
-            var messageEntity = queryHolder.get().uniqueResult();
+            var messageEntity = query.uniqueResult();
 
             if (messageEntity == null) {
                 log.warn("Last message with recipient={} not found", recipient);

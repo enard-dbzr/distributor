@@ -1,7 +1,7 @@
 package com.plux.distribution.domain.message.state;
 
-public interface MessageStateVisitor {
-    void visit(PendingState state);
-    void visit(TransferredState state);
-    void visit(ReceivedState state);
+public interface MessageStateVisitor<R> {
+    R visit(PendingState state);
+    R visit(TransferredState state);
+    R visit(ReceivedState state);
 }

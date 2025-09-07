@@ -1,8 +1,8 @@
 package com.plux.distribution.domain.message.participant;
 
-public interface ParticipantVisitor {
-    void visit(ServiceParticipant participant);
-    void visit(UnknownServiceParticipant participant);
-    void visit(ChatParticipant participant);
-    void visit(SelfParticipant participant);
+public interface ParticipantVisitor<R> {
+    R visit(ServiceParticipant participant);
+    R visit(UnknownServiceParticipant participant);
+    R visit(ChatParticipant participant);
+    R visit(SelfParticipant participant);
 }

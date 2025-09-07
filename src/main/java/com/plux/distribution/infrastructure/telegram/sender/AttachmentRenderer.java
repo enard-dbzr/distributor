@@ -6,7 +6,7 @@ import org.jetbrains.annotations.NotNull;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardRow;
 
-class AttachmentRenderer implements AttachmentVisitor {
+class AttachmentRenderer implements AttachmentVisitor<Void> {
 
     @NotNull
     final RenderingContext context;
@@ -16,7 +16,7 @@ class AttachmentRenderer implements AttachmentVisitor {
     }
 
     @Override
-    public void visit(ButtonAttachment attachment) {
+    public Void visit(ButtonAttachment attachment) {
         context.inlineKeyboardMarkupBuilder.keyboardRow(
                 new InlineKeyboardRow(
                         InlineKeyboardButton
@@ -27,5 +27,7 @@ class AttachmentRenderer implements AttachmentVisitor {
                 )
         );
         context.hasButtons = true;
+
+        return null;
     }
 }

@@ -2,5 +2,5 @@ package com.plux.distribution.domain.message.content;
 
 public sealed interface MessageContent permits SimpleMessageContent {
 
-    void accept(MessageContentVisitor visitor);
+    <R> R accept(MessageContentVisitor<R> visitor);
 }

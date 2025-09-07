@@ -15,7 +15,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Inheritance;
 import jakarta.persistence.InheritanceType;
 import jakarta.persistence.Table;
-import java.util.concurrent.atomic.AtomicReference;
 
 @Entity
 @Table(name = "participants")
@@ -30,30 +29,26 @@ public abstract class ParticipantEntity {
     public abstract Participant toModel();
 
     public static ParticipantEntity fromModel(Participant participant) {
-        var holder = new AtomicReference<ParticipantEntity>();
-
-        participant.accept(new ParticipantVisitor() {
+        return participant.accept(new ParticipantVisitor<>() {
             @Override
-            public void visit(ServiceParticipant participant) {
-                holder.set(ServiceParticipantEntity.fromModel(participant));
+            public ParticipantEntity visit(ServiceParticipant participant) {
+                return ServiceParticipantEntity.fromModel(participant);
             }
 
             @Override
-            public void visit(UnknownServiceParticipant participant) {
-                holder.set(UnkServiceParticipantEntity.fromModel(participant));
+            public ParticipantEntity visit(UnknownServiceParticipant participant) {
+                return UnkServiceParticipantEntity.fromModel(participant);
             }
 
             @Override
-            public void visit(ChatParticipant participant) {
-                holder.set(ChatParticipantEntity.fromModel(participant));
+            public ParticipantEntity visit(ChatParticipant participant) {
+                return ChatParticipantEntity.fromModel(participant);
             }
 
             @Override
-            public void visit(SelfParticipant participant) {
-                holder.set(SelfParticipantEntity.fromModel(participant));
+            public ParticipantEntity visit(SelfParticipant participant) {
+                return SelfParticipantEntity.fromModel(participant);
             }
         });
-
-        return holder.get();
     }
 }

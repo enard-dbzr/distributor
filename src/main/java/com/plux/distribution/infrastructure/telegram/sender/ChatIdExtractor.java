@@ -8,29 +8,30 @@ import com.plux.distribution.domain.message.participant.ChatParticipant;
 import com.plux.distribution.domain.chat.ChatId;
 import org.jetbrains.annotations.NotNull;
 
-class ChatIdExtractor implements ParticipantVisitor {
+class ChatIdExtractor implements ParticipantVisitor<Void> {
 
     private ChatId chatId;
 
     @Override
-    public void visit(ServiceParticipant participant) {
+    public Void visit(ServiceParticipant participant) {
         throw new UnsupportedOperationException(
                 "Sending messages not to chats via telegram is not supported");
     }
 
     @Override
-    public void visit(UnknownServiceParticipant participant) {
+    public Void visit(UnknownServiceParticipant participant) {
         throw new UnsupportedOperationException(
                 "Sending messages not to chats via telegram is not supported");
     }
 
     @Override
-    public void visit(ChatParticipant participant) {
+    public Void visit(ChatParticipant participant) {
         chatId = participant.chatId();
+        return null;
     }
 
     @Override
-    public void visit(SelfParticipant participant) {
+    public Void visit(SelfParticipant participant) {
         throw new UnsupportedOperationException(
                 "Sending messages not to chats via telegram is not supported");
     }

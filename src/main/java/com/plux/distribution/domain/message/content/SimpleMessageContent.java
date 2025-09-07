@@ -8,7 +8,7 @@ public record SimpleMessageContent(@NotNull String text, @NotNull List<MessageAt
         MessageContent {
 
     @Override
-    public void accept(@NotNull MessageContentVisitor visitor) {
-        visitor.visit(this);
+    public <R> R accept(@NotNull MessageContentVisitor<R> visitor) {
+        return visitor.visit(this);
     }
 }

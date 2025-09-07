@@ -12,7 +12,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Inheritance;
 import jakarta.persistence.InheritanceType;
 import jakarta.persistence.Table;
-import java.util.concurrent.atomic.AtomicReference;
 
 @Entity
 @Table(name = "attachments")
@@ -25,16 +24,12 @@ public abstract class AttachmentEntity {
     private Long id;
 
     public static AttachmentEntity fromModel(MessageAttachment model) {
-        var holder = new AtomicReference<AttachmentEntity>();
-
-        model.accept(new AttachmentVisitor() {
+        return model.accept(new AttachmentVisitor<>() {
             @Override
-            public void visit(ButtonAttachment attachment) {
-                holder.set(ButtonAttachmentEntity.fromModel(attachment));
+            public AttachmentEntity visit(ButtonAttachment attachment) {
+                return ButtonAttachmentEntity.fromModel(attachment);
             }
         });
-
-        return holder.get();
     }
 
     public abstract MessageAttachment toModel();

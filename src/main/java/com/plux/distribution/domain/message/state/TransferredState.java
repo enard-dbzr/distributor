@@ -6,7 +6,7 @@ import org.jetbrains.annotations.NotNull;
 public record TransferredState(@NotNull Date transferTime) implements MessageState {
 
     @Override
-    public void accept(@NotNull MessageStateVisitor visitor) {
-        visitor.visit(this);
+    public <R> R accept(MessageStateVisitor<R> visitor) {
+        return visitor.visit(this);
     }
 }

@@ -84,11 +84,12 @@ public class FlowFeedbackProcessor implements FeedbackProcessor {
         });
 
         context.content().ifPresent(message -> {
-            message.accept(new MessageContentVisitor() {
+            message.accept(new MessageContentVisitor<>() {
 
                 @Override
-                public void visit(SimpleMessageContent content) {
+                public Void visit(SimpleMessageContent content) {
                     text.set(content.text());
+                    return null;
                 }
             });
         });

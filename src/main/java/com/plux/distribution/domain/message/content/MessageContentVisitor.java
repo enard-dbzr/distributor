@@ -1,5 +1,5 @@
 package com.plux.distribution.domain.message.content;
 
-public interface MessageContentVisitor {
-    void visit(SimpleMessageContent content);
+public interface MessageContentVisitor<R> {
+    R visit(SimpleMessageContent content);
 }

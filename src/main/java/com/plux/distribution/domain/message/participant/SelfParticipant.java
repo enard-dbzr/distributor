@@ -5,7 +5,7 @@ import org.jetbrains.annotations.NotNull;
 public record SelfParticipant() implements Participant {
 
     @Override
-    public void accept(@NotNull ParticipantVisitor visitor) {
-        visitor.visit(this);
+    public <R> R accept(@NotNull ParticipantVisitor<R> visitor) {
+        return visitor.visit(this);
     }
 }

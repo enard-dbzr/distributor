@@ -5,7 +5,7 @@ import java.util.Date;
 public record ReceivedState(Date receiveTime) implements MessageState {
 
     @Override
-    public void accept(MessageStateVisitor visitor) {
-        visitor.visit(this);
+    public <R> R accept(MessageStateVisitor<R> visitor) {
+        return visitor.visit(this);
     }
 }

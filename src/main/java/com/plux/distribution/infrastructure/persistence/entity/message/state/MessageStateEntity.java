@@ -14,7 +14,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Inheritance;
 import jakarta.persistence.InheritanceType;
 import jakarta.persistence.Table;
-import java.util.concurrent.atomic.AtomicReference;
 
 @Entity
 @Table(name = "message_states")
@@ -28,25 +27,21 @@ public abstract class MessageStateEntity {
     public abstract MessageState toModel();
 
     public static MessageStateEntity fromModel(MessageState state) {
-        var holder = new AtomicReference<MessageStateEntity>();
-
-        state.accept(new MessageStateVisitor() {
+        return state.accept(new MessageStateVisitor<MessageStateEntity>() {
             @Override
-            public void visit(PendingState state) {
-                holder.set(PendingStateEntity.fromModel(state));
+            public MessageStateEntity visit(PendingState state) {
+                return PendingStateEntity.fromModel(state);
             }
 
             @Override
-            public void visit(TransferredState state) {
-                holder.set(TransferredStateEntity.fromModel(state));
+            public MessageStateEntity visit(TransferredState state) {
+                return TransferredStateEntity.fromModel(state);
             }
 
             @Override
-            public void visit(ReceivedState state) {
-                holder.set(ReceivedStateEntity.fromModel(state));
+            public MessageStateEntity visit(ReceivedState state) {
+                return ReceivedStateEntity.fromModel(state);
             }
         });
-
-        return holder.get();
     }
 }
