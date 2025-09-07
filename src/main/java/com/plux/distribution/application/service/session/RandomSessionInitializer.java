@@ -72,7 +72,7 @@ public class RandomSessionInitializer implements InitSessionsStrategy {
             var it = schedule.iterator();
             while (it.hasNext()) {
                 var scheduledTime = it.next();
-                if (!scheduledTime.isAfter(now)) {
+                if (scheduledTime.isBefore(now)) {
                     createSessionUseCase.create(chatId, serviceId);
                     it.remove();
                 }

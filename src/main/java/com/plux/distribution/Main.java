@@ -4,6 +4,8 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import com.plux.distribution.application.service.ChatService;
 import com.plux.distribution.application.service.ExecuteActionService;
 import com.plux.distribution.application.service.FlowFeedbackProcessor;
+import com.plux.distribution.application.service.SequenceFeedbackProcessor;
+import com.plux.distribution.application.service.integration.IntegrationFeedbackProcessor;
 import com.plux.distribution.application.service.integration.IntegrationService;
 import com.plux.distribution.application.service.MessageService;
 import com.plux.distribution.application.service.RegisterFeedbackService;
@@ -67,22 +69,25 @@ public class Main {
         var sender = new TelegramMessageSender(tgClient, tgChatLinker, tgMessageLinker);
         var executor = new TelegramActionExecutor(tgClient, tgChatLinker, tgMessageLinker);
 
-        var messageService = new MessageService(sender, messageRepo, messageRepo);
+        var messageService = new MessageService(sender, messageRepo, messageRepo, messageRepo);
         var executeActionService = new ExecuteActionService(executor);
 
         var chatService = new ChatService(chatRepo, chatRepo, chatRepo);
         var userService = new UserService(userRepo);
 
         var integrationService = new IntegrationService(integrationRepo);
+        var notifier = new WebhookNotifier(integrationService);
         var sendIntegrationMessageService = new SendServiceMessageService(messageService, integrationRepo);
+        var integrationFeedbackProcessor = new IntegrationFeedbackProcessor(messageService, notifier);
 
-        var sessionNotificator = new WebhookNotifier(integrationService);
-
-        var sessionService = new SessionService(sessionRepo, sessionNotificator);
+        var sessionService = new SessionService(sessionRepo, notifier);
 
         var frameFactory = makeFrameFactory(userService, chatService);
         var frameContextManager = new DefaultContextManager(messageService, executeActionService);
-        var mainFeedbackProcessor = new FlowFeedbackProcessor(frameRepo, frameRepo, frameContextManager, frameFactory);
+        var flowFeedbackProcessor = new FlowFeedbackProcessor(frameRepo, frameRepo, frameContextManager, frameFactory);
+
+        var mainFeedbackProcessor = new SequenceFeedbackProcessor(
+                List.of(flowFeedbackProcessor, integrationFeedbackProcessor));
 
         var registerFeedbackService = new RegisterFeedbackService(messageService, feedbackRepo,
                 chatService, mainFeedbackProcessor);

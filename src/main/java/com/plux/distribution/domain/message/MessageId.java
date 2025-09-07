@@ -1,5 +1,7 @@
 package com.plux.distribution.domain.message;
 
-public record MessageId(Long value) {
+import org.jetbrains.annotations.NotNull;
+
+public record MessageId(@NotNull Long value) {
 
 }

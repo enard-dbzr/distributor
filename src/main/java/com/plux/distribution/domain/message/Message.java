@@ -8,7 +8,8 @@ import java.util.Date;
 import org.jetbrains.annotations.NotNull;
 
 public class Message {
-    private final MessageId id;
+
+    private final @NotNull MessageId id;
 
     private final @NotNull Participant sender;
 
@@ -18,7 +19,7 @@ public class Message {
 
     private final @NotNull MessageContent content;
 
-    public Message(MessageId id, @NotNull Participant sender, @NotNull Participant recipient,
+    public Message(@NotNull MessageId id, @NotNull Participant sender, @NotNull Participant recipient,
             @NotNull MessageState state,
             @NotNull MessageContent content) {
         this.id = id;
@@ -56,7 +57,7 @@ public class Message {
         return content;
     }
 
-    public MessageId getId() {
+    public @NotNull MessageId getId() {
         return id;
     }
 }

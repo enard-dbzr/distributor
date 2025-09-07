@@ -4,10 +4,13 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.plux.distribution.application.dto.session.SessionDto;
 import com.plux.distribution.application.port.in.integration.GetWebhookUseCase;
+import com.plux.distribution.application.port.in.integration.NotifyServiceFeedbackPort;
 import com.plux.distribution.application.port.out.session.NotifySessionEventPort;
+import com.plux.distribution.domain.feedback.Feedback;
 import com.plux.distribution.domain.service.ServiceId;
 import com.plux.distribution.infrastructure.notifier.view.EventType;
 import com.plux.distribution.infrastructure.notifier.view.EventView;
+import com.plux.distribution.infrastructure.notifier.view.feedback.FeedbackView;
 import com.plux.distribution.infrastructure.notifier.view.session.SessionEvent;
 import com.plux.distribution.infrastructure.notifier.view.session.SessionEventType;
 import com.plux.distribution.infrastructure.notifier.view.session.SessionView;
@@ -20,7 +23,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 
-public class WebhookNotifier implements NotifySessionEventPort {
+public class WebhookNotifier implements NotifySessionEventPort, NotifyServiceFeedbackPort {
 
     private static final Logger log = LogManager.getLogger(WebhookNotifier.class);
     private final ObjectMapper mapper = new ObjectMapper();
@@ -66,5 +69,12 @@ public class WebhookNotifier implements NotifySessionEventPort {
 
         sendEvent(session.serviceId(),
                 new EventView(EventType.SESSION, new SessionEvent(SessionEventType.CREATED, sessionView)));
+    }
+
+    @Override
+    public void notifyGotFeedback(@NotNull ServiceId serviceId, @NotNull Feedback feedback) {
+        var feedbackView = new FeedbackView(feedback);
+
+        sendEvent(serviceId, new EventView(EventType.FEEDBACK, feedbackView));
     }
 }
