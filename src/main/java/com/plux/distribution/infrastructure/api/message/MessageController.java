@@ -3,62 +3,48 @@ package com.plux.distribution.infrastructure.api.message;
 import com.plux.distribution.application.dto.integration.SendServiceMessageCommand;
 import com.plux.distribution.application.port.exception.InvalidToken;
 import com.plux.distribution.application.port.in.integration.SendServiceMessageUseCase;
-import io.javalin.Javalin;
+import com.plux.distribution.infrastructure.api.message.request.SendMessageRequest;
 
-import io.javalin.http.Context;
-import io.javalin.http.UnauthorizedResponse;
-import jakarta.validation.Validation;
-import jakarta.validation.Validator;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.jetbrains.annotations.NotNull;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
+@RestController
+@RequestMapping({"/messages"})
 public class MessageController {
-
-    private static final Logger log = LogManager.getLogger(MessageController.class);
-
-    private final Validator validator = Validation.buildDefaultValidatorFactory().getValidator();
-
     private final SendServiceMessageUseCase sendServiceMessageUseCase;
 
-    public MessageController(SendServiceMessageUseCase sendServiceMessageUseCase) {
+    public MessageController(
+            @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection") SendServiceMessageUseCase sendServiceMessageUseCase) {
         this.sendServiceMessageUseCase = sendServiceMessageUseCase;
     }
 
-    public void register(Javalin app) {
-        app.post("messages/", this::post);
-    }
-
-
-    private void post(@NotNull Context ctx) {
-        String authHeader = ctx.header("Authorization");
+    @PostMapping
+    @SecurityRequirement(name = "serviceToken")
+    public ResponseEntity<SendMessageResult> sendMessage(
+            @Parameter(hidden = true)
+            @RequestHeader("Authorization") String authHeader,
+            @Valid @RequestBody SendMessageRequest request
+    ) {
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            throw new UnauthorizedResponse();
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
         String token = authHeader.substring("Bearer ".length()).trim();
 
-        var request = ctx.bodyAsClass(SendMessageRequest.class);
-
-        var violations = validator.validate(request);
-        if (!violations.isEmpty()) {
-            ctx.status(400).json(violations.stream()
-                    .map(v -> v.getPropertyPath() + ": " + v.getMessage())
-                    .toList());
-            return;
-        }
-
-        log.info("Got sending message request: {}", request);
-
         try {
-            var messageId = sendServiceMessageUseCase.send(new SendServiceMessageCommand(
-                    token,
-                    request.chatId(),
-                    request.content().toModel()
-            ));
+            var messageId = sendServiceMessageUseCase.send(
+                    new SendServiceMessageCommand(token, request.chatId(), request.content().toModel()));
 
-            ctx.status(201).json(new SendMessageResult(messageId.value()));
+            return ResponseEntity.status(HttpStatus.CREATED).body(new SendMessageResult(messageId.value()));
         } catch (InvalidToken e) {
-            throw new UnauthorizedResponse("Invalid token");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
     }
 }

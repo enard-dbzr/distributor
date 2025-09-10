@@ -6,7 +6,7 @@
                        https://logging.apache.org/xml/ns/log4j-config-2.xsd">
 
     <Appenders>
-        <Console name="CONSOLE">
+        <Console name="Console">
             <PatternLayout pattern="%d [%t] %5p %c{1.} - %m%n"/>
         </Console>
     </Appenders>
@@ -14,7 +14,7 @@
     <Loggers>
         <Logger name="com.plux.distribution" level="INFO"/>
         <Root level="WARN">
-            <AppenderRef ref="CONSOLE"/>
+            <AppenderRef ref="Console"/>
         </Root>
     </Loggers>
 

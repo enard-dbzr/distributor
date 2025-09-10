@@ -1,6 +1,5 @@
 package com.plux.distribution;
 
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.plux.distribution.application.service.ChatService;
 import com.plux.distribution.application.service.ExecuteActionService;
 import com.plux.distribution.application.service.FlowFeedbackProcessor;
@@ -19,7 +18,6 @@ import com.plux.distribution.application.workflow.frame.FrameRegistry;
 import com.plux.distribution.application.workflow.core.FrameFactory;
 import com.plux.distribution.application.workflow.frame.utils.SequenceFrame;
 import com.plux.distribution.domain.service.ServiceId;
-import com.plux.distribution.infrastructure.api.message.MessageController;
 import com.plux.distribution.infrastructure.notifier.WebhookNotifier;
 import com.plux.distribution.infrastructure.persistence.DbChatRepository;
 import com.plux.distribution.infrastructure.persistence.DbFeedbackRepository;
@@ -34,10 +32,19 @@ import com.plux.distribution.infrastructure.persistence.config.HibernateConfig;
 import com.plux.distribution.infrastructure.telegram.TelegramActionExecutor;
 import com.plux.distribution.infrastructure.telegram.TelegramHandler;
 import com.plux.distribution.infrastructure.telegram.sender.TelegramMessageSender;
-import io.javalin.Javalin;
+import jakarta.servlet.DispatcherType;
+import java.util.EnumSet;
 import java.util.List;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.servlet.FilterHolder;
+import org.eclipse.jetty.servlet.ServletContextHandler;
+import org.eclipse.jetty.servlet.ServletHolder;
+import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
+import org.springframework.web.filter.UrlHandlerFilter;
+import org.springframework.web.servlet.DispatcherServlet;
+import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 import org.telegram.telegrambots.client.okhttp.OkHttpTelegramClient;
 import org.telegram.telegrambots.longpolling.TelegramBotsLongPollingApplication;
 
@@ -101,11 +108,38 @@ public class Main {
         var tgHandler = new TelegramHandler(registerFeedbackService, tgMessageLinker,
                 tgMessageLinker, tgChatLinker, tgChatLinker);
 
-        Javalin apiApp = Javalin.create().start(8080);
-        apiApp.exception(JsonMappingException.class, (e, ctx) ->
-                ctx.status(400).json("JSON mapping error: " + e.getOriginalMessage()));
+        AnnotationConfigWebApplicationContext springContext = new AnnotationConfigWebApplicationContext();
 
-        new MessageController(sendIntegrationMessageService).register(apiApp);
+        springContext.register(AppConfig.class, OpenApiConfig.class);
+        springContext.addBeanFactoryPostProcessor(beanFactory ->
+                beanFactory.registerSingleton("sendServiceMessageUseCase", sendIntegrationMessageService));
+
+        UrlHandlerFilter filter = UrlHandlerFilter.trailingSlashHandler("/**").wrapRequest().build();
+
+        FilterHolder fh = new FilterHolder(filter);
+
+        Server jettyServer = new Server(8080);
+        ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
+        context.setContextPath("/");
+        context.addFilter(fh, "/*", EnumSet.of(DispatcherType.REQUEST));
+
+        context.addServlet(new ServletHolder(new DispatcherServlet(springContext)), "/");
+
+        jettyServer.setHandler(context);
+        springContext.setServletContext(context.getServletContext());
+
+        springContext.refresh();
+
+        RequestMappingHandlerMapping handlerMapping = springContext.getBean(RequestMappingHandlerMapping.class);
+        handlerMapping.getHandlerMethods().forEach((key, value) ->
+                log.debug("Mapped: {} {}", key, value));
+
+        try {
+            jettyServer.start();
+            log.info("Spring Web MVC server started on port 8080 with Jetty");
+        } catch (Exception e) {
+            log.error("Failed to start Jetty: ", e);
+        }
 
         try (var botsApplication = new TelegramBotsLongPollingApplication()) {
             botsApplication.registerBot(botToken, tgHandler);
