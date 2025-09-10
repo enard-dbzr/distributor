@@ -1,6 +1,7 @@
 package com.plux.distribution.application.service.integration;
 
 import com.plux.distribution.application.dto.feedback.dto.Feedback;
+import com.plux.distribution.application.dto.feedback.dto.ResolvedFeedback;
 import com.plux.distribution.application.dto.message.MessageDto;
 import com.plux.distribution.application.port.in.FeedbackProcessor;
 import com.plux.distribution.application.port.in.integration.NotifyServiceFeedbackPort;
@@ -58,8 +59,10 @@ public class IntegrationFeedbackProcessor implements FeedbackProcessor {
             return;
         }
 
+        var resolvedFeedback = new ResolvedFeedback(feedback, message.get().id());
+
         if (message.get().sender() instanceof ServiceParticipant(ServiceId serviceId)) {
-            notifyServiceFeedbackPort.notifyGotFeedback(serviceId, feedback);
+            notifyServiceFeedbackPort.notifyGotFeedback(serviceId, resolvedFeedback);
         }
     }
 }

@@ -2,15 +2,15 @@ package com.plux.distribution.infrastructure.notifier;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.plux.distribution.application.dto.feedback.dto.ResolvedFeedback;
 import com.plux.distribution.application.dto.session.SessionDto;
 import com.plux.distribution.application.port.in.integration.GetWebhookUseCase;
 import com.plux.distribution.application.port.in.integration.NotifyServiceFeedbackPort;
 import com.plux.distribution.application.port.out.session.NotifySessionEventPort;
-import com.plux.distribution.application.dto.feedback.dto.Feedback;
 import com.plux.distribution.domain.service.ServiceId;
 import com.plux.distribution.infrastructure.notifier.view.EventType;
 import com.plux.distribution.infrastructure.notifier.view.EventView;
-import com.plux.distribution.infrastructure.notifier.view.feedback.FeedbackView;
+import com.plux.distribution.infrastructure.notifier.view.feedback.ResolvedFeedbackView;
 import com.plux.distribution.infrastructure.notifier.view.session.SessionEvent;
 import com.plux.distribution.infrastructure.notifier.view.session.SessionEventType;
 import com.plux.distribution.infrastructure.notifier.view.session.SessionView;
@@ -72,8 +72,8 @@ public class WebhookNotifier implements NotifySessionEventPort, NotifyServiceFee
     }
 
     @Override
-    public void notifyGotFeedback(@NotNull ServiceId serviceId, @NotNull Feedback feedback) {
-        var feedbackView = new FeedbackView(feedback);
+    public void notifyGotFeedback(@NotNull ServiceId serviceId, @NotNull ResolvedFeedback resolvedFeedback) {
+        var feedbackView = new ResolvedFeedbackView(resolvedFeedback);
 
         sendEvent(serviceId, new EventView(EventType.FEEDBACK, feedbackView));
     }
