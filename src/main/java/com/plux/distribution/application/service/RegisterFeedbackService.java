@@ -15,19 +15,19 @@ import com.plux.distribution.domain.chat.ChatId;
 import com.plux.distribution.application.dto.feedback.dto.payload.ButtonPayload;
 import com.plux.distribution.application.dto.feedback.dto.payload.MessagePayload;
 import com.plux.distribution.application.dto.feedback.dto.payload.ReplyPayload;
-import com.plux.distribution.domain.message.content.MessageContent;
 import com.plux.distribution.domain.message.content.SimpleMessageContent;
 import com.plux.distribution.domain.message.participant.UnknownServiceParticipant;
 import com.plux.distribution.domain.message.participant.ChatParticipant;
 import com.plux.distribution.domain.message.state.ReceivedState;
 import java.util.Date;
 import java.util.List;
-import java.util.Optional;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 public class RegisterFeedbackService implements RegisterFeedbackUseCase {
 
+    private static final Logger log = LogManager.getLogger(RegisterFeedbackService.class);
     private final CreateMessageUseCase createMessageUseCase;
     private final CreateFeedbackPort createFeedbackPort;
     private final CreateChatUseCase createChatUseCase;
@@ -42,11 +42,10 @@ public class RegisterFeedbackService implements RegisterFeedbackUseCase {
         this.feedbackProcessor = feedbackProcessor;
     }
 
-    private void registerAndProcess(@NotNull CreateFeedbackCommand command, @Nullable MessageContent content) {
+    private void registerAndProcess(@NotNull CreateFeedbackCommand command) {
         var feedback = createFeedbackPort.create(command);
 
-        var feedbackContext = new FeedbackContext(feedback, Optional.ofNullable(content));
-        feedbackProcessor.process(feedbackContext);
+        feedbackProcessor.process(feedback);
     }
 
     @Override
@@ -59,7 +58,7 @@ public class RegisterFeedbackService implements RegisterFeedbackUseCase {
         } catch (ChatIdNotFound e) {
             chatId = createChatUseCase.create().id();
             context.onChatCreated(chatId);
-            System.out.println("Created new chat");
+            log.info("Created new chat with id={}", chatId);
         }
 
         var content = new SimpleMessageContent(context.getText(), List.of());
@@ -73,7 +72,7 @@ public class RegisterFeedbackService implements RegisterFeedbackUseCase {
 
         var createFeedbackCommand = makeFeedbackCommand(context, contentMessage, receiveTime, chatId);
 
-        registerAndProcess(createFeedbackCommand, content);
+        registerAndProcess(createFeedbackCommand);
     }
 
     @Override
@@ -82,7 +81,7 @@ public class RegisterFeedbackService implements RegisterFeedbackUseCase {
 
         var createFeedbackCommand = makeFeedbackCommand(context, receiveTime);
 
-        registerAndProcess(createFeedbackCommand, null);
+        registerAndProcess(createFeedbackCommand);
     }
 
     private static CreateFeedbackCommand makeFeedbackCommand(MessageContext context, MessageDto content,

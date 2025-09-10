@@ -1,5 +1,6 @@
 package com.plux.distribution.application.service;
 
+import com.plux.distribution.application.dto.feedback.dto.Feedback;
 import com.plux.distribution.application.port.in.FeedbackProcessor;
 import com.plux.distribution.application.port.out.workflow.SaveContextPort;
 import com.plux.distribution.application.port.out.workflow.LoadContextPort;
@@ -11,6 +12,7 @@ import com.plux.distribution.application.dto.feedback.dto.payload.ButtonPayload;
 import com.plux.distribution.application.dto.feedback.dto.payload.FeedbackPayloadVisitor;
 import com.plux.distribution.application.dto.feedback.dto.payload.MessagePayload;
 import com.plux.distribution.application.dto.feedback.dto.payload.ReplyPayload;
+import com.plux.distribution.domain.message.content.MessageContent;
 import com.plux.distribution.domain.message.content.MessageContentVisitor;
 import com.plux.distribution.domain.message.content.SimpleMessageContent;
 import java.util.Optional;
@@ -34,14 +36,14 @@ public class FlowFeedbackProcessor implements FeedbackProcessor {
     }
 
     @Override
-    public void process(@NotNull FeedbackContext context) {
-        var chatId = context.feedback().chatId();
+    public void process(@NotNull Feedback feedback) {
+        var chatId = feedback.chatId();
         var frameContext = contextLoader.load(chatId, contextManager, frameFactory)
                 .orElse(new FrameContext(contextManager, frameFactory, chatId));
 
         AtomicBoolean newTriggered = new AtomicBoolean(false);
 
-        createFrameFeedback(context).text().ifPresent(text -> {
+        createFrameFeedback(feedback).text().ifPresent(text -> {
             if (text.equals("/start")) {
                 startRegistration(frameContext);
                 newTriggered.set(true);
@@ -49,7 +51,7 @@ public class FlowFeedbackProcessor implements FeedbackProcessor {
         });
 
         if (!newTriggered.get()) {
-            frameContext.handle(createFrameFeedback(context));
+            frameContext.handle(createFrameFeedback(feedback));
         }
 
         contextSaver.save(frameContext);
@@ -61,11 +63,12 @@ public class FlowFeedbackProcessor implements FeedbackProcessor {
         frameContext.exec();
     }
 
-    private FrameFeedback createFrameFeedback(FeedbackContext context) {
+    private FrameFeedback createFrameFeedback(Feedback feedback) {
         var text = new AtomicReference<String>();
         var buttonTag = new AtomicReference<String>();
+        var content = new AtomicReference<MessageContent>();
 
-        context.feedback().payload().accept(new FeedbackPayloadVisitor<Void>() {
+        feedback.payload().accept(new FeedbackPayloadVisitor<Void>() {
             @Override
             public Void visit(@NotNull ButtonPayload entity) {
                 buttonTag.set(entity.tag());
@@ -74,27 +77,32 @@ public class FlowFeedbackProcessor implements FeedbackProcessor {
 
             @Override
             public Void visit(@NotNull MessagePayload entity) {
+                content.set(entity.content().content());
+                text.set(entity.content().content().accept(new ExtractMessageText()));
                 return null;
             }
 
             @Override
             public Void visit(@NotNull ReplyPayload entity) {
+                content.set(entity.content().content());
+                text.set(entity.content().content().accept(new ExtractMessageText()));
                 return null;
             }
         });
 
-        context.content().ifPresent(message -> {
-            message.accept(new MessageContentVisitor<>() {
+        return new FrameFeedback(
+                feedback,
+                Optional.ofNullable(content.get()),
+                Optional.ofNullable(text.get()),
+                Optional.ofNullable(buttonTag.get())
+        );
+    }
 
-                @Override
-                public Void visit(SimpleMessageContent content) {
-                    text.set(content.text());
-                    return null;
-                }
-            });
-        });
+    private static class ExtractMessageText implements MessageContentVisitor<String> {
 
-        return new FrameFeedback(context.feedback(), context.content(),
-                Optional.ofNullable(text.get()), Optional.ofNullable(buttonTag.get()));
+        @Override
+        public String visit(SimpleMessageContent content) {
+            return content.text().isEmpty() ? null : content.text();
+        }
     }
 }

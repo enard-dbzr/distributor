@@ -1,10 +1,10 @@
 package com.plux.distribution.application.service.integration;
 
+import com.plux.distribution.application.dto.feedback.dto.Feedback;
 import com.plux.distribution.application.dto.message.MessageDto;
 import com.plux.distribution.application.port.in.FeedbackProcessor;
 import com.plux.distribution.application.port.in.integration.NotifyServiceFeedbackPort;
 import com.plux.distribution.application.port.in.message.GetMessageUseCase;
-import com.plux.distribution.application.service.FeedbackContext;
 import com.plux.distribution.application.dto.feedback.dto.payload.ButtonPayload;
 import com.plux.distribution.application.dto.feedback.dto.payload.FeedbackPayloadVisitor;
 import com.plux.distribution.application.dto.feedback.dto.payload.MessagePayload;
@@ -28,8 +28,8 @@ public class IntegrationFeedbackProcessor implements FeedbackProcessor {
     }
 
     @Override
-    public void process(@NotNull FeedbackContext feedback) {
-        var replyTo = feedback.feedback().payload().accept(new FeedbackPayloadVisitor<MessageId>() {
+    public void process(@NotNull Feedback feedback) {
+        var replyTo = feedback.payload().accept(new FeedbackPayloadVisitor<MessageId>() {
             @Override
             public MessageId visit(@NotNull ButtonPayload entity) {
                 return entity.replyTo();
@@ -50,7 +50,7 @@ public class IntegrationFeedbackProcessor implements FeedbackProcessor {
         if (replyTo != null) {
             message.set(getMessageUseCase.getMessage(replyTo));
         } else {
-            getMessageUseCase.getLastOfRecipient(new ChatParticipant(feedback.feedback().chatId()))
+            getMessageUseCase.getLastOfRecipient(new ChatParticipant(feedback.chatId()))
                     .ifPresent(message::set);
         }
 
@@ -59,7 +59,7 @@ public class IntegrationFeedbackProcessor implements FeedbackProcessor {
         }
 
         if (message.get().sender() instanceof ServiceParticipant(ServiceId serviceId)) {
-            notifyServiceFeedbackPort.notifyGotFeedback(serviceId, feedback.feedback());
+            notifyServiceFeedbackPort.notifyGotFeedback(serviceId, feedback);
         }
     }
 }

@@ -1,5 +1,6 @@
 package com.plux.distribution.application.service;
 
+import com.plux.distribution.application.dto.feedback.dto.Feedback;
 import com.plux.distribution.application.port.in.FeedbackProcessor;
 import java.util.List;
 import org.jetbrains.annotations.NotNull;
@@ -12,7 +13,7 @@ public class SequenceFeedbackProcessor implements FeedbackProcessor {
     }
 
     @Override
-    public void process(@NotNull FeedbackContext feedback) {
+    public void process(@NotNull Feedback feedback) {
         for (FeedbackProcessor processor : processors) {
             processor.process(feedback);
         }
