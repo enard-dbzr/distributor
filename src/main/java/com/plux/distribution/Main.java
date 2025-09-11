@@ -111,8 +111,10 @@ public class Main {
         AnnotationConfigWebApplicationContext springContext = new AnnotationConfigWebApplicationContext();
 
         springContext.register(AppConfig.class, OpenApiConfig.class);
-        springContext.addBeanFactoryPostProcessor(beanFactory ->
-                beanFactory.registerSingleton("sendServiceMessageUseCase", sendIntegrationMessageService));
+        springContext.addBeanFactoryPostProcessor(beanFactory -> {
+            beanFactory.registerSingleton("sendServiceMessageUseCase", sendIntegrationMessageService);
+            beanFactory.registerSingleton("createIntegrationUseCase", integrationService);
+        });
 
         UrlHandlerFilter filter = UrlHandlerFilter.trailingSlashHandler("/**").wrapRequest().build();
 

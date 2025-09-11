@@ -7,6 +7,7 @@ import com.plux.distribution.infrastructure.api.message.request.SendMessageReque
 
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,7 +19,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping({"/messages"})
+@Tag(name = "Message")
 public class MessageController {
+
     private final SendServiceMessageUseCase sendServiceMessageUseCase;
 
     public MessageController(

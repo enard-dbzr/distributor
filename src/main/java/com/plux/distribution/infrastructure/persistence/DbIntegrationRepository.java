@@ -1,11 +1,14 @@
 package com.plux.distribution.infrastructure.persistence;
 
-import com.plux.distribution.application.dto.integration.CreateIntegrationCommand;
+import com.plux.distribution.application.dto.integration.IntegrationCommand;
+import com.plux.distribution.application.dto.integration.Integration;
 import com.plux.distribution.application.dto.integration.ServiceToken;
+import com.plux.distribution.application.dto.integration.ServiceWebhook;
 import com.plux.distribution.application.port.exception.InvalidToken;
 import com.plux.distribution.application.port.out.integration.IntegrationRepositoryPort;
 import com.plux.distribution.domain.service.ServiceId;
 import com.plux.distribution.infrastructure.persistence.entity.integration.IntegrationEntity;
+import java.util.List;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.jetbrains.annotations.NotNull;
@@ -19,7 +22,7 @@ public class DbIntegrationRepository implements IntegrationRepositoryPort {
     }
 
     @Override
-    public @NotNull ServiceId create(@NotNull ServiceToken serviceToken, @NotNull CreateIntegrationCommand command) {
+    public @NotNull ServiceId create(@NotNull ServiceToken serviceToken, @NotNull IntegrationCommand command) {
         try (Session session = sessionFactory.openSession()) {
             var transaction = session.beginTransaction();
 
@@ -56,6 +59,47 @@ public class DbIntegrationRepository implements IntegrationRepositoryPort {
             var entity = session.find(IntegrationEntity.class, id.value());
 
             return entity.getWebhookUrl();
+        }
+    }
+
+    @Override
+    public @NotNull List<Integration> getAll() {
+        try (var session = sessionFactory.openSession()) {
+            var query = session.createQuery("from IntegrationEntity", IntegrationEntity.class);
+
+            return query
+                    .stream()
+                    .map(entity ->
+                            new Integration(
+                                    new ServiceId(entity.getId()),
+                                    new ServiceWebhook(entity.getWebhookUrl())
+                            ))
+                    .toList();
+        }
+    }
+
+    @Override
+    public void delete(ServiceId id) {
+        try (var session = sessionFactory.openSession()) {
+            var transaction = session.beginTransaction();
+
+            var entity = session.find(IntegrationEntity.class, id.value());
+            session.remove(entity);
+
+            transaction.commit();
+        }
+    }
+
+    @Override
+    public void put(@NotNull ServiceId id, @NotNull IntegrationCommand command) {
+        try (var session = sessionFactory.openSession()) {
+            var transaction = session.beginTransaction();
+
+            var entity = session.find(IntegrationEntity.class, id.value());
+
+            entity.setWebhookUrl(command.webhook());
+
+            transaction.commit();
         }
     }
 }
