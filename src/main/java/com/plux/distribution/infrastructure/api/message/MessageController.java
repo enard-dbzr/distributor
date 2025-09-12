@@ -5,7 +5,9 @@ import com.plux.distribution.application.port.exception.InvalidToken;
 import com.plux.distribution.application.port.in.integration.SendServiceMessageUseCase;
 import com.plux.distribution.infrastructure.api.message.request.SendMessageRequest;
 
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.security.SecurityRequirement;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -24,13 +26,22 @@ public class MessageController {
 
     private final SendServiceMessageUseCase sendServiceMessageUseCase;
 
-    public MessageController(
-            @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection") SendServiceMessageUseCase sendServiceMessageUseCase) {
+    @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
+    public MessageController(SendServiceMessageUseCase sendServiceMessageUseCase) {
         this.sendServiceMessageUseCase = sendServiceMessageUseCase;
     }
 
     @PostMapping
-    @SecurityRequirement(name = "serviceToken")
+
+    @Operation(
+            summary = "Send message",
+            description = "Send message to specified chat",
+            security = {@SecurityRequirement(name = "serviceToken")},
+            responses = {
+                    @ApiResponse(responseCode = "401"),
+                    @ApiResponse(responseCode = "201", description = "Message was send")
+            }
+    )
     public ResponseEntity<SendMessageResult> sendMessage(
             @Parameter(hidden = true)
             @RequestHeader("Authorization") String authHeader,
