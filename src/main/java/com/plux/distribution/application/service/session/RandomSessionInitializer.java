@@ -38,6 +38,7 @@ public class RandomSessionInitializer implements InitSessionsStrategy {
 
     @Override
     public void initSessions() {
+        // FIXME: Исправить повторную генерацию после открытия всех запланированных сессий
         generateScheduleIfNeeded();
         checkAndStartSessions(LocalDateTime.now());
     }
