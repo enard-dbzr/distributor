@@ -1,10 +1,10 @@
-package com.plux.distribution.application.service;
+package com.plux.distribution.application.service.feedback;
 
 import com.plux.distribution.application.dto.feedback.command.CreateFeedbackCommand;
 import com.plux.distribution.application.dto.message.CreateMessageCommand;
 import com.plux.distribution.application.dto.message.MessageDto;
-import com.plux.distribution.application.port.in.FeedbackProcessor;
-import com.plux.distribution.application.port.in.RegisterFeedbackUseCase;
+import com.plux.distribution.application.port.in.feedback.FeedbackProcessor;
+import com.plux.distribution.application.port.in.feedback.RegisterFeedbackUseCase;
 import com.plux.distribution.application.port.in.chat.CreateChatUseCase;
 import com.plux.distribution.application.dto.feedback.ButtonContext;
 import com.plux.distribution.application.dto.feedback.MessageContext;

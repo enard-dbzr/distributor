@@ -3,11 +3,12 @@ package com.plux.distribution;
 import com.plux.distribution.application.service.ChatService;
 import com.plux.distribution.application.service.ExecuteActionService;
 import com.plux.distribution.application.service.FlowFeedbackProcessor;
-import com.plux.distribution.application.service.SequenceFeedbackProcessor;
+import com.plux.distribution.application.service.feedback.FeedbackResolver;
+import com.plux.distribution.application.service.feedback.SequenceFeedbackProcessor;
 import com.plux.distribution.application.service.integration.IntegrationFeedbackProcessor;
 import com.plux.distribution.application.service.integration.IntegrationService;
 import com.plux.distribution.application.service.MessageService;
-import com.plux.distribution.application.service.RegisterFeedbackService;
+import com.plux.distribution.application.service.feedback.RegisterFeedbackService;
 import com.plux.distribution.application.service.integration.SendServiceMessageService;
 import com.plux.distribution.application.service.session.RandomSessionInitializer;
 import com.plux.distribution.application.service.session.SessionSchedulerRunner;
@@ -85,7 +86,7 @@ public class Main {
         var integrationService = new IntegrationService(integrationRepo);
         var notifier = new WebhookNotifier(integrationService);
         var sendIntegrationMessageService = new SendServiceMessageService(messageService, integrationRepo);
-        var integrationFeedbackProcessor = new IntegrationFeedbackProcessor(messageService, notifier);
+        var integrationFeedbackProcessor = new IntegrationFeedbackProcessor(notifier);
 
         var sessionService = new SessionService(sessionRepo, notifier);
 
@@ -93,8 +94,12 @@ public class Main {
         var frameContextManager = new DefaultContextManager(messageService, executeActionService);
         var flowFeedbackProcessor = new FlowFeedbackProcessor(frameRepo, frameRepo, frameContextManager, frameFactory);
 
-        var mainFeedbackProcessor = new SequenceFeedbackProcessor(
-                List.of(flowFeedbackProcessor, integrationFeedbackProcessor));
+        var mainFeedbackProcessor = new SequenceFeedbackProcessor(List.of(
+                flowFeedbackProcessor,
+                new FeedbackResolver(List.of(
+                        integrationFeedbackProcessor
+                ), messageService)
+        ));
 
         var registerFeedbackService = new RegisterFeedbackService(messageService, feedbackRepo,
                 chatService, mainFeedbackProcessor);

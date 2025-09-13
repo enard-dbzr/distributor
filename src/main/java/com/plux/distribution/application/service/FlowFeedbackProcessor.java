@@ -1,7 +1,7 @@
 package com.plux.distribution.application.service;
 
 import com.plux.distribution.application.dto.feedback.dto.Feedback;
-import com.plux.distribution.application.port.in.FeedbackProcessor;
+import com.plux.distribution.application.port.in.feedback.FeedbackProcessor;
 import com.plux.distribution.application.port.out.workflow.SaveContextPort;
 import com.plux.distribution.application.port.out.workflow.LoadContextPort;
 import com.plux.distribution.application.workflow.core.FrameContext;

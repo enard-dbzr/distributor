@@ -10,7 +10,7 @@ public record ResolvedFeedbackView (
     public ResolvedFeedbackView(ResolvedFeedback resolvedFeedback) {
         this(
                 new FeedbackView(resolvedFeedback.feedback()),
-                resolvedFeedback.replyTo().value()
+                resolvedFeedback.replyTo().id().value()
         );
     }
 }

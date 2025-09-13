@@ -1,4 +1,4 @@
-package com.plux.distribution.application.port.in;
+package com.plux.distribution.application.port.in.feedback;
 
 import com.plux.distribution.application.dto.feedback.ButtonContext;
 import com.plux.distribution.application.dto.feedback.MessageContext;

@@ -1,6 +1,6 @@
 package com.plux.distribution.infrastructure.telegram;
 
-import com.plux.distribution.application.port.in.RegisterFeedbackUseCase;
+import com.plux.distribution.application.port.in.feedback.RegisterFeedbackUseCase;
 import com.plux.distribution.application.dto.feedback.ButtonContext;
 import com.plux.distribution.application.dto.feedback.MessageContext;
 import com.plux.distribution.application.port.exception.ChatIdNotFound;

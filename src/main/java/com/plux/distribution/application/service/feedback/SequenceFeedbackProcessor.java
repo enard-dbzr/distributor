@@ -1,7 +1,7 @@
-package com.plux.distribution.application.service;
+package com.plux.distribution.application.service.feedback;
 
 import com.plux.distribution.application.dto.feedback.dto.Feedback;
-import com.plux.distribution.application.port.in.FeedbackProcessor;
+import com.plux.distribution.application.port.in.feedback.FeedbackProcessor;
 import java.util.List;
 import org.jetbrains.annotations.NotNull;
 
