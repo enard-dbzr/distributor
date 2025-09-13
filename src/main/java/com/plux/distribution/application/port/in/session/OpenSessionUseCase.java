@@ -4,7 +4,7 @@ import com.plux.distribution.domain.chat.ChatId;
 import com.plux.distribution.domain.service.ServiceId;
 import org.jetbrains.annotations.NotNull;
 
-public interface CreateSessionUseCase {
+public interface OpenSessionUseCase {
 
-    void create(@NotNull ChatId chatId, @NotNull ServiceId serviceId);
+    void open(@NotNull ChatId chatId, @NotNull ServiceId serviceId);
 }

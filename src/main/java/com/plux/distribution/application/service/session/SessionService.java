@@ -2,29 +2,39 @@ package com.plux.distribution.application.service.session;
 
 import com.plux.distribution.application.dto.session.CreateSessionCommand;
 import com.plux.distribution.application.dto.session.SessionDto;
-import com.plux.distribution.application.port.in.session.CreateSessionUseCase;
+import com.plux.distribution.application.port.in.session.OpenSessionUseCase;
 import com.plux.distribution.application.port.out.session.NotifySessionEventPort;
-import com.plux.distribution.application.port.out.session.SaveSessionPort;
+import com.plux.distribution.application.port.out.session.SessionRepositoryPort;
 import com.plux.distribution.domain.chat.ChatId;
 import com.plux.distribution.domain.service.ServiceId;
 import com.plux.distribution.domain.session.SessionState;
 import java.util.Date;
+import java.util.List;
 import org.jetbrains.annotations.NotNull;
 
-public class SessionService implements CreateSessionUseCase {
+public class SessionService implements OpenSessionUseCase {
 
-    private final @NotNull SaveSessionPort saveSessionPort;
+    private final @NotNull SessionRepositoryPort sessionRepositoryPort;
     private final @NotNull NotifySessionEventPort notifySessionEventPort;
 
-    public SessionService(@NotNull SaveSessionPort saveSessionPort,
+    public SessionService(@NotNull SessionRepositoryPort sessionRepositoryPort,
             @NotNull NotifySessionEventPort notifySessionEventPort) {
-        this.saveSessionPort = saveSessionPort;
+        this.sessionRepositoryPort = sessionRepositoryPort;
         this.notifySessionEventPort = notifySessionEventPort;
     }
 
     @Override
-    public void create(@NotNull ChatId chatId, @NotNull ServiceId serviceId) {
-        var session = saveSessionPort.create(new CreateSessionCommand(
+    public void open(@NotNull ChatId chatId, @NotNull ServiceId serviceId) {
+        var aliveSession = sessionRepositoryPort.findWithStates(
+                chatId, serviceId, List.of(SessionState.OPEN, SessionState.STARTED)
+        );
+
+        if (aliveSession != null) {
+            notifySessionEventPort.notifyCreated(new SessionDto(aliveSession));
+            return;
+        }
+
+        var session = sessionRepositoryPort.create(new CreateSessionCommand(
                 chatId,
                 serviceId,
                 SessionState.OPEN,

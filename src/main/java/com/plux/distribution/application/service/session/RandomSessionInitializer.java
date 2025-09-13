@@ -1,7 +1,7 @@
 package com.plux.distribution.application.service.session;
 
 import com.plux.distribution.application.port.in.chat.GetAllChatsUseCase;
-import com.plux.distribution.application.port.in.session.CreateSessionUseCase;
+import com.plux.distribution.application.port.in.session.OpenSessionUseCase;
 import com.plux.distribution.application.port.in.session.InitSessionsStrategy;
 import com.plux.distribution.domain.chat.ChatId;
 import com.plux.distribution.domain.service.ServiceId;
@@ -21,17 +21,17 @@ public class RandomSessionInitializer implements InitSessionsStrategy {
 
     private static final Logger log = LogManager.getLogger(RandomSessionInitializer.class);
 
-    private final @NotNull CreateSessionUseCase createSessionUseCase;
+    private final @NotNull OpenSessionUseCase openSessionUseCase;
     private final @NotNull GetAllChatsUseCase getAllChatsUseCase;
     private final @NotNull ServiceId serviceId;  // TODO: Remove this mock
 
     private final Map<ChatId, List<LocalDateTime>> scheduledSessions = new ConcurrentHashMap<>();
     private final Random random = new Random();
 
-    public RandomSessionInitializer(@NotNull CreateSessionUseCase createSessionUseCase,
+    public RandomSessionInitializer(@NotNull OpenSessionUseCase openSessionUseCase,
             @NotNull GetAllChatsUseCase getAllChatsUseCase,
             @NotNull ServiceId serviceId) {
-        this.createSessionUseCase = createSessionUseCase;
+        this.openSessionUseCase = openSessionUseCase;
         this.getAllChatsUseCase = getAllChatsUseCase;
         this.serviceId = serviceId;
     }
@@ -73,7 +73,7 @@ public class RandomSessionInitializer implements InitSessionsStrategy {
             while (it.hasNext()) {
                 var scheduledTime = it.next();
                 if (scheduledTime.isBefore(now)) {
-                    createSessionUseCase.create(chatId, serviceId);
+                    openSessionUseCase.open(chatId, serviceId);
                     it.remove();
                 }
             }
