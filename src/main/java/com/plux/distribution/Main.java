@@ -43,6 +43,7 @@ import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.FilterHolder;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
+import org.slf4j.bridge.SLF4JBridgeHandler;
 import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
 import org.springframework.web.filter.UrlHandlerFilter;
 import org.springframework.web.servlet.DispatcherServlet;
@@ -55,6 +56,9 @@ public class Main {
     private static final Logger log = LogManager.getLogger(Main.class);
 
     public static void main(String[] args) {
+        SLF4JBridgeHandler.removeHandlersForRootLogger();
+        SLF4JBridgeHandler.install();
+
         var botToken = System.getenv("TG_TOKEN");
 
         var hibernateConfig = new HibernateConfig(
