@@ -5,6 +5,8 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.plux.distribution.domain.message.attachment.AttachmentVisitor;
 import com.plux.distribution.domain.message.attachment.ButtonAttachment;
 import com.plux.distribution.domain.message.attachment.MessageAttachment;
+import io.swagger.v3.oas.annotations.media.DiscriminatorMapping;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.jetbrains.annotations.NotNull;
 
 @JsonTypeInfo(
@@ -15,6 +17,11 @@ import org.jetbrains.annotations.NotNull;
 @JsonSubTypes({
         @JsonSubTypes.Type(value = ButtonAttachmentView.class, name = "button"),
 })
+@Schema(
+        discriminatorMapping = {
+                @DiscriminatorMapping(schema = ButtonAttachmentView.class, value = "button")
+        }
+)
 public sealed interface MessageAttachmentView permits ButtonAttachmentView {
     static @NotNull MessageAttachmentView create(@NotNull MessageAttachment attachment) {
         return attachment.accept(new AttachmentVisitor<>() {

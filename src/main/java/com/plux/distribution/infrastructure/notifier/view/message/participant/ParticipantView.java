@@ -8,6 +8,8 @@ import com.plux.distribution.domain.message.participant.ParticipantVisitor;
 import com.plux.distribution.domain.message.participant.SelfParticipant;
 import com.plux.distribution.domain.message.participant.ServiceParticipant;
 import com.plux.distribution.domain.message.participant.UnknownServiceParticipant;
+import io.swagger.v3.oas.annotations.media.DiscriminatorMapping;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.jetbrains.annotations.NotNull;
 
 @JsonTypeInfo(
@@ -21,6 +23,14 @@ import org.jetbrains.annotations.NotNull;
         @JsonSubTypes.Type(value = SelfParticipantView.class, name = "service"),
         @JsonSubTypes.Type(value = UnkServiceParticipantView.class, name = "unknown_service"),
 })
+@Schema(
+        discriminatorMapping = {
+                @DiscriminatorMapping(schema = ChatParticipantView.class, value = "chat"),
+                @DiscriminatorMapping(schema = SelfParticipantView.class, value = "self"),
+                @DiscriminatorMapping(schema = SelfParticipantView.class, value = "service"),
+                @DiscriminatorMapping(schema = UnkServiceParticipantView.class, value = "unknown_service"),
+        }
+)
 public sealed interface ParticipantView permits ChatParticipantView, SelfParticipantView, ServiceParticipantView,
         UnkServiceParticipantView {
 

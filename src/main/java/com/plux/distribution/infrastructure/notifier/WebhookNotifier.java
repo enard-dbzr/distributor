@@ -14,6 +14,13 @@ import com.plux.distribution.infrastructure.notifier.view.feedback.ResolvedFeedb
 import com.plux.distribution.infrastructure.notifier.view.session.SessionEvent;
 import com.plux.distribution.infrastructure.notifier.view.session.SessionEventType;
 import com.plux.distribution.infrastructure.notifier.view.session.SessionView;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Webhook;
+import io.swagger.v3.oas.annotations.Webhooks;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.parameters.RequestBody;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -22,7 +29,24 @@ import java.net.http.HttpResponse;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
+import org.springframework.stereotype.Component;
 
+@Webhooks({
+        @Webhook(
+                name = "events",
+                operation = @Operation(
+                        summary = "Service(integration) events webhook",
+                        requestBody = @RequestBody(
+                                required = true,
+                                content = @Content(schema = @Schema(implementation = EventView.class))
+                        ),
+                        responses = {
+                                @ApiResponse(responseCode = "200")
+                        }
+                )
+        )
+})
+@Component
 public class WebhookNotifier implements NotifySessionEventPort, NotifyServiceFeedbackPort {
 
     private static final Logger log = LogManager.getLogger(WebhookNotifier.class);
@@ -31,6 +55,7 @@ public class WebhookNotifier implements NotifySessionEventPort, NotifyServiceFee
 
     private final GetWebhookUseCase getWebhookUseCase;
 
+    @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
     public WebhookNotifier(GetWebhookUseCase getWebhookUseCase) {
         this.getWebhookUseCase = getWebhookUseCase;
     }

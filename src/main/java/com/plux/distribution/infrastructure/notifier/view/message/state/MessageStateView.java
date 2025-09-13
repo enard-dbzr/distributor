@@ -7,6 +7,8 @@ import com.plux.distribution.domain.message.state.MessageStateVisitor;
 import com.plux.distribution.domain.message.state.PendingState;
 import com.plux.distribution.domain.message.state.ReceivedState;
 import com.plux.distribution.domain.message.state.TransferredState;
+import io.swagger.v3.oas.annotations.media.DiscriminatorMapping;
+import io.swagger.v3.oas.annotations.media.Schema;
 import org.jetbrains.annotations.NotNull;
 
 @JsonTypeInfo(
@@ -19,6 +21,13 @@ import org.jetbrains.annotations.NotNull;
         @JsonSubTypes.Type(value = ReceivedStateView.class, name = "received"),
         @JsonSubTypes.Type(value = TransferredStateView.class, name = "transferred"),
 })
+@Schema(
+        discriminatorMapping = {
+                @DiscriminatorMapping(schema = PendingStateView.class, value = "pending"),
+                @DiscriminatorMapping(schema = ReceivedStateView.class, value = "received"),
+                @DiscriminatorMapping(schema = TransferredStateView.class, value = "transferred"),
+        }
+)
 public sealed interface MessageStateView permits PendingStateView, ReceivedStateView, TransferredStateView {
     static @NotNull MessageStateView create(@NotNull MessageState state) {
         return state.accept(new MessageStateVisitor<>() {
