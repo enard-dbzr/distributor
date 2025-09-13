@@ -122,6 +122,7 @@ public class Main {
         springContext.addBeanFactoryPostProcessor(beanFactory -> {
             beanFactory.registerSingleton("sendServiceMessageUseCase", sendIntegrationMessageService);
             beanFactory.registerSingleton("createIntegrationUseCase", integrationService);
+            beanFactory.registerSingleton("executeActionUseCase", executeActionService);
         });
 
         UrlHandlerFilter filter = UrlHandlerFilter.trailingSlashHandler("/**").wrapRequest().build();
