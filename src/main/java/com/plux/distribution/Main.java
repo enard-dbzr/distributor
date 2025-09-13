@@ -11,6 +11,7 @@ import com.plux.distribution.application.service.MessageService;
 import com.plux.distribution.application.service.feedback.RegisterFeedbackService;
 import com.plux.distribution.application.service.integration.SendServiceMessageService;
 import com.plux.distribution.application.service.session.RandomSessionInitializer;
+import com.plux.distribution.application.service.session.SessionFeedbackProcessor;
 import com.plux.distribution.application.service.session.SessionSchedulerRunner;
 import com.plux.distribution.application.service.session.SessionService;
 import com.plux.distribution.application.service.UserService;
@@ -89,6 +90,7 @@ public class Main {
         var integrationFeedbackProcessor = new IntegrationFeedbackProcessor(notifier);
 
         var sessionService = new SessionService(sessionRepo, notifier);
+        var sessionFeedbackProcessor = new SessionFeedbackProcessor(sessionService);
 
         var frameFactory = makeFrameFactory(userService, chatService);
         var frameContextManager = new DefaultContextManager(messageService, executeActionService);
@@ -97,6 +99,7 @@ public class Main {
         var mainFeedbackProcessor = new SequenceFeedbackProcessor(List.of(
                 flowFeedbackProcessor,
                 new FeedbackResolver(List.of(
+                        sessionFeedbackProcessor,
                         integrationFeedbackProcessor
                 ), messageService)
         ));
