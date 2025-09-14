@@ -4,10 +4,13 @@ import com.plux.distribution.application.port.in.session.InitSessionsStrategy;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 
 public class SessionSchedulerRunner {
 
+    private static final Logger log = LogManager.getLogger(SessionSchedulerRunner.class);
     private final @NotNull InitSessionsStrategy initSessionsStrategy;
 
     private final long tickIntervalSeconds;
@@ -19,7 +22,11 @@ public class SessionSchedulerRunner {
     }
 
     public void tick() {
-        initSessionsStrategy.initSessions();
+        try {
+            initSessionsStrategy.initSessions();
+        } catch (Exception e) {
+            log.error("Session scheduling failed", e);
+        }
     }
 
     public void start() {
