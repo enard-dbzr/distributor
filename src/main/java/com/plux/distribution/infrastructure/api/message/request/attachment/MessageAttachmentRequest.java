@@ -1,4 +1,4 @@
-package com.plux.distribution.infrastructure.api.message.request;
+package com.plux.distribution.infrastructure.api.message.request.attachment;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonSubTypes.Type;

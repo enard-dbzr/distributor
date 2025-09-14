@@ -1,4 +1,4 @@
-package com.plux.distribution.infrastructure.api.message.request;
+package com.plux.distribution.infrastructure.api.message.request.attachment;
 
 import com.plux.distribution.domain.message.attachment.ButtonAttachment;
 import com.plux.distribution.domain.message.attachment.MessageAttachment;

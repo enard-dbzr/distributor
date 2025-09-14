@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.33.xsd"
+        objectQuotingStrategy="QUOTE_ONLY_RESERVED_WORDS">
+    <changeSet id="1757869558619-1" author="enard">
+        <addColumn tableName="message_contents">
+            <column name="original_id" type="BIGINT"/>
+            <column name="reply_to" type="BIGINT"/>
+        </addColumn>
+    </changeSet>
+    <changeSet id="1757869558619-3" author="enard">
+        <addForeignKeyConstraint baseColumnNames="original_id" baseTableName="message_contents"
+                constraintName="FK_MESSAGE_CONTENTS_ON_ORIGINAL" referencedColumnNames="id"
+                referencedTableName="message_contents"/>
+    </changeSet>
+
+</databaseChangeLog>

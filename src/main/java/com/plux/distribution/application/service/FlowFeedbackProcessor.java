@@ -14,6 +14,7 @@ import com.plux.distribution.application.dto.feedback.dto.payload.MessagePayload
 import com.plux.distribution.application.dto.feedback.dto.payload.ReplyPayload;
 import com.plux.distribution.domain.message.content.MessageContent;
 import com.plux.distribution.domain.message.content.MessageContentVisitor;
+import com.plux.distribution.domain.message.content.ReplyMessageContent;
 import com.plux.distribution.domain.message.content.SimpleMessageContent;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -103,6 +104,11 @@ public class FlowFeedbackProcessor implements FeedbackProcessor {
         @Override
         public String visit(SimpleMessageContent content) {
             return content.text().isEmpty() ? null : content.text();
+        }
+
+        @Override
+        public String visit(ReplyMessageContent content) {
+            return content.original().accept(this);
         }
     }
 }

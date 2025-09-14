@@ -2,6 +2,7 @@ package com.plux.distribution.infrastructure.persistence.entity.message.content;
 
 import com.plux.distribution.domain.message.content.MessageContent;
 import com.plux.distribution.domain.message.content.MessageContentVisitor;
+import com.plux.distribution.domain.message.content.ReplyMessageContent;
 import com.plux.distribution.domain.message.content.SimpleMessageContent;
 import jakarta.persistence.DiscriminatorColumn;
 import jakarta.persistence.DiscriminatorType;
@@ -28,6 +29,11 @@ public abstract class MessageContentEntity {
             @Override
             public MessageContentEntity visit(SimpleMessageContent content) {
                 return SimpleContentEntity.fromModel(content);
+            }
+
+            @Override
+            public MessageContentEntity visit(ReplyMessageContent content) {
+                return ReplyContentEntity.fromModel(content);
             }
         });
     }

@@ -2,6 +2,7 @@ package com.plux.distribution.infrastructure.telegram.sender;
 
 import com.plux.distribution.application.port.out.specific.telegram.chat.GetTgChatIdPort;
 import com.plux.distribution.application.port.out.MessageSenderPort;
+import com.plux.distribution.application.port.out.specific.telegram.message.GetTgMessageIdPort;
 import com.plux.distribution.application.port.out.specific.telegram.message.TgMessageGlobalId;
 import com.plux.distribution.application.port.out.specific.telegram.message.TgMessageLinker;
 import com.plux.distribution.domain.message.MessageId;
@@ -16,13 +17,16 @@ public class TelegramMessageSender implements MessageSenderPort {
     private final @NotNull TelegramClient client;
     private final @NotNull GetTgChatIdPort getTgChatIdPort;
     private final @NotNull TgMessageLinker tgMessageLinker;
+    private final @NotNull GetTgMessageIdPort getTgMessageIdPort;
 
 
     public TelegramMessageSender(@NotNull TelegramClient client,
-            @NotNull GetTgChatIdPort getTgChatIdPort, @NotNull TgMessageLinker tgMessageLinker) {
+            @NotNull GetTgChatIdPort getTgChatIdPort, @NotNull TgMessageLinker tgMessageLinker,
+            @NotNull GetTgMessageIdPort getTgMessageIdPort) {
         this.client = client;
         this.getTgChatIdPort = getTgChatIdPort;
         this.tgMessageLinker = tgMessageLinker;
+        this.getTgMessageIdPort = getTgMessageIdPort;
     }
 
     @Override
@@ -37,7 +41,7 @@ public class TelegramMessageSender implements MessageSenderPort {
 
         context.sendMessageBuilder.chatId(tgId);
 
-        var renderer = new ContentRenderer(context);
+        var renderer = new ContentRenderer(context, getTgMessageIdPort);
 
         messageContent.accept(renderer);
 

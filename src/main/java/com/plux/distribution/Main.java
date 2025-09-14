@@ -79,7 +79,7 @@ public class Main {
         var tgMessageLinker = new DbTgMessageLinker(hibernateConfig.getSessionFactory());
         var tgClient = new OkHttpTelegramClient(botToken);
 
-        var sender = new TelegramMessageSender(tgClient, tgChatLinker, tgMessageLinker);
+        var sender = new TelegramMessageSender(tgClient, tgChatLinker, tgMessageLinker, tgMessageLinker);
         var executor = new TelegramActionExecutor(tgClient, tgChatLinker, tgMessageLinker);
 
         var messageService = new MessageService(sender, messageRepo, messageRepo, messageRepo);
