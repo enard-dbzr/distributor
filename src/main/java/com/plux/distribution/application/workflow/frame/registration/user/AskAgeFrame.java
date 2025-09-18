@@ -1,11 +1,11 @@
 package com.plux.distribution.application.workflow.frame.registration.user;
 
-import com.plux.distribution.application.workflow.core.Frame;
-import com.plux.distribution.application.workflow.core.FrameContext;
-import com.plux.distribution.application.workflow.core.FrameFeedback;
+import com.plux.distribution.domain.workflow.Frame;
+import com.plux.distribution.domain.workflow.FrameContext;
+import com.plux.distribution.domain.workflow.FrameFeedback;
 import com.plux.distribution.application.workflow.frame.utils.InfoMessageFrame;
+import com.plux.distribution.application.workflow.frame.utils.LastMessageData;
 import com.plux.distribution.domain.action.ClearButtonsAction;
-import com.plux.distribution.domain.message.MessageId;
 import com.plux.distribution.domain.message.attachment.ButtonAttachment;
 import com.plux.distribution.domain.message.content.SimpleMessageContent;
 import java.util.List;
@@ -14,18 +14,13 @@ import org.jetbrains.annotations.NotNull;
 public class AskAgeFrame implements Frame {
 
     @Override
-    public @NotNull String getKey() {
-        return "registration.user.ask_age";
-    }
-
-    @Override
     public void exec(@NotNull FrameContext context) {
         var messageId = context.send(new SimpleMessageContent(
                 "Сколько тебе лет? 😉",
                 List.of(new ButtonAttachment("Пропустить", "skip"))
         ));
 
-        context.getData().put(AskAgeMessageId.class, new AskAgeMessageId(messageId));
+        context.getData().put(LastMessageData.class, new LastMessageData(messageId));
     }
 
     @Override
@@ -52,21 +47,17 @@ public class AskAgeFrame implements Frame {
     }
 
     private void goNext(@NotNull FrameContext context) {
-        context.changeState();
-
-        if (context.getData().contains(AskAgeMessageId.class)) {
+        if (context.getData().contains(LastMessageData.class)) {
             context.dispatch(
                     new ClearButtonsAction(
                             context.getChatId(),
-                            context.getData().get(AskAgeMessageId.class).messageId()
+                            context.getData().get(LastMessageData.class).messageId()
                     )
             );
 
-            context.getData().remove(AskAgeMessageId.class);
+            context.getData().remove(LastMessageData.class);
         }
-    }
 
-    private record AskAgeMessageId(MessageId messageId) {
-
+        context.changeState();
     }
 }

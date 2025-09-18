@@ -1,5 +1,6 @@
 package com.plux.distribution.application.workflow.frame.registration.user;
 
+import com.plux.distribution.application.service.workflow.JsonDataSerializer;
 import com.plux.distribution.domain.user.UserInfo;
 import org.apache.commons.validator.routines.EmailValidator;
 
@@ -15,10 +16,12 @@ public class UserBuilder {
         this.name = name;
     }
 
+    @SuppressWarnings("unused")
     public String getName() {
         return name;
     }
 
+    @SuppressWarnings("unused")
     public String getEmail() {
         return email;
     }
@@ -30,6 +33,7 @@ public class UserBuilder {
         this.email = email;
     }
 
+    @SuppressWarnings("unused")
     public Integer getAge() {
         return age;
     }
@@ -38,6 +42,7 @@ public class UserBuilder {
         this.age = age;
     }
 
+    @SuppressWarnings("unused")
     public String getCity() {
         return city;
     }
@@ -46,6 +51,7 @@ public class UserBuilder {
         this.city = city;
     }
 
+    @SuppressWarnings("unused")
     public String getHobby() {
         return hobby;
     }
@@ -60,5 +66,12 @@ public class UserBuilder {
         }
 
         return new UserInfo(name, email, age, city, hobby);
+    }
+
+    public static class Serializer extends JsonDataSerializer<UserBuilder> {
+
+        public Serializer() {
+            super(UserBuilder.class);
+        }
     }
 }

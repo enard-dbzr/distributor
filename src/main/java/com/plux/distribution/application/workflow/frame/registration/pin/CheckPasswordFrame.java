@@ -1,9 +1,9 @@
 package com.plux.distribution.application.workflow.frame.registration.pin;
 
-import com.plux.distribution.application.workflow.core.FrameFeedback;
+import com.plux.distribution.domain.workflow.FrameFeedback;
 import com.plux.distribution.domain.message.content.SimpleMessageContent;
-import com.plux.distribution.application.workflow.core.Frame;
-import com.plux.distribution.application.workflow.core.FrameContext;
+import com.plux.distribution.domain.workflow.Frame;
+import com.plux.distribution.domain.workflow.FrameContext;
 import java.util.List;
 import org.jetbrains.annotations.NotNull;
 
@@ -13,11 +13,6 @@ public class CheckPasswordFrame implements Frame {
 
     public CheckPasswordFrame(String password) {
         this.password = password;
-    }
-
-    @Override
-    public @NotNull String getKey() {
-        return "registration.check_pin";
     }
 
     @Override
@@ -31,9 +26,11 @@ public class CheckPasswordFrame implements Frame {
     public void handle(@NotNull FrameContext context, @NotNull FrameFeedback feedback) {
         feedback.text().ifPresent(text -> {
             if (text.equals(password)) {
-                context.changeState(context.getFactory().get("registration.check_pin.correct"));
+                context.changeState(new CorrectPasswordFrame(), true);
             } else {
-                context.changeState(context.getFactory().get("registration.check_pin.incorrect"));
+                context.changeState(this, false);
+                context.push(new InorrectPasswordFrame(), true);
+                context.exec();
             }
         });
     }

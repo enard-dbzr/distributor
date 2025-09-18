@@ -2,7 +2,7 @@ package com.plux.distribution;
 
 import com.plux.distribution.application.service.ChatService;
 import com.plux.distribution.application.service.ExecuteActionService;
-import com.plux.distribution.application.service.FlowFeedbackProcessor;
+import com.plux.distribution.application.service.workflow.FlowFeedbackProcessor;
 import com.plux.distribution.application.service.feedback.FeedbackResolver;
 import com.plux.distribution.application.service.feedback.SequenceFeedbackProcessor;
 import com.plux.distribution.application.service.integration.IntegrationFeedbackProcessor;
@@ -16,9 +16,14 @@ import com.plux.distribution.application.service.session.SessionSchedulerRunner;
 import com.plux.distribution.application.service.session.SessionService;
 import com.plux.distribution.application.service.UserService;
 import com.plux.distribution.application.workflow.DefaultContextManager;
-import com.plux.distribution.application.workflow.frame.FrameRegistry;
-import com.plux.distribution.application.workflow.core.FrameFactory;
+import com.plux.distribution.application.service.workflow.DataRegistry;
+import com.plux.distribution.application.service.workflow.FrameRegistry;
+import com.plux.distribution.application.workflow.frame.DefaultDataRegistry;
+import com.plux.distribution.application.workflow.frame.DefaultFrameRegistry;
+import com.plux.distribution.application.workflow.frame.registration.user.UserBuilder;
+import com.plux.distribution.application.workflow.frame.utils.LastMessageData;
 import com.plux.distribution.application.workflow.frame.utils.SequenceFrame;
+import com.plux.distribution.application.service.workflow.WorkflowService;
 import com.plux.distribution.domain.service.ServiceId;
 import com.plux.distribution.infrastructure.notifier.WebhookNotifier;
 import com.plux.distribution.infrastructure.persistence.DbChatRepository;
@@ -96,9 +101,11 @@ public class Main {
         var sessionService = new SessionService(sessionRepo, notifier);
         var sessionFeedbackProcessor = new SessionFeedbackProcessor(sessionService);
 
-        var frameFactory = makeFrameFactory(userService, chatService);
+        var frameRegistry = makeFrameRegistry(userService, chatService);
+        var dataRegistry = makeDataRegistry();
         var frameContextManager = new DefaultContextManager(messageService, executeActionService);
-        var flowFeedbackProcessor = new FlowFeedbackProcessor(frameRepo, frameRepo, frameContextManager, frameFactory);
+        var workflowService = new WorkflowService(frameRegistry, dataRegistry, frameRepo, frameContextManager);
+        var flowFeedbackProcessor = new FlowFeedbackProcessor(workflowService, frameRegistry.get("flow.registration"));
 
         var mainFeedbackProcessor = new SequenceFeedbackProcessor(List.of(
                 flowFeedbackProcessor,
@@ -166,33 +173,60 @@ public class Main {
         }
     }
 
-    private static FrameFactory makeFrameFactory(UserService userService, ChatService chatService) {
+    private static FrameRegistry makeFrameRegistry(UserService userService, ChatService chatService) {
         var pin = System.getenv("BOT_PIN");
 
-        var factory = new FrameRegistry();
+        var factory = new DefaultFrameRegistry();
 
-        factory.register(new com.plux.distribution.application.workflow.frame.registration.hello.HelloFrame());
-        factory.register(new com.plux.distribution.application.workflow.frame.registration.hello.PostHelloFrame());
-        factory.register(new com.plux.distribution.application.workflow.frame.registration.pin.CheckPasswordFrame(pin));
-        factory.register(new com.plux.distribution.application.workflow.frame.registration.pin.CorrectPasswordFrame());
-        factory.register(new com.plux.distribution.application.workflow.frame.registration.pin.InorrectPasswordFrame());
-        factory.register(
-                new com.plux.distribution.application.workflow.frame.registration.user.StartUserBuildingFrame());
-        factory.register(new com.plux.distribution.application.workflow.frame.registration.user.AskNameFrame());
-        factory.register(new com.plux.distribution.application.workflow.frame.registration.user.AskEmailFrame());
-        factory.register(new com.plux.distribution.application.workflow.frame.registration.user.AskAgeFrame());
-        factory.register(new com.plux.distribution.application.workflow.frame.registration.user.AskCityFrame());
-        factory.register(new com.plux.distribution.application.workflow.frame.registration.user.AskHobbyFrame());
-        factory.register(
-                new com.plux.distribution.application.workflow.frame.registration.user.FinalizeFrame(userService,
-                        chatService));
+        factory.register("registration.hello_frame",
+                new com.plux.distribution.application.workflow.frame.registration.hello.HelloFrame());
+        factory.register("registration.post_hello",
+                new com.plux.distribution.application.workflow.frame.registration.hello.PostHelloFrame());
 
-        factory.register(new SequenceFrame("flow.registration", List.of(
+        factory.register("registration.check_pin",
+                new com.plux.distribution.application.workflow.frame.registration.pin.CheckPasswordFrame(pin));
+        factory.register("registration.check_pin.correct",
+                new com.plux.distribution.application.workflow.frame.registration.pin.CorrectPasswordFrame());
+        factory.register("registration.check_pin.incorrect",
+                new com.plux.distribution.application.workflow.frame.registration.pin.InorrectPasswordFrame());
+
+        factory.register("registration.user.ask_name",
+                new com.plux.distribution.application.workflow.frame.registration.user.AskNameFrame());
+        factory.register("registration.user.ask_email",
+                new com.plux.distribution.application.workflow.frame.registration.user.AskEmailFrame());
+        factory.register("registration.user.ask_age",
+                new com.plux.distribution.application.workflow.frame.registration.user.AskAgeFrame());
+        factory.register("registration.user.ask_city",
+                new com.plux.distribution.application.workflow.frame.registration.user.AskCityFrame());
+        factory.register("registration.user.ask_hobby",
+                new com.plux.distribution.application.workflow.frame.registration.user.AskHobbyFrame());
+        factory.register("registration.user.finalize",
+                new com.plux.distribution.application.workflow.frame.registration.user.FinalizeFrame(
+                        userService, chatService
+                )
+        );
+        factory.register(
+                "registration.user.start_building",
+                new com.plux.distribution.application.workflow.frame.registration.user.StartUserBuildingFrame(
+                        factory.get("registration.user.finalize")
+                )
+        );
+
+        factory.register("flow.registration", new SequenceFrame(List.of(
                 factory.get("registration.hello_frame"),
                 factory.get("registration.check_pin"),
                 factory.get("registration.user.start_building")
         )));
 
         return factory;
+    }
+
+    private static DataRegistry makeDataRegistry() {
+        var registry = new DefaultDataRegistry();
+
+        registry.register("utils.last_message", LastMessageData.class, new LastMessageData.Serializer());
+        registry.register("registration.user_builder", UserBuilder.class, new UserBuilder.Serializer());
+
+        return registry;
     }
 }

@@ -1,13 +1,11 @@
-package com.plux.distribution.application.service;
+package com.plux.distribution.application.service.workflow;
 
 import com.plux.distribution.application.dto.feedback.dto.Feedback;
 import com.plux.distribution.application.port.in.feedback.FeedbackProcessor;
-import com.plux.distribution.application.port.out.workflow.SaveContextPort;
-import com.plux.distribution.application.port.out.workflow.LoadContextPort;
-import com.plux.distribution.application.workflow.core.FrameContext;
-import com.plux.distribution.application.workflow.core.FrameContextManager;
-import com.plux.distribution.application.workflow.core.FrameFactory;
-import com.plux.distribution.application.workflow.core.FrameFeedback;
+import com.plux.distribution.application.port.in.workflow.WorkflowUseCase;
+import com.plux.distribution.domain.workflow.Frame;
+import com.plux.distribution.domain.workflow.FrameContext;
+import com.plux.distribution.domain.workflow.FrameFeedback;
 import com.plux.distribution.application.dto.feedback.dto.payload.ButtonPayload;
 import com.plux.distribution.application.dto.feedback.dto.payload.FeedbackPayloadVisitor;
 import com.plux.distribution.application.dto.feedback.dto.payload.MessagePayload;
@@ -23,24 +21,17 @@ import org.jetbrains.annotations.NotNull;
 
 public class FlowFeedbackProcessor implements FeedbackProcessor {
 
-    private final LoadContextPort contextLoader;
-    private final SaveContextPort contextSaver;
-    private final FrameContextManager contextManager;
-    private final FrameFactory frameFactory;
+    private final WorkflowUseCase workflowUseCase;
+    private final Frame registrationWorkflow;
 
-    public FlowFeedbackProcessor(LoadContextPort contextLoader, SaveContextPort contextSaver,
-            FrameContextManager contextManager, FrameFactory frameFactory) {
-        this.contextLoader = contextLoader;
-        this.contextSaver = contextSaver;
-        this.contextManager = contextManager;
-        this.frameFactory = frameFactory;
+    public FlowFeedbackProcessor(WorkflowUseCase workflowUseCase, Frame registrationWorkflow) {
+        this.workflowUseCase = workflowUseCase;
+        this.registrationWorkflow = registrationWorkflow;
     }
 
     @Override
     public void process(@NotNull Feedback feedback) {
-        var chatId = feedback.chatId();
-        var frameContext = contextLoader.load(chatId, contextManager, frameFactory)
-                .orElse(new FrameContext(contextManager, frameFactory, chatId));
+        var frameContext = workflowUseCase.load(feedback.chatId());
 
         AtomicBoolean newTriggered = new AtomicBoolean(false);
 
@@ -55,12 +46,12 @@ public class FlowFeedbackProcessor implements FeedbackProcessor {
             frameContext.handle(createFrameFeedback(feedback));
         }
 
-        contextSaver.save(frameContext);
+        workflowUseCase.save(frameContext);
     }
 
     private void startRegistration(FrameContext frameContext) {
         frameContext.clear();
-        frameContext.push(frameFactory.get("flow.registration"), true);
+        frameContext.push(registrationWorkflow, true);
         frameContext.exec();
     }
 

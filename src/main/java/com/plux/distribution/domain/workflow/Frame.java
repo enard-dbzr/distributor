@@ -1,10 +1,8 @@
-package com.plux.distribution.application.workflow.core;
+package com.plux.distribution.domain.workflow;
 
 import org.jetbrains.annotations.NotNull;
 
 public interface Frame {
-
-    @NotNull String getKey();
 
     void exec(@NotNull FrameContext context);
 

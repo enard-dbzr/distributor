@@ -1,37 +1,29 @@
 package com.plux.distribution.infrastructure.persistence;
 
-import com.plux.distribution.application.port.out.workflow.SaveContextPort;
-import com.plux.distribution.application.port.out.workflow.LoadContextPort;
-import com.plux.distribution.application.workflow.core.FrameContext;
-import com.plux.distribution.application.workflow.core.FrameContextManager;
-import com.plux.distribution.application.workflow.core.FrameFactory;
+import com.plux.distribution.application.port.out.workflow.ContextRepositoryPort;
 import com.plux.distribution.domain.chat.ChatId;
 import com.plux.distribution.infrastructure.persistence.entity.workflow.FrameContextSnapshotEntity;
-import com.plux.distribution.infrastructure.persistence.serializer.ContextSnapshotSerializer;
-import java.util.Optional;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-public class DbFrameRepository implements SaveContextPort, LoadContextPort {
+public class DbFrameRepository implements ContextRepositoryPort {
 
     private final SessionFactory sessionFactory;
-    private final ContextSnapshotSerializer snapshotSerializer = new ContextSnapshotSerializer();
 
     public DbFrameRepository(SessionFactory sessionFactory) {
         this.sessionFactory = sessionFactory;
     }
 
     @Override
-    public void save(@NotNull FrameContext context) {
+    public void save(@NotNull ChatId chatId, @NotNull String snapshot) {
         try (var session = sessionFactory.openSession()) {
             Transaction transaction = session.beginTransaction();
 
-            var snapshot = context.save();
-
             var entity = new FrameContextSnapshotEntity(
-                    context.getChatId().value(),
-                    snapshotSerializer.toJson(snapshot)
+                    chatId.value(),
+                    snapshot
             );
 
             session.merge(entity);
@@ -41,18 +33,14 @@ public class DbFrameRepository implements SaveContextPort, LoadContextPort {
     }
 
     @Override
-    public @NotNull Optional<FrameContext> load(@NotNull ChatId chatId, @NotNull FrameContextManager manager,
-            @NotNull FrameFactory frameFactory) {
+    public @Nullable String getSnapshot(@NotNull ChatId chatId) {
         try (var session = sessionFactory.openSession()) {
             var entity = session.find(FrameContextSnapshotEntity.class, chatId.value());
             if (entity == null) {
-                return Optional.empty();
+                return null;
             }
 
-            var context = new FrameContext(manager, frameFactory, chatId);
-            context.restore(snapshotSerializer.fromJson(entity.getSnapshot()));
-
-            return Optional.of(context);
+            return entity.getSnapshot();
         }
     }
 }

@@ -1,18 +1,13 @@
 package com.plux.distribution.application.workflow.frame.registration.hello;
 
-import com.plux.distribution.application.workflow.core.FrameFeedback;
+import com.plux.distribution.domain.workflow.FrameFeedback;
 import com.plux.distribution.domain.message.content.SimpleMessageContent;
-import com.plux.distribution.application.workflow.core.Frame;
-import com.plux.distribution.application.workflow.core.FrameContext;
+import com.plux.distribution.domain.workflow.Frame;
+import com.plux.distribution.domain.workflow.FrameContext;
 import java.util.List;
 import org.jetbrains.annotations.NotNull;
 
 public class PostHelloFrame implements Frame {
-
-    @Override
-    public @NotNull String getKey() {
-        return "registration.post_hello";
-    }
 
     @Override
     public void exec(@NotNull FrameContext context) {

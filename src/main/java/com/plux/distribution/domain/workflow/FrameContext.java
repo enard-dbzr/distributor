@@ -1,26 +1,25 @@
-package com.plux.distribution.application.workflow.core;
+package com.plux.distribution.domain.workflow;
 
 import com.plux.distribution.domain.action.ChatAction;
 import com.plux.distribution.domain.chat.ChatId;
 import com.plux.distribution.domain.message.MessageId;
 import com.plux.distribution.domain.message.content.MessageContent;
 import java.util.List;
+import java.util.Map;
 import java.util.Stack;
 import org.jetbrains.annotations.NotNull;
 
 public class FrameContext {
+
     private final @NotNull FrameContextManager manager;
 
-    private final @NotNull FrameFactory factory;
     private final @NotNull ChatId chatId;
 
     private final @NotNull FlowData data = new FlowData();
     private final @NotNull Stack<FrameEntry> frames = new Stack<>();
 
-    public FrameContext(@NotNull FrameContextManager manager, @NotNull FrameFactory factory,
-            @NotNull ChatId chatId) {
+    public FrameContext(@NotNull FrameContextManager manager, @NotNull ChatId chatId) {
         this.manager = manager;
-        this.factory = factory;
         this.chatId = chatId;
     }
 
@@ -82,7 +81,7 @@ public class FrameContext {
     public @NotNull ContextSnapshot save() {
         return new ContextSnapshot(
                 data.save(),
-                frames.stream().map(FrameEntry::save).toList()
+                frames.stream().toList()
         );
     }
 
@@ -91,11 +90,7 @@ public class FrameContext {
         data.restore(snapshot.data);
 
         frames.clear();
-        snapshot.stack.stream().map(f -> FrameEntry.restore(f, factory)).forEach(frames::addLast);
-    }
-
-    public @NotNull FrameFactory getFactory() {
-        return factory;
+        snapshot.stack.forEach(frames::addLast);
     }
 
     public @NotNull ChatId getChatId() {
@@ -106,8 +101,12 @@ public class FrameContext {
         return data;
     }
 
-    public record ContextSnapshot(FlowData.FlowDataSnapshot data,
-                                  List<FrameEntry.FrameEntrySnapshot> stack) {
+    public record FrameEntry(Frame frame, boolean execute) {
+
+    }
+
+    public record ContextSnapshot(Map<Class<?>, Object> data,
+                                  List<FrameEntry> stack) {
 
     }
 }

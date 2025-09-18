@@ -3,9 +3,9 @@ package com.plux.distribution.application.workflow.frame.registration.user;
 import com.plux.distribution.application.dto.user.CreateUserCommand;
 import com.plux.distribution.application.port.in.chat.AssignUserToChatUseCase;
 import com.plux.distribution.application.port.in.user.CreateUserUseCase;
-import com.plux.distribution.application.workflow.core.Frame;
-import com.plux.distribution.application.workflow.core.FrameContext;
-import com.plux.distribution.application.workflow.core.FrameFeedback;
+import com.plux.distribution.domain.workflow.Frame;
+import com.plux.distribution.domain.workflow.FrameContext;
+import com.plux.distribution.domain.workflow.FrameFeedback;
 import com.plux.distribution.domain.message.content.SimpleMessageContent;
 import java.util.List;
 import org.jetbrains.annotations.NotNull;
@@ -18,11 +18,6 @@ public class FinalizeFrame implements Frame {
     public FinalizeFrame(CreateUserUseCase createUserUseCase, AssignUserToChatUseCase userToChatUseCase) {
         this.createUserUseCase = createUserUseCase;
         this.userToChatUseCase = userToChatUseCase;
-    }
-
-    @Override
-    public @NotNull String getKey() {
-        return "registration.user.finalize";
     }
 
     @Override

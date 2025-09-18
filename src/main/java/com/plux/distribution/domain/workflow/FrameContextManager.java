@@ -1,4 +1,4 @@
-package com.plux.distribution.application.workflow.core;
+package com.plux.distribution.domain.workflow;
 
 import com.plux.distribution.domain.action.ChatAction;
 import com.plux.distribution.domain.message.MessageId;

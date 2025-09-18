@@ -1,11 +1,11 @@
 package com.plux.distribution.application.workflow.frame.registration.user;
 
-import com.plux.distribution.application.workflow.core.Frame;
-import com.plux.distribution.application.workflow.core.FrameContext;
-import com.plux.distribution.application.workflow.core.FrameFeedback;
+import com.plux.distribution.domain.workflow.Frame;
+import com.plux.distribution.domain.workflow.FrameContext;
+import com.plux.distribution.domain.workflow.FrameFeedback;
 import com.plux.distribution.application.workflow.frame.utils.InfoMessageFrame;
+import com.plux.distribution.application.workflow.frame.utils.LastMessageData;
 import com.plux.distribution.domain.action.ClearButtonsAction;
-import com.plux.distribution.domain.message.MessageId;
 import com.plux.distribution.domain.message.attachment.ButtonAttachment;
 import com.plux.distribution.domain.message.content.SimpleMessageContent;
 import java.util.List;
@@ -14,18 +14,13 @@ import org.jetbrains.annotations.NotNull;
 public class AskEmailFrame implements Frame {
 
     @Override
-    public @NotNull String getKey() {
-        return "registration.user.ask_email";
-    }
-
-    @Override
     public void exec(@NotNull FrameContext context) {
         var messageId = context.send(new SimpleMessageContent(
                 "Оставь, пожалуйста, свою почту ✉️",
                 List.of(new ButtonAttachment("Пропустить", "skip"))
         ));
 
-        context.getData().put(AskEmailMessageId.class, new AskEmailMessageId(messageId));
+        context.getData().put(LastMessageData.class, new LastMessageData(messageId));
     }
 
     @Override
@@ -52,20 +47,17 @@ public class AskEmailFrame implements Frame {
     }
 
     private void goNext(@NotNull FrameContext context) {
-        context.changeState();
-
-        if (context.getData().contains(AskEmailMessageId.class)) {
+        if (context.getData().contains(LastMessageData.class)) {
             context.dispatch(
                     new ClearButtonsAction(
                             context.getChatId(),
-                            context.getData().get(AskEmailMessageId.class).messageId()
+                            context.getData().get(LastMessageData.class).messageId()
                     )
             );
-            context.getData().remove(AskEmailMessageId.class);
+
+            context.getData().remove(LastMessageData.class);
         }
-    }
 
-    private record AskEmailMessageId(MessageId messageId) {
-
+        context.changeState();
     }
 }

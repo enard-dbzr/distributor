@@ -1,21 +1,16 @@
 package com.plux.distribution.application.workflow.frame.registration.hello;
 
-import com.plux.distribution.application.workflow.core.FrameFeedback;
+import com.plux.distribution.domain.workflow.FrameFeedback;
+import com.plux.distribution.application.workflow.frame.utils.LastMessageData;
 import com.plux.distribution.domain.action.ClearButtonsAction;
-import com.plux.distribution.domain.message.MessageId;
 import com.plux.distribution.domain.message.attachment.ButtonAttachment;
 import com.plux.distribution.domain.message.content.SimpleMessageContent;
-import com.plux.distribution.application.workflow.core.Frame;
-import com.plux.distribution.application.workflow.core.FrameContext;
+import com.plux.distribution.domain.workflow.Frame;
+import com.plux.distribution.domain.workflow.FrameContext;
 import java.util.List;
 import org.jetbrains.annotations.NotNull;
 
 public class HelloFrame implements Frame {
-
-    @Override
-    public @NotNull String getKey() {
-        return "registration.hello_frame";
-    }
 
     @Override
     public void exec(@NotNull FrameContext context) {
@@ -28,24 +23,20 @@ public class HelloFrame implements Frame {
         );
 
         var messageId = context.send(message);
-        context.getData().put(HelloFrameData.class, new HelloFrameData(messageId));
+        context.getData().put(LastMessageData.class, new LastMessageData(messageId));
     }
 
     @Override
     public void handle(@NotNull FrameContext context, @NotNull FrameFeedback feedback) {
-        if (context.getData().contains(HelloFrameData.class)) {
-            var data = context.getData().get(HelloFrameData.class);
+        if (context.getData().contains(LastMessageData.class)) {
+            var data = context.getData().get(LastMessageData.class);
             context.dispatch(new ClearButtonsAction(
                     context.getChatId(),
                     data.messageId()
             ));
-            context.getData().remove(HelloFrameData.class);
+            context.getData().remove(LastMessageData.class);
         }
 
         context.changeState(new PostHelloFrame());
-    }
-
-    private record HelloFrameData(@NotNull MessageId messageId) {
-
     }
 }

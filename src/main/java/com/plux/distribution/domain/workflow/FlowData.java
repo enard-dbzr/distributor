@@ -1,5 +1,6 @@
-package com.plux.distribution.application.workflow.core;
+package com.plux.distribution.domain.workflow;
 
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import org.jetbrains.annotations.NotNull;
@@ -28,16 +29,12 @@ public class FlowData {
         data.clear();
     }
 
-    @NotNull FlowDataSnapshot save() {
-        return new FlowDataSnapshot(data);
+    @NotNull Map<Class<?>, Object> save() {
+        return new HashMap<>(data);
     }
 
-    void restore(@NotNull FlowDataSnapshot snapshot) {
+    void restore(@NotNull Map<Class<?>, Object> snapshot) {
         data.clear();
-        data.putAll(snapshot.data);
-    }
-
-    public record FlowDataSnapshot(Map<Class<?>, Object> data) {
-
+        data.putAll(snapshot);
     }
 }

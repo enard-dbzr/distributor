@@ -1,8 +1,8 @@
 package com.plux.distribution.application.workflow.frame.utils;
 
-import com.plux.distribution.application.workflow.core.Frame;
-import com.plux.distribution.application.workflow.core.FrameContext;
-import com.plux.distribution.application.workflow.core.FrameFeedback;
+import com.plux.distribution.domain.workflow.Frame;
+import com.plux.distribution.domain.workflow.FrameContext;
+import com.plux.distribution.domain.workflow.FrameFeedback;
 import com.plux.distribution.domain.message.content.SimpleMessageContent;
 import java.util.List;
 import org.jetbrains.annotations.NotNull;
@@ -13,11 +13,6 @@ public class InfoMessageFrame implements Frame {
 
     public InfoMessageFrame(String text) {
         this.text = text;
-    }
-
-    @Override
-    public @NotNull String getKey() {
-        return "utils.info";
     }
 
     @Override

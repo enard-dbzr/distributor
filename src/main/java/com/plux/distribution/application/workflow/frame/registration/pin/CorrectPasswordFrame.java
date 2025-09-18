@@ -1,18 +1,13 @@
 package com.plux.distribution.application.workflow.frame.registration.pin;
 
-import com.plux.distribution.application.workflow.core.Frame;
-import com.plux.distribution.application.workflow.core.FrameContext;
-import com.plux.distribution.application.workflow.core.FrameFeedback;
+import com.plux.distribution.domain.workflow.Frame;
+import com.plux.distribution.domain.workflow.FrameContext;
+import com.plux.distribution.domain.workflow.FrameFeedback;
 import com.plux.distribution.domain.message.content.SimpleMessageContent;
 import java.util.List;
 import org.jetbrains.annotations.NotNull;
 
 public class CorrectPasswordFrame implements Frame {
-
-    @Override
-    public @NotNull String getKey() {
-        return "registration.check_pin.correct";
-    }
 
     @Override
     public void exec(@NotNull FrameContext context) {
