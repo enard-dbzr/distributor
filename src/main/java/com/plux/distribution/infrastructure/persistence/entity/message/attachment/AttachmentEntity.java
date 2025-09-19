@@ -1,8 +1,8 @@
 package com.plux.distribution.infrastructure.persistence.entity.message.attachment;
 
-import com.plux.distribution.domain.message.attachment.AttachmentVisitor;
-import com.plux.distribution.domain.message.attachment.ButtonAttachment;
-import com.plux.distribution.domain.message.attachment.MessageAttachment;
+import com.plux.distribution.core.message.domain.attachment.AttachmentVisitor;
+import com.plux.distribution.core.message.domain.attachment.ButtonAttachment;
+import com.plux.distribution.core.message.domain.attachment.MessageAttachment;
 import jakarta.persistence.DiscriminatorColumn;
 import jakarta.persistence.DiscriminatorType;
 import jakarta.persistence.Entity;
@@ -21,9 +21,11 @@ public abstract class AttachmentEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @SuppressWarnings("unused")
     private Long id;
 
     public static AttachmentEntity fromModel(MessageAttachment model) {
+        //noinspection Convert2Lambda,Anonymous2MethodRef
         return model.accept(new AttachmentVisitor<>() {
             @Override
             public AttachmentEntity visit(ButtonAttachment attachment) {

@@ -1,8 +1,8 @@
 package com.plux.distribution.infrastructure.persistence.entity.message.participant;
 
-import com.plux.distribution.domain.chat.ChatId;
-import com.plux.distribution.domain.message.participant.Participant;
-import com.plux.distribution.domain.message.participant.ChatParticipant;
+import com.plux.distribution.core.chat.domain.ChatId;
+import com.plux.distribution.core.message.domain.participant.Participant;
+import com.plux.distribution.core.message.domain.participant.ChatParticipant;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 

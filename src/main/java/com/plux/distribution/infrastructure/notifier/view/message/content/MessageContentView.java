@@ -2,10 +2,10 @@ package com.plux.distribution.infrastructure.notifier.view.message.content;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import com.plux.distribution.domain.message.content.MessageContent;
-import com.plux.distribution.domain.message.content.MessageContentVisitor;
-import com.plux.distribution.domain.message.content.ReplyMessageContent;
-import com.plux.distribution.domain.message.content.SimpleMessageContent;
+import com.plux.distribution.core.message.domain.content.MessageContent;
+import com.plux.distribution.core.message.domain.content.MessageContentVisitor;
+import com.plux.distribution.core.message.domain.content.ReplyMessageContent;
+import com.plux.distribution.core.message.domain.content.SimpleMessageContent;
 import com.plux.distribution.infrastructure.notifier.view.message.attachment.MessageAttachmentView;
 import io.swagger.v3.oas.annotations.media.DiscriminatorMapping;
 import io.swagger.v3.oas.annotations.media.Schema;

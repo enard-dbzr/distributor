@@ -1,6 +1,6 @@
 package com.plux.distribution.infrastructure.notifier.view.message;
 
-import com.plux.distribution.application.dto.message.MessageDto;
+import com.plux.distribution.core.message.application.dto.MessageDto;
 import com.plux.distribution.infrastructure.notifier.view.message.content.MessageContentView;
 import com.plux.distribution.infrastructure.notifier.view.message.participant.ParticipantView;
 import com.plux.distribution.infrastructure.notifier.view.message.state.MessageStateView;

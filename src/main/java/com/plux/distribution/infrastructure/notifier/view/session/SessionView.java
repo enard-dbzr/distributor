@@ -1,6 +1,6 @@
 package com.plux.distribution.infrastructure.notifier.view.session;
 
-import com.plux.distribution.application.dto.session.SessionDto;
+import com.plux.distribution.core.session.application.dto.SessionDto;
 import java.util.Date;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;

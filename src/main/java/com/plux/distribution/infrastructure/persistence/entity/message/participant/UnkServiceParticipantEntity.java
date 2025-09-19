@@ -1,7 +1,7 @@
 package com.plux.distribution.infrastructure.persistence.entity.message.participant;
 
-import com.plux.distribution.domain.message.participant.Participant;
-import com.plux.distribution.domain.message.participant.UnknownServiceParticipant;
+import com.plux.distribution.core.message.domain.participant.Participant;
+import com.plux.distribution.core.message.domain.participant.UnknownServiceParticipant;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 
@@ -14,7 +14,7 @@ public class UnkServiceParticipantEntity extends ParticipantEntity {
         return new UnknownServiceParticipant();
     }
 
-    public static UnkServiceParticipantEntity fromModel(UnknownServiceParticipant model) {
+    public static UnkServiceParticipantEntity fromModel(@SuppressWarnings("unused") UnknownServiceParticipant model) {
         return new UnkServiceParticipantEntity();
     }
 }

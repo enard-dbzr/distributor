@@ -1,10 +1,10 @@
 package com.plux.distribution.infrastructure.persistence.entity.message.state;
 
-import com.plux.distribution.domain.message.state.MessageState;
-import com.plux.distribution.domain.message.state.MessageStateVisitor;
-import com.plux.distribution.domain.message.state.PendingState;
-import com.plux.distribution.domain.message.state.ReceivedState;
-import com.plux.distribution.domain.message.state.TransferredState;
+import com.plux.distribution.core.message.domain.state.MessageState;
+import com.plux.distribution.core.message.domain.state.MessageStateVisitor;
+import com.plux.distribution.core.message.domain.state.PendingState;
+import com.plux.distribution.core.message.domain.state.ReceivedState;
+import com.plux.distribution.core.message.domain.state.TransferredState;
 import jakarta.persistence.DiscriminatorColumn;
 import jakarta.persistence.DiscriminatorType;
 import jakarta.persistence.Entity;
@@ -22,12 +22,13 @@ import jakarta.persistence.Table;
 public abstract class MessageStateEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @SuppressWarnings("unused")
     private Long id;
 
     public abstract MessageState toModel();
 
     public static MessageStateEntity fromModel(MessageState state) {
-        return state.accept(new MessageStateVisitor<MessageStateEntity>() {
+        return state.accept(new MessageStateVisitor<>() {
             @Override
             public MessageStateEntity visit(PendingState state) {
                 return PendingStateEntity.fromModel(state);

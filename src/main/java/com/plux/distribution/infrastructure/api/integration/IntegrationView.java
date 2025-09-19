@@ -1,6 +1,6 @@
 package com.plux.distribution.infrastructure.api.integration;
 
-import com.plux.distribution.application.dto.integration.Integration;
+import com.plux.distribution.core.integration.application.dto.Integration;
 import jakarta.validation.constraints.NotNull;
 
 public record IntegrationView(

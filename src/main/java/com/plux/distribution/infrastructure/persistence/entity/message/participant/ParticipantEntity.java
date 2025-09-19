@@ -1,11 +1,11 @@
 package com.plux.distribution.infrastructure.persistence.entity.message.participant;
 
-import com.plux.distribution.domain.message.participant.Participant;
-import com.plux.distribution.domain.message.participant.ParticipantVisitor;
-import com.plux.distribution.domain.message.participant.SelfParticipant;
-import com.plux.distribution.domain.message.participant.ServiceParticipant;
-import com.plux.distribution.domain.message.participant.UnknownServiceParticipant;
-import com.plux.distribution.domain.message.participant.ChatParticipant;
+import com.plux.distribution.core.message.domain.participant.Participant;
+import com.plux.distribution.core.message.domain.participant.ParticipantVisitor;
+import com.plux.distribution.core.message.domain.participant.SelfParticipant;
+import com.plux.distribution.core.message.domain.participant.ServiceParticipant;
+import com.plux.distribution.core.message.domain.participant.UnknownServiceParticipant;
+import com.plux.distribution.core.message.domain.participant.ChatParticipant;
 import jakarta.persistence.DiscriminatorColumn;
 import jakarta.persistence.DiscriminatorType;
 import jakarta.persistence.Entity;
@@ -24,6 +24,7 @@ public abstract class ParticipantEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @SuppressWarnings("unused")
     private Long id;
 
     public abstract Participant toModel();

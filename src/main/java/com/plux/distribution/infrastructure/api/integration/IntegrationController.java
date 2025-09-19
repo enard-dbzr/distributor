@@ -1,7 +1,7 @@
 package com.plux.distribution.infrastructure.api.integration;
 
-import com.plux.distribution.application.port.in.integration.CrudIntegrationUseCase;
-import com.plux.distribution.domain.service.ServiceId;
+import com.plux.distribution.core.integration.application.port.in.CrudIntegrationUseCase;
+import com.plux.distribution.core.integration.domain.ServiceId;
 import com.plux.distribution.infrastructure.api.integration.request.IntegrationRequest;
 import com.plux.distribution.infrastructure.api.integration.response.CreateIntegrationResponse;
 import com.plux.distribution.infrastructure.api.integration.response.IntegrationsResponse;

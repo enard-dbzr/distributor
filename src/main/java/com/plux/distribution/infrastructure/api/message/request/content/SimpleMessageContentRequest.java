@@ -1,7 +1,7 @@
 package com.plux.distribution.infrastructure.api.message.request.content;
 
-import com.plux.distribution.domain.message.content.MessageContent;
-import com.plux.distribution.domain.message.content.SimpleMessageContent;
+import com.plux.distribution.core.message.domain.content.MessageContent;
+import com.plux.distribution.core.message.domain.content.SimpleMessageContent;
 import com.plux.distribution.infrastructure.api.message.request.attachment.MessageAttachmentRequest;
 import jakarta.validation.constraints.NotNull;
 import java.util.List;

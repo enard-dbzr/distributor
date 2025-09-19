@@ -1,10 +1,10 @@
 package com.plux.distribution.infrastructure.notifier.view.feedback;
 
-import com.plux.distribution.application.dto.feedback.dto.Feedback;
-import com.plux.distribution.application.dto.feedback.dto.payload.ButtonPayload;
-import com.plux.distribution.application.dto.feedback.dto.payload.FeedbackPayloadVisitor;
-import com.plux.distribution.application.dto.feedback.dto.payload.MessagePayload;
-import com.plux.distribution.application.dto.feedback.dto.payload.ReplyPayload;
+import com.plux.distribution.core.feedback.application.dto.Feedback;
+import com.plux.distribution.core.feedback.domain.payload.ButtonPayload;
+import com.plux.distribution.core.feedback.domain.payload.FeedbackPayloadVisitor;
+import com.plux.distribution.core.feedback.domain.payload.MessagePayload;
+import com.plux.distribution.core.feedback.domain.payload.ReplyPayload;
 import com.plux.distribution.infrastructure.notifier.view.feedback.payload.ButtonFeedbackPayloadView;
 import com.plux.distribution.infrastructure.notifier.view.feedback.payload.FeedbackPayloadView;
 import com.plux.distribution.infrastructure.notifier.view.feedback.payload.MessageFeedbackPayloadView;
@@ -44,18 +44,22 @@ public class FeedbackView {
         this.payload = payloadView;
     }
 
+    @SuppressWarnings("unused")
     public long getId() {
         return id;
     }
 
+    @SuppressWarnings("unused")
     public Date getActionTime() {
         return actionTime;
     }
 
+    @SuppressWarnings("unused")
     public long getChatId() {
         return chatId;
     }
 
+    @SuppressWarnings("unused")
     public FeedbackPayloadView getPayload() {
         return payload;
     }

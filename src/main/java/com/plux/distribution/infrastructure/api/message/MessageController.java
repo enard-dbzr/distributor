@@ -1,8 +1,8 @@
 package com.plux.distribution.infrastructure.api.message;
 
-import com.plux.distribution.application.dto.integration.SendServiceMessageCommand;
-import com.plux.distribution.application.port.exception.InvalidToken;
-import com.plux.distribution.application.port.in.integration.SendServiceMessageUseCase;
+import com.plux.distribution.core.integration.application.command.SendServiceMessageCommand;
+import com.plux.distribution.core.integration.application.exception.InvalidToken;
+import com.plux.distribution.core.integration.application.port.in.SendServiceMessageUseCase;
 import com.plux.distribution.infrastructure.api.message.request.SendMessageRequest;
 
 import io.swagger.v3.oas.annotations.Operation;
@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping({"/messages"})
-@Tag(name = "Message")
+@Tag(name = "MessageModel")
 public class MessageController {
 
     private final SendServiceMessageUseCase sendServiceMessageUseCase;
@@ -39,7 +39,7 @@ public class MessageController {
             security = {@SecurityRequirement(name = "serviceToken")},
             responses = {
                     @ApiResponse(responseCode = "401"),
-                    @ApiResponse(responseCode = "201", description = "Message was send")
+                    @ApiResponse(responseCode = "201", description = "MessageModel was send")
             }
     )
     public ResponseEntity<SendMessageResult> sendMessage(

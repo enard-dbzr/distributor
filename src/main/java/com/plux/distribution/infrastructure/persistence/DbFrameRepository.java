@@ -1,7 +1,7 @@
 package com.plux.distribution.infrastructure.persistence;
 
-import com.plux.distribution.application.port.out.workflow.ContextRepositoryPort;
-import com.plux.distribution.domain.chat.ChatId;
+import com.plux.distribution.core.workflow.application.port.out.ContextRepositoryPort;
+import com.plux.distribution.core.chat.domain.ChatId;
 import com.plux.distribution.infrastructure.persistence.entity.workflow.FrameContextSnapshotEntity;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;

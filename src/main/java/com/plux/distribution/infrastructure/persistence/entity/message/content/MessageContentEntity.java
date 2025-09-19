@@ -1,9 +1,9 @@
 package com.plux.distribution.infrastructure.persistence.entity.message.content;
 
-import com.plux.distribution.domain.message.content.MessageContent;
-import com.plux.distribution.domain.message.content.MessageContentVisitor;
-import com.plux.distribution.domain.message.content.ReplyMessageContent;
-import com.plux.distribution.domain.message.content.SimpleMessageContent;
+import com.plux.distribution.core.message.domain.content.MessageContent;
+import com.plux.distribution.core.message.domain.content.MessageContentVisitor;
+import com.plux.distribution.core.message.domain.content.ReplyMessageContent;
+import com.plux.distribution.core.message.domain.content.SimpleMessageContent;
 import jakarta.persistence.DiscriminatorColumn;
 import jakarta.persistence.DiscriminatorType;
 import jakarta.persistence.Entity;
@@ -22,6 +22,7 @@ public abstract class MessageContentEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @SuppressWarnings("unused")
     private Long id;
 
     public static MessageContentEntity fromModel(MessageContent model) {

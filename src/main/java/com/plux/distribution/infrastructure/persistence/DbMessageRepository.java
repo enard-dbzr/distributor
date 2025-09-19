@@ -1,17 +1,17 @@
 package com.plux.distribution.infrastructure.persistence;
 
-import com.plux.distribution.application.dto.message.CreateMessageCommand;
-import com.plux.distribution.application.port.out.message.CreateMessagePort;
-import com.plux.distribution.application.port.out.message.GetMessagePort;
-import com.plux.distribution.application.port.out.message.UpdateMessagePort;
-import com.plux.distribution.domain.message.Message;
-import com.plux.distribution.domain.message.MessageId;
-import com.plux.distribution.domain.message.participant.ChatParticipant;
-import com.plux.distribution.domain.message.participant.Participant;
-import com.plux.distribution.domain.message.participant.ParticipantVisitor;
-import com.plux.distribution.domain.message.participant.SelfParticipant;
-import com.plux.distribution.domain.message.participant.ServiceParticipant;
-import com.plux.distribution.domain.message.participant.UnknownServiceParticipant;
+import com.plux.distribution.core.message.application.command.CreateMessageCommand;
+import com.plux.distribution.core.message.application.port.out.CreateMessagePort;
+import com.plux.distribution.core.message.application.port.out.GetMessagePort;
+import com.plux.distribution.core.message.application.port.out.UpdateMessagePort;
+import com.plux.distribution.core.message.domain.MessageModel;
+import com.plux.distribution.core.message.domain.MessageId;
+import com.plux.distribution.core.message.domain.participant.ChatParticipant;
+import com.plux.distribution.core.message.domain.participant.Participant;
+import com.plux.distribution.core.message.domain.participant.ParticipantVisitor;
+import com.plux.distribution.core.message.domain.participant.SelfParticipant;
+import com.plux.distribution.core.message.domain.participant.ServiceParticipant;
+import com.plux.distribution.core.message.domain.participant.UnknownServiceParticipant;
 import com.plux.distribution.infrastructure.persistence.entity.message.MessageEntity;
 import com.plux.distribution.infrastructure.persistence.entity.message.participant.ParticipantEntity;
 import com.plux.distribution.infrastructure.persistence.entity.message.state.MessageStateEntity;
@@ -33,7 +33,7 @@ public class DbMessageRepository implements CreateMessagePort, UpdateMessagePort
     }
 
     @Override
-    public @NotNull Message create(@NotNull CreateMessageCommand command) {
+    public @NotNull MessageModel create(@NotNull CreateMessageCommand command) {
         try (var session = sessionFactory.openSession()) {
             Transaction transaction = session.beginTransaction();
 
@@ -47,7 +47,7 @@ public class DbMessageRepository implements CreateMessagePort, UpdateMessagePort
     }
 
     @Override
-    public void update(@NotNull Message message) {
+    public void update(@NotNull MessageModel message) {
         try (var session = sessionFactory.openSession()) {
             Transaction transaction = session.beginTransaction();
 
@@ -66,7 +66,7 @@ public class DbMessageRepository implements CreateMessagePort, UpdateMessagePort
     }
 
     @Override
-    public @NotNull Message get(@NotNull MessageId messageId) {
+    public @NotNull MessageModel get(@NotNull MessageId messageId) {
         try (var session = sessionFactory.openSession()) {
             var entity = session.find(MessageEntity.class, messageId.value());
 
@@ -75,7 +75,7 @@ public class DbMessageRepository implements CreateMessagePort, UpdateMessagePort
     }
 
     @Override
-    public @Nullable Message getLastOfRecipient(@NotNull Participant recipient) {
+    public @Nullable MessageModel getLastOfRecipient(@NotNull Participant recipient) {
 
         try (var session = sessionFactory.openSession()) {
             var query = recipient.accept(new ParticipantVisitor<Query<MessageEntity>>() {

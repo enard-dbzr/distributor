@@ -1,12 +1,12 @@
 package com.plux.distribution.infrastructure.persistence;
 
-import com.plux.distribution.application.dto.integration.IntegrationCommand;
-import com.plux.distribution.application.dto.integration.Integration;
-import com.plux.distribution.application.dto.integration.ServiceToken;
-import com.plux.distribution.application.dto.integration.ServiceWebhook;
-import com.plux.distribution.application.port.exception.InvalidToken;
-import com.plux.distribution.application.port.out.integration.IntegrationRepositoryPort;
-import com.plux.distribution.domain.service.ServiceId;
+import com.plux.distribution.core.integration.application.command.IntegrationCommand;
+import com.plux.distribution.core.integration.application.dto.Integration;
+import com.plux.distribution.core.integration.application.dto.ServiceToken;
+import com.plux.distribution.core.integration.application.dto.ServiceWebhook;
+import com.plux.distribution.core.integration.application.exception.InvalidToken;
+import com.plux.distribution.core.integration.application.port.out.IntegrationRepositoryPort;
+import com.plux.distribution.core.integration.domain.ServiceId;
 import com.plux.distribution.infrastructure.persistence.entity.integration.IntegrationEntity;
 import java.util.List;
 import org.hibernate.Session;

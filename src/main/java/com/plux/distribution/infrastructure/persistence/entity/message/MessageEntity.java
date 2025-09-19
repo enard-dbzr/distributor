@@ -1,8 +1,8 @@
 package com.plux.distribution.infrastructure.persistence.entity.message;
 
-import com.plux.distribution.application.dto.message.CreateMessageCommand;
-import com.plux.distribution.domain.message.Message;
-import com.plux.distribution.domain.message.MessageId;
+import com.plux.distribution.core.message.application.command.CreateMessageCommand;
+import com.plux.distribution.core.message.domain.MessageModel;
+import com.plux.distribution.core.message.domain.MessageId;
 import com.plux.distribution.infrastructure.persistence.entity.message.content.MessageContentEntity;
 import com.plux.distribution.infrastructure.persistence.entity.message.participant.ParticipantEntity;
 import com.plux.distribution.infrastructure.persistence.entity.message.state.MessageStateEntity;
@@ -46,7 +46,7 @@ public class MessageEntity {
         content = MessageContentEntity.fromModel(command.content());
     }
 
-    public MessageEntity(Message model) {
+    public MessageEntity(MessageModel model) {
         id = model.getId().value();
         sender = ParticipantEntity.fromModel(model.getSender());
         recipient = ParticipantEntity.fromModel(model.getRecipient());
@@ -58,8 +58,8 @@ public class MessageEntity {
 
     }
 
-    public Message toModel() {
-        return new Message(
+    public MessageModel toModel() {
+        return new MessageModel(
                 new MessageId(id),
                 sender.toModel(),
                 recipient.toModel(),

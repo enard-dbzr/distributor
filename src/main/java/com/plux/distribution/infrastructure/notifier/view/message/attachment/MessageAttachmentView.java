@@ -2,9 +2,9 @@ package com.plux.distribution.infrastructure.notifier.view.message.attachment;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import com.plux.distribution.domain.message.attachment.AttachmentVisitor;
-import com.plux.distribution.domain.message.attachment.ButtonAttachment;
-import com.plux.distribution.domain.message.attachment.MessageAttachment;
+import com.plux.distribution.core.message.domain.attachment.AttachmentVisitor;
+import com.plux.distribution.core.message.domain.attachment.ButtonAttachment;
+import com.plux.distribution.core.message.domain.attachment.MessageAttachment;
 import io.swagger.v3.oas.annotations.media.DiscriminatorMapping;
 import io.swagger.v3.oas.annotations.media.Schema;
 import org.jetbrains.annotations.NotNull;
@@ -24,6 +24,7 @@ import org.jetbrains.annotations.NotNull;
 )
 public sealed interface MessageAttachmentView permits ButtonAttachmentView {
     static @NotNull MessageAttachmentView create(@NotNull MessageAttachment attachment) {
+        //noinspection Convert2Lambda
         return attachment.accept(new AttachmentVisitor<>() {
             @Override
             public MessageAttachmentView visit(ButtonAttachment attachment) {

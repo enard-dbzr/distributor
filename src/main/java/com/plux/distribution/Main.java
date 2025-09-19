@@ -1,30 +1,42 @@
 package com.plux.distribution;
 
-import com.plux.distribution.application.service.ChatService;
-import com.plux.distribution.application.service.ExecuteActionService;
-import com.plux.distribution.application.service.workflow.FlowFeedbackProcessor;
-import com.plux.distribution.application.service.feedback.FeedbackResolver;
-import com.plux.distribution.application.service.feedback.SequenceFeedbackProcessor;
-import com.plux.distribution.application.service.integration.IntegrationFeedbackProcessor;
-import com.plux.distribution.application.service.integration.IntegrationService;
-import com.plux.distribution.application.service.MessageService;
-import com.plux.distribution.application.service.feedback.RegisterFeedbackService;
-import com.plux.distribution.application.service.integration.SendServiceMessageService;
-import com.plux.distribution.application.service.session.RandomSessionInitializer;
-import com.plux.distribution.application.service.session.SessionFeedbackProcessor;
-import com.plux.distribution.application.service.session.SessionSchedulerRunner;
-import com.plux.distribution.application.service.session.SessionService;
-import com.plux.distribution.application.service.UserService;
-import com.plux.distribution.application.workflow.DefaultContextManager;
-import com.plux.distribution.application.service.workflow.DataRegistry;
-import com.plux.distribution.application.service.workflow.FrameRegistry;
-import com.plux.distribution.application.workflow.frame.DefaultDataRegistry;
-import com.plux.distribution.application.workflow.frame.DefaultFrameRegistry;
-import com.plux.distribution.application.workflow.frame.registration.user.UserBuilder;
-import com.plux.distribution.application.workflow.frame.utils.LastMessageData;
-import com.plux.distribution.application.workflow.frame.utils.SequenceFrame;
-import com.plux.distribution.application.service.workflow.WorkflowService;
-import com.plux.distribution.domain.service.ServiceId;
+import com.plux.distribution.core.chat.application.service.ChatService;
+import com.plux.distribution.core.message.application.service.ExecuteActionService;
+import com.plux.distribution.core.workflow.application.frame.registration.hello.HelloFrame;
+import com.plux.distribution.core.workflow.application.frame.registration.hello.PostHelloFrame;
+import com.plux.distribution.core.workflow.application.frame.registration.pin.CheckPasswordFrame;
+import com.plux.distribution.core.workflow.application.frame.registration.pin.CorrectPasswordFrame;
+import com.plux.distribution.core.workflow.application.frame.registration.pin.InorrectPasswordFrame;
+import com.plux.distribution.core.workflow.application.frame.registration.user.AskAgeFrame;
+import com.plux.distribution.core.workflow.application.frame.registration.user.AskCityFrame;
+import com.plux.distribution.core.workflow.application.frame.registration.user.AskEmailFrame;
+import com.plux.distribution.core.workflow.application.frame.registration.user.AskHobbyFrame;
+import com.plux.distribution.core.workflow.application.frame.registration.user.AskNameFrame;
+import com.plux.distribution.core.workflow.application.frame.registration.user.FinalizeFrame;
+import com.plux.distribution.core.workflow.application.frame.registration.user.StartUserBuildingFrame;
+import com.plux.distribution.core.workflow.application.service.FlowFeedbackProcessor;
+import com.plux.distribution.core.feedback.application.service.FeedbackResolver;
+import com.plux.distribution.core.feedback.application.service.SequenceFeedbackProcessor;
+import com.plux.distribution.core.integration.application.service.IntegrationFeedbackProcessor;
+import com.plux.distribution.core.integration.application.service.IntegrationService;
+import com.plux.distribution.core.message.application.service.MessageService;
+import com.plux.distribution.core.feedback.application.service.RegisterFeedbackService;
+import com.plux.distribution.core.integration.application.service.SendServiceMessageService;
+import com.plux.distribution.core.session.application.service.RandomSessionInitializer;
+import com.plux.distribution.core.session.application.service.SessionFeedbackProcessor;
+import com.plux.distribution.core.session.application.service.SessionSchedulerRunner;
+import com.plux.distribution.core.session.application.service.SessionService;
+import com.plux.distribution.core.user.application.service.UserService;
+import com.plux.distribution.core.workflow.application.utils.DefaultContextManager;
+import com.plux.distribution.core.workflow.application.port.out.DataRegistry;
+import com.plux.distribution.core.workflow.application.port.out.FrameRegistry;
+import com.plux.distribution.core.workflow.application.frame.DefaultDataRegistry;
+import com.plux.distribution.core.workflow.application.frame.DefaultFrameRegistry;
+import com.plux.distribution.core.workflow.application.frame.registration.user.UserBuilder;
+import com.plux.distribution.core.workflow.application.frame.utils.LastMessageData;
+import com.plux.distribution.core.workflow.application.frame.utils.SequenceFrame;
+import com.plux.distribution.core.workflow.application.service.WorkflowService;
+import com.plux.distribution.core.integration.domain.ServiceId;
 import com.plux.distribution.infrastructure.notifier.WebhookNotifier;
 import com.plux.distribution.infrastructure.persistence.DbChatRepository;
 import com.plux.distribution.infrastructure.persistence.DbFeedbackRepository;
@@ -179,35 +191,35 @@ public class Main {
         var factory = new DefaultFrameRegistry();
 
         factory.register("registration.hello_frame",
-                new com.plux.distribution.application.workflow.frame.registration.hello.HelloFrame());
+                new HelloFrame());
         factory.register("registration.post_hello",
-                new com.plux.distribution.application.workflow.frame.registration.hello.PostHelloFrame());
+                new PostHelloFrame());
 
         factory.register("registration.check_pin",
-                new com.plux.distribution.application.workflow.frame.registration.pin.CheckPasswordFrame(pin));
+                new CheckPasswordFrame(pin));
         factory.register("registration.check_pin.correct",
-                new com.plux.distribution.application.workflow.frame.registration.pin.CorrectPasswordFrame());
+                new CorrectPasswordFrame());
         factory.register("registration.check_pin.incorrect",
-                new com.plux.distribution.application.workflow.frame.registration.pin.InorrectPasswordFrame());
+                new InorrectPasswordFrame());
 
         factory.register("registration.user.ask_name",
-                new com.plux.distribution.application.workflow.frame.registration.user.AskNameFrame());
+                new AskNameFrame());
         factory.register("registration.user.ask_email",
-                new com.plux.distribution.application.workflow.frame.registration.user.AskEmailFrame());
+                new AskEmailFrame());
         factory.register("registration.user.ask_age",
-                new com.plux.distribution.application.workflow.frame.registration.user.AskAgeFrame());
+                new AskAgeFrame());
         factory.register("registration.user.ask_city",
-                new com.plux.distribution.application.workflow.frame.registration.user.AskCityFrame());
+                new AskCityFrame());
         factory.register("registration.user.ask_hobby",
-                new com.plux.distribution.application.workflow.frame.registration.user.AskHobbyFrame());
+                new AskHobbyFrame());
         factory.register("registration.user.finalize",
-                new com.plux.distribution.application.workflow.frame.registration.user.FinalizeFrame(
+                new FinalizeFrame(
                         userService, chatService
                 )
         );
         factory.register(
                 "registration.user.start_building",
-                new com.plux.distribution.application.workflow.frame.registration.user.StartUserBuildingFrame(
+                new StartUserBuildingFrame(
                         factory.get("registration.user.finalize")
                 )
         );

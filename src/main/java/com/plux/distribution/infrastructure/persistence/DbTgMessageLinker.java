@@ -1,10 +1,10 @@
 package com.plux.distribution.infrastructure.persistence;
 
-import com.plux.distribution.application.port.out.specific.telegram.message.GetMessageIdByTgPort;
-import com.plux.distribution.application.port.out.specific.telegram.message.GetTgMessageIdPort;
-import com.plux.distribution.application.port.out.specific.telegram.message.TgMessageGlobalId;
-import com.plux.distribution.application.port.out.specific.telegram.message.TgMessageLinker;
-import com.plux.distribution.domain.message.MessageId;
+import com.plux.distribution.infrastructure.telegram.port.message.GetMessageIdByTgPort;
+import com.plux.distribution.infrastructure.telegram.port.message.GetTgMessageIdPort;
+import com.plux.distribution.infrastructure.telegram.port.message.TgMessageGlobalId;
+import com.plux.distribution.infrastructure.telegram.port.message.TgMessageLinker;
+import com.plux.distribution.core.message.domain.MessageId;
 import com.plux.distribution.infrastructure.persistence.entity.specific.telegram.TgMessageLinkEntity;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;

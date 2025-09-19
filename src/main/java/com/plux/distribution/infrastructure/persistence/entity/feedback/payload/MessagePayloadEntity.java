@@ -1,6 +1,6 @@
 package com.plux.distribution.infrastructure.persistence.entity.feedback.payload;
 
-import com.plux.distribution.application.dto.feedback.dto.payload.MessagePayload;
+import com.plux.distribution.core.feedback.domain.payload.MessagePayload;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 
@@ -8,6 +8,7 @@ import jakarta.persistence.Entity;
 @DiscriminatorValue("MESSAGE")
 public class MessagePayloadEntity extends FeedbackPayloadEntity {
 
+    @SuppressWarnings("unused")
     private Long contentId;
 
     public static MessagePayloadEntity fromModel(MessagePayload model) {

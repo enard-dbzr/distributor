@@ -1,10 +1,10 @@
 package com.plux.distribution.infrastructure.persistence.entity.feedback.payload;
 
-import com.plux.distribution.application.dto.feedback.dto.payload.ButtonPayload;
-import com.plux.distribution.application.dto.feedback.dto.payload.FeedbackPayload;
-import com.plux.distribution.application.dto.feedback.dto.payload.FeedbackPayloadVisitor;
-import com.plux.distribution.application.dto.feedback.dto.payload.MessagePayload;
-import com.plux.distribution.application.dto.feedback.dto.payload.ReplyPayload;
+import com.plux.distribution.core.feedback.domain.payload.ButtonPayload;
+import com.plux.distribution.core.feedback.domain.payload.FeedbackPayload;
+import com.plux.distribution.core.feedback.domain.payload.FeedbackPayloadVisitor;
+import com.plux.distribution.core.feedback.domain.payload.MessagePayload;
+import com.plux.distribution.core.feedback.domain.payload.ReplyPayload;
 import jakarta.persistence.DiscriminatorColumn;
 import jakarta.persistence.DiscriminatorType;
 import jakarta.persistence.Entity;
@@ -24,6 +24,7 @@ public abstract class FeedbackPayloadEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @SuppressWarnings("unused")
     private Long id;
 
     public static FeedbackPayloadEntity fromModel(FeedbackPayload model) {

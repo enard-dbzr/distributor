@@ -1,10 +1,10 @@
 package com.plux.distribution.infrastructure.persistence;
 
-import com.plux.distribution.application.port.out.chat.CreateChatPort;
-import com.plux.distribution.application.port.out.chat.GetChatPort;
-import com.plux.distribution.application.port.out.chat.UpdateChatPort;
-import com.plux.distribution.domain.chat.Chat;
-import com.plux.distribution.domain.chat.ChatId;
+import com.plux.distribution.core.chat.application.port.out.CreateChatPort;
+import com.plux.distribution.core.chat.application.port.out.GetChatPort;
+import com.plux.distribution.core.chat.application.port.out.UpdateChatPort;
+import com.plux.distribution.core.chat.domain.Chat;
+import com.plux.distribution.core.chat.domain.ChatId;
 import com.plux.distribution.infrastructure.persistence.entity.chat.ChatEntity;
 import java.util.List;
 import org.hibernate.Session;

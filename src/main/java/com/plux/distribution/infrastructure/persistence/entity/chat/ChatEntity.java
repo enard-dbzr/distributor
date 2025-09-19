@@ -1,8 +1,8 @@
 package com.plux.distribution.infrastructure.persistence.entity.chat;
 
-import com.plux.distribution.domain.chat.Chat;
-import com.plux.distribution.domain.chat.ChatId;
-import com.plux.distribution.domain.user.UserId;
+import com.plux.distribution.core.chat.domain.Chat;
+import com.plux.distribution.core.chat.domain.ChatId;
+import com.plux.distribution.core.user.domain.UserId;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;

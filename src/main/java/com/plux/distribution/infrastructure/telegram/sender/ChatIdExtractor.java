@@ -1,11 +1,11 @@
 package com.plux.distribution.infrastructure.telegram.sender;
 
-import com.plux.distribution.domain.message.participant.ParticipantVisitor;
-import com.plux.distribution.domain.message.participant.SelfParticipant;
-import com.plux.distribution.domain.message.participant.ServiceParticipant;
-import com.plux.distribution.domain.message.participant.UnknownServiceParticipant;
-import com.plux.distribution.domain.message.participant.ChatParticipant;
-import com.plux.distribution.domain.chat.ChatId;
+import com.plux.distribution.core.message.domain.participant.ParticipantVisitor;
+import com.plux.distribution.core.message.domain.participant.SelfParticipant;
+import com.plux.distribution.core.message.domain.participant.ServiceParticipant;
+import com.plux.distribution.core.message.domain.participant.UnknownServiceParticipant;
+import com.plux.distribution.core.message.domain.participant.ChatParticipant;
+import com.plux.distribution.core.chat.domain.ChatId;
 import org.jetbrains.annotations.NotNull;
 
 class ChatIdExtractor implements ParticipantVisitor<Void> {

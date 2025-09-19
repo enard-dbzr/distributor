@@ -1,9 +1,9 @@
 package com.plux.distribution.infrastructure.telegram.sender;
 
-import com.plux.distribution.application.port.out.specific.telegram.message.GetTgMessageIdPort;
-import com.plux.distribution.domain.message.content.MessageContentVisitor;
-import com.plux.distribution.domain.message.content.ReplyMessageContent;
-import com.plux.distribution.domain.message.content.SimpleMessageContent;
+import com.plux.distribution.infrastructure.telegram.port.message.GetTgMessageIdPort;
+import com.plux.distribution.core.message.domain.content.MessageContentVisitor;
+import com.plux.distribution.core.message.domain.content.ReplyMessageContent;
+import com.plux.distribution.core.message.domain.content.SimpleMessageContent;
 import org.jetbrains.annotations.NotNull;
 
 class ContentRenderer implements MessageContentVisitor<Void> {

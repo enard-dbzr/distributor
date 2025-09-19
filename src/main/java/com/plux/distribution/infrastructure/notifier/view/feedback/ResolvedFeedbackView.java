@@ -1,6 +1,6 @@
 package com.plux.distribution.infrastructure.notifier.view.feedback;
 
-import com.plux.distribution.application.dto.feedback.dto.ResolvedFeedback;
+import com.plux.distribution.core.feedback.application.dto.ResolvedFeedback;
 import org.jetbrains.annotations.NotNull;
 
 public record ResolvedFeedbackView (

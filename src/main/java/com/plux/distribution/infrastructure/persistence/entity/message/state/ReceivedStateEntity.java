@@ -1,7 +1,7 @@
 package com.plux.distribution.infrastructure.persistence.entity.message.state;
 
-import com.plux.distribution.domain.message.state.MessageState;
-import com.plux.distribution.domain.message.state.ReceivedState;
+import com.plux.distribution.core.message.domain.state.MessageState;
+import com.plux.distribution.core.message.domain.state.ReceivedState;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 import java.util.Date;

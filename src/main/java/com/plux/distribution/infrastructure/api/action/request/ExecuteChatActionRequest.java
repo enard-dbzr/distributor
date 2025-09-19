@@ -1,7 +1,7 @@
 package com.plux.distribution.infrastructure.api.action.request;
 
-import com.plux.distribution.domain.action.ChatAction;
-import com.plux.distribution.domain.chat.ChatId;
+import com.plux.distribution.core.message.application.dto.action.ChatAction;
+import com.plux.distribution.core.chat.domain.ChatId;
 import com.plux.distribution.infrastructure.api.action.request.payload.ActionPayloadRequest;
 import jakarta.validation.constraints.NotNull;
 

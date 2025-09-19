@@ -1,9 +1,9 @@
 package com.plux.distribution.infrastructure.api.action.request.payload;
 
-import com.plux.distribution.domain.action.ChatAction;
-import com.plux.distribution.domain.action.ClearButtonsAction;
-import com.plux.distribution.domain.chat.ChatId;
-import com.plux.distribution.domain.message.MessageId;
+import com.plux.distribution.core.message.application.dto.action.ChatAction;
+import com.plux.distribution.core.message.application.dto.action.ClearButtonsAction;
+import com.plux.distribution.core.chat.domain.ChatId;
+import com.plux.distribution.core.message.domain.MessageId;
 import jakarta.validation.constraints.NotNull;
 
 public record ClearButtonsActionRequest(

@@ -2,11 +2,11 @@ package com.plux.distribution.infrastructure.notifier.view.message.state;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import com.plux.distribution.domain.message.state.MessageState;
-import com.plux.distribution.domain.message.state.MessageStateVisitor;
-import com.plux.distribution.domain.message.state.PendingState;
-import com.plux.distribution.domain.message.state.ReceivedState;
-import com.plux.distribution.domain.message.state.TransferredState;
+import com.plux.distribution.core.message.domain.state.MessageState;
+import com.plux.distribution.core.message.domain.state.MessageStateVisitor;
+import com.plux.distribution.core.message.domain.state.PendingState;
+import com.plux.distribution.core.message.domain.state.ReceivedState;
+import com.plux.distribution.core.message.domain.state.TransferredState;
 import io.swagger.v3.oas.annotations.media.DiscriminatorMapping;
 import io.swagger.v3.oas.annotations.media.Schema;
 import org.jetbrains.annotations.NotNull;

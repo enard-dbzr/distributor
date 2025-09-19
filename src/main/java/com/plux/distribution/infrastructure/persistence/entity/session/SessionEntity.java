@@ -1,11 +1,11 @@
 package com.plux.distribution.infrastructure.persistence.entity.session;
 
-import com.plux.distribution.application.dto.session.CreateSessionCommand;
-import com.plux.distribution.domain.chat.ChatId;
-import com.plux.distribution.domain.service.ServiceId;
-import com.plux.distribution.domain.session.Session;
-import com.plux.distribution.domain.session.SessionId;
-import com.plux.distribution.domain.session.SessionState;
+import com.plux.distribution.core.session.application.command.CreateSessionCommand;
+import com.plux.distribution.core.chat.domain.ChatId;
+import com.plux.distribution.core.integration.domain.ServiceId;
+import com.plux.distribution.core.session.domain.Session;
+import com.plux.distribution.core.session.domain.SessionId;
+import com.plux.distribution.core.session.domain.SessionState;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;

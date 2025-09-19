@@ -1,10 +1,10 @@
 package com.plux.distribution.infrastructure.persistence;
 
-import com.plux.distribution.application.port.exception.ChatIdNotFound;
-import com.plux.distribution.application.port.out.specific.telegram.chat.GetChatIdByTgPort;
-import com.plux.distribution.application.port.out.specific.telegram.chat.GetTgChatIdPort;
-import com.plux.distribution.application.port.out.specific.telegram.chat.TgChatLinker;
-import com.plux.distribution.domain.chat.ChatId;
+import com.plux.distribution.core.feedback.application.exception.ChatIdNotFound;
+import com.plux.distribution.infrastructure.telegram.port.chat.GetChatIdByTgPort;
+import com.plux.distribution.infrastructure.telegram.port.chat.GetTgChatIdPort;
+import com.plux.distribution.infrastructure.telegram.port.chat.TgChatLinker;
+import com.plux.distribution.core.chat.domain.ChatId;
 import com.plux.distribution.infrastructure.persistence.entity.specific.telegram.TgChatLinkEntity;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;

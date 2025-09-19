@@ -4,8 +4,8 @@ import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.JsonTypeInfo.As;
 import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
-import com.plux.distribution.domain.action.ChatAction;
-import com.plux.distribution.domain.chat.ChatId;
+import com.plux.distribution.core.message.application.dto.action.ChatAction;
+import com.plux.distribution.core.chat.domain.ChatId;
 import io.swagger.v3.oas.annotations.media.DiscriminatorMapping;
 import io.swagger.v3.oas.annotations.media.Schema;
 

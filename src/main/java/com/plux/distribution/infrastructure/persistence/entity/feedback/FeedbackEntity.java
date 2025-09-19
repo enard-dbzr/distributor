@@ -1,6 +1,6 @@
 package com.plux.distribution.infrastructure.persistence.entity.feedback;
 
-import com.plux.distribution.application.dto.feedback.command.CreateFeedbackCommand;
+import com.plux.distribution.core.feedback.application.command.CreateFeedbackCommand;
 import com.plux.distribution.infrastructure.persistence.entity.feedback.payload.FeedbackPayloadEntity;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
@@ -20,14 +20,18 @@ public class FeedbackEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @SuppressWarnings("unused")
     private Long id;
 
+    @SuppressWarnings("unused")
     private Date actionTime;
 
+    @SuppressWarnings("unused")
     private Long chatId;
 
     @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     @JoinColumn(name = "payload_id")
+    @SuppressWarnings("unused")
     private FeedbackPayloadEntity payload;
 
     public FeedbackEntity(@NotNull CreateFeedbackCommand command) {

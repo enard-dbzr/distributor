@@ -1,6 +1,6 @@
 package com.plux.distribution.infrastructure.api.integration.response;
 
-import com.plux.distribution.application.dto.integration.CreateIntegrationResult;
+import com.plux.distribution.core.integration.application.command.CreateIntegrationResult;
 import jakarta.validation.constraints.NotNull;
 
 public record CreateIntegrationResponse(

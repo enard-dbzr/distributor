@@ -1,6 +1,6 @@
 package com.plux.distribution.infrastructure.persistence.entity.feedback.payload;
 
-import com.plux.distribution.application.dto.feedback.dto.payload.ButtonPayload;
+import com.plux.distribution.core.feedback.domain.payload.ButtonPayload;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 
@@ -8,7 +8,10 @@ import jakarta.persistence.Entity;
 @DiscriminatorValue("BUTTON")
 public class ButtonPayloadEntity extends FeedbackPayloadEntity {
 
+    @SuppressWarnings("unused")
     private Long replyToId;
+
+    @SuppressWarnings("unused")
     private String tag;
 
     public static ButtonPayloadEntity fromModel(ButtonPayload model) {

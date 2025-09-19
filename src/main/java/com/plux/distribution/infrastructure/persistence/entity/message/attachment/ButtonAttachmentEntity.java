@@ -1,7 +1,7 @@
 package com.plux.distribution.infrastructure.persistence.entity.message.attachment;
 
-import com.plux.distribution.domain.message.attachment.ButtonAttachment;
-import com.plux.distribution.domain.message.attachment.MessageAttachment;
+import com.plux.distribution.core.message.domain.attachment.ButtonAttachment;
+import com.plux.distribution.core.message.domain.attachment.MessageAttachment;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 

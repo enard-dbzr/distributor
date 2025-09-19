@@ -1,7 +1,7 @@
 package com.plux.distribution.infrastructure.telegram.sender;
 
-import com.plux.distribution.domain.message.attachment.AttachmentVisitor;
-import com.plux.distribution.domain.message.attachment.ButtonAttachment;
+import com.plux.distribution.core.message.domain.attachment.AttachmentVisitor;
+import com.plux.distribution.core.message.domain.attachment.ButtonAttachment;
 import org.jetbrains.annotations.NotNull;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardButton;
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.InlineKeyboardRow;

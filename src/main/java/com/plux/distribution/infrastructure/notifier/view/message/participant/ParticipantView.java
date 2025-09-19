@@ -2,12 +2,12 @@ package com.plux.distribution.infrastructure.notifier.view.message.participant;
 
 import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
-import com.plux.distribution.domain.message.participant.ChatParticipant;
-import com.plux.distribution.domain.message.participant.Participant;
-import com.plux.distribution.domain.message.participant.ParticipantVisitor;
-import com.plux.distribution.domain.message.participant.SelfParticipant;
-import com.plux.distribution.domain.message.participant.ServiceParticipant;
-import com.plux.distribution.domain.message.participant.UnknownServiceParticipant;
+import com.plux.distribution.core.message.domain.participant.ChatParticipant;
+import com.plux.distribution.core.message.domain.participant.Participant;
+import com.plux.distribution.core.message.domain.participant.ParticipantVisitor;
+import com.plux.distribution.core.message.domain.participant.SelfParticipant;
+import com.plux.distribution.core.message.domain.participant.ServiceParticipant;
+import com.plux.distribution.core.message.domain.participant.UnknownServiceParticipant;
 import io.swagger.v3.oas.annotations.media.DiscriminatorMapping;
 import io.swagger.v3.oas.annotations.media.Schema;
 import org.jetbrains.annotations.NotNull;
