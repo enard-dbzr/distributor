@@ -1,7 +1,7 @@
 package com.plux.distribution.infrastructure.persistence.entity.message.content;
 
-import com.plux.distribution.domain.message.content.MessageContent;
-import com.plux.distribution.domain.message.content.SimpleMessageContent;
+import com.plux.distribution.core.message.domain.content.MessageContent;
+import com.plux.distribution.core.message.domain.content.SimpleMessageContent;
 import com.plux.distribution.infrastructure.persistence.entity.message.attachment.AttachmentEntity;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.DiscriminatorValue;

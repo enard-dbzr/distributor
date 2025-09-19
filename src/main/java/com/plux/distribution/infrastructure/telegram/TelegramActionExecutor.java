@@ -1,11 +1,11 @@
 package com.plux.distribution.infrastructure.telegram;
 
-import com.plux.distribution.application.port.out.action.ActionExecutorPort;
-import com.plux.distribution.application.port.out.specific.telegram.chat.GetTgChatIdPort;
-import com.plux.distribution.application.port.out.specific.telegram.message.GetTgMessageIdPort;
-import com.plux.distribution.domain.action.ChatAction;
-import com.plux.distribution.domain.action.ChatActionVisitor;
-import com.plux.distribution.domain.action.ClearButtonsAction;
+import com.plux.distribution.core.message.application.port.out.ActionExecutorPort;
+import com.plux.distribution.infrastructure.telegram.port.chat.GetTgChatIdPort;
+import com.plux.distribution.infrastructure.telegram.port.message.GetTgMessageIdPort;
+import com.plux.distribution.core.message.application.dto.action.ChatAction;
+import com.plux.distribution.core.message.application.dto.action.ChatActionVisitor;
+import com.plux.distribution.core.message.application.dto.action.ClearButtonsAction;
 import org.jetbrains.annotations.NotNull;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageReplyMarkup;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
@@ -28,6 +28,7 @@ public class TelegramActionExecutor implements ActionExecutorPort {
         // TODO: убрать зависсимость от ChatAction в связи с возможным SendMessageAction
         var tgChatId = getTgChatIdPort.getTgChatId(chatAction.getChatId());
 
+        //noinspection Convert2Lambda
         chatAction.accept(new ChatActionVisitor() {
             @Override
             public void visit(ClearButtonsAction entity) {

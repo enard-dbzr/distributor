@@ -1,16 +1,16 @@
 package com.plux.distribution.infrastructure.telegram;
 
-import com.plux.distribution.application.port.in.RegisterFeedbackUseCase;
-import com.plux.distribution.application.dto.feedback.ButtonContext;
-import com.plux.distribution.application.dto.feedback.MessageContext;
-import com.plux.distribution.application.port.exception.ChatIdNotFound;
-import com.plux.distribution.application.port.out.specific.telegram.message.GetMessageIdByTgPort;
-import com.plux.distribution.application.port.out.specific.telegram.chat.GetChatIdByTgPort;
-import com.plux.distribution.application.port.out.specific.telegram.message.TgMessageGlobalId;
-import com.plux.distribution.application.port.out.specific.telegram.message.TgMessageLinker;
-import com.plux.distribution.application.port.out.specific.telegram.chat.TgChatLinker;
-import com.plux.distribution.domain.message.MessageId;
-import com.plux.distribution.domain.chat.ChatId;
+import com.plux.distribution.core.feedback.application.port.in.register.RegisterFeedbackUseCase;
+import com.plux.distribution.core.feedback.application.port.in.register.ButtonContext;
+import com.plux.distribution.core.feedback.application.port.in.register.MessageContext;
+import com.plux.distribution.core.feedback.application.exception.ChatIdNotFound;
+import com.plux.distribution.infrastructure.telegram.port.message.GetMessageIdByTgPort;
+import com.plux.distribution.infrastructure.telegram.port.chat.GetChatIdByTgPort;
+import com.plux.distribution.infrastructure.telegram.port.message.TgMessageGlobalId;
+import com.plux.distribution.infrastructure.telegram.port.message.TgMessageLinker;
+import com.plux.distribution.infrastructure.telegram.port.chat.TgChatLinker;
+import com.plux.distribution.core.message.domain.MessageId;
+import com.plux.distribution.core.chat.domain.ChatId;
 import java.util.Date;
 import java.util.Optional;
 import org.jetbrains.annotations.NotNull;

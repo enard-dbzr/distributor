@@ -1,8 +1,8 @@
 package com.plux.distribution.infrastructure.persistence.entity.user;
 
-import com.plux.distribution.domain.user.User;
-import com.plux.distribution.domain.user.UserId;
-import com.plux.distribution.domain.user.UserInfo;
+import com.plux.distribution.core.user.domain.User;
+import com.plux.distribution.core.user.domain.UserId;
+import com.plux.distribution.core.user.domain.UserInfo;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;

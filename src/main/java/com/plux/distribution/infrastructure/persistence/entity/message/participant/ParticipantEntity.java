@@ -1,11 +1,11 @@
 package com.plux.distribution.infrastructure.persistence.entity.message.participant;
 
-import com.plux.distribution.domain.message.participant.Participant;
-import com.plux.distribution.domain.message.participant.ParticipantVisitor;
-import com.plux.distribution.domain.message.participant.SelfParticipant;
-import com.plux.distribution.domain.message.participant.ServiceParticipant;
-import com.plux.distribution.domain.message.participant.UnknownServiceParticipant;
-import com.plux.distribution.domain.message.participant.ChatParticipant;
+import com.plux.distribution.core.message.domain.participant.Participant;
+import com.plux.distribution.core.message.domain.participant.ParticipantVisitor;
+import com.plux.distribution.core.message.domain.participant.SelfParticipant;
+import com.plux.distribution.core.message.domain.participant.ServiceParticipant;
+import com.plux.distribution.core.message.domain.participant.UnknownServiceParticipant;
+import com.plux.distribution.core.message.domain.participant.ChatParticipant;
 import jakarta.persistence.DiscriminatorColumn;
 import jakarta.persistence.DiscriminatorType;
 import jakarta.persistence.Entity;
@@ -15,7 +15,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Inheritance;
 import jakarta.persistence.InheritanceType;
 import jakarta.persistence.Table;
-import java.util.concurrent.atomic.AtomicReference;
 
 @Entity
 @Table(name = "participants")
@@ -25,35 +24,32 @@ public abstract class ParticipantEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @SuppressWarnings("unused")
     private Long id;
 
     public abstract Participant toModel();
 
     public static ParticipantEntity fromModel(Participant participant) {
-        var holder = new AtomicReference<ParticipantEntity>();
-
-        participant.accept(new ParticipantVisitor() {
+        return participant.accept(new ParticipantVisitor<>() {
             @Override
-            public void visit(ServiceParticipant participant) {
-                holder.set(ServiceParticipantEntity.fromModel(participant));
+            public ParticipantEntity visit(ServiceParticipant participant) {
+                return ServiceParticipantEntity.fromModel(participant);
             }
 
             @Override
-            public void visit(UnknownServiceParticipant participant) {
-                holder.set(UnkServiceParticipantEntity.fromModel(participant));
+            public ParticipantEntity visit(UnknownServiceParticipant participant) {
+                return UnkServiceParticipantEntity.fromModel(participant);
             }
 
             @Override
-            public void visit(ChatParticipant participant) {
-                holder.set(ChatParticipantEntity.fromModel(participant));
+            public ParticipantEntity visit(ChatParticipant participant) {
+                return ChatParticipantEntity.fromModel(participant);
             }
 
             @Override
-            public void visit(SelfParticipant participant) {
-                holder.set(SelfParticipantEntity.fromModel(participant));
+            public ParticipantEntity visit(SelfParticipant participant) {
+                return SelfParticipantEntity.fromModel(participant);
             }
         });
-
-        return holder.get();
     }
 }

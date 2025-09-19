@@ -1,8 +1,8 @@
 package com.plux.distribution.infrastructure.persistence.entity.message.attachment;
 
-import com.plux.distribution.domain.message.attachment.AttachmentVisitor;
-import com.plux.distribution.domain.message.attachment.ButtonAttachment;
-import com.plux.distribution.domain.message.attachment.MessageAttachment;
+import com.plux.distribution.core.message.domain.attachment.AttachmentVisitor;
+import com.plux.distribution.core.message.domain.attachment.ButtonAttachment;
+import com.plux.distribution.core.message.domain.attachment.MessageAttachment;
 import jakarta.persistence.DiscriminatorColumn;
 import jakarta.persistence.DiscriminatorType;
 import jakarta.persistence.Entity;
@@ -12,7 +12,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.Inheritance;
 import jakarta.persistence.InheritanceType;
 import jakarta.persistence.Table;
-import java.util.concurrent.atomic.AtomicReference;
 
 @Entity
 @Table(name = "attachments")
@@ -22,19 +21,17 @@ public abstract class AttachmentEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @SuppressWarnings("unused")
     private Long id;
 
     public static AttachmentEntity fromModel(MessageAttachment model) {
-        var holder = new AtomicReference<AttachmentEntity>();
-
-        model.accept(new AttachmentVisitor() {
+        //noinspection Convert2Lambda,Anonymous2MethodRef
+        return model.accept(new AttachmentVisitor<>() {
             @Override
-            public void visit(ButtonAttachment attachment) {
-                holder.set(ButtonAttachmentEntity.fromModel(attachment));
+            public AttachmentEntity visit(ButtonAttachment attachment) {
+                return ButtonAttachmentEntity.fromModel(attachment);
             }
         });
-
-        return holder.get();
     }
 
     public abstract MessageAttachment toModel();

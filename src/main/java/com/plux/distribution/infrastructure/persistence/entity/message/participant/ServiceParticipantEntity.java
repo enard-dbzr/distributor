@@ -1,8 +1,8 @@
 package com.plux.distribution.infrastructure.persistence.entity.message.participant;
 
-import com.plux.distribution.domain.message.participant.Participant;
-import com.plux.distribution.domain.message.participant.ServiceParticipant;
-import com.plux.distribution.domain.service.ServiceId;
+import com.plux.distribution.core.message.domain.participant.Participant;
+import com.plux.distribution.core.message.domain.participant.ServiceParticipant;
+import com.plux.distribution.core.integration.domain.ServiceId;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 

@@ -1,11 +1,12 @@
 package com.plux.distribution.infrastructure.persistence;
 
-import com.plux.distribution.application.port.out.chat.CreateChatPort;
-import com.plux.distribution.application.port.out.chat.GetChatPort;
-import com.plux.distribution.application.port.out.chat.UpdateChatPort;
-import com.plux.distribution.domain.chat.Chat;
-import com.plux.distribution.domain.chat.ChatId;
+import com.plux.distribution.core.chat.application.port.out.CreateChatPort;
+import com.plux.distribution.core.chat.application.port.out.GetChatPort;
+import com.plux.distribution.core.chat.application.port.out.UpdateChatPort;
+import com.plux.distribution.core.chat.domain.Chat;
+import com.plux.distribution.core.chat.domain.ChatId;
 import com.plux.distribution.infrastructure.persistence.entity.chat.ChatEntity;
+import java.util.List;
 import org.hibernate.Session;
 import org.hibernate.SessionFactory;
 import org.jetbrains.annotations.NotNull;
@@ -38,6 +39,15 @@ public class DbChatRepository implements CreateChatPort, UpdateChatPort, GetChat
             var chat = session.find(ChatEntity.class, id.value());
 
             return chat.toModel();
+        }
+    }
+
+    @Override
+    public @NotNull List<ChatId> getAllChatIds() {
+        try (Session session = sessionFactory.openSession()) {
+            var ids = session.createQuery("select c.id from ChatEntity c", Long.class).getResultList();
+
+            return ids.stream().map(ChatId::new).toList();
         }
     }
 

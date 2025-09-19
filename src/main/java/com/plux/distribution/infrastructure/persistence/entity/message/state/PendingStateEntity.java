@@ -1,7 +1,7 @@
 package com.plux.distribution.infrastructure.persistence.entity.message.state;
 
-import com.plux.distribution.domain.message.state.MessageState;
-import com.plux.distribution.domain.message.state.PendingState;
+import com.plux.distribution.core.message.domain.state.MessageState;
+import com.plux.distribution.core.message.domain.state.PendingState;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 
@@ -14,7 +14,7 @@ public class PendingStateEntity extends MessageStateEntity {
         return new PendingState();
     }
 
-    public static PendingStateEntity fromModel(PendingState model) {
+    public static PendingStateEntity fromModel(@SuppressWarnings("unused") PendingState model) {
         return new PendingStateEntity();
     }
 }

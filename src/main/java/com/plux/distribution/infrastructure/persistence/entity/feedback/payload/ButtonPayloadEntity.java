@@ -1,17 +1,17 @@
 package com.plux.distribution.infrastructure.persistence.entity.feedback.payload;
 
-import com.plux.distribution.domain.feedback.payload.ButtonPayload;
-import com.plux.distribution.domain.feedback.payload.FeedbackPayload;
-import com.plux.distribution.domain.message.MessageId;
+import com.plux.distribution.core.feedback.domain.payload.ButtonPayload;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
-import org.jetbrains.annotations.NotNull;
 
 @Entity
 @DiscriminatorValue("BUTTON")
 public class ButtonPayloadEntity extends FeedbackPayloadEntity {
 
+    @SuppressWarnings("unused")
     private Long replyToId;
+
+    @SuppressWarnings("unused")
     private String tag;
 
     public static ButtonPayloadEntity fromModel(ButtonPayload model) {
@@ -21,10 +21,5 @@ public class ButtonPayloadEntity extends FeedbackPayloadEntity {
         entity.tag = model.tag();
 
         return entity;
-    }
-
-    @Override
-    public @NotNull FeedbackPayload toModel() {
-        return new ButtonPayload(new MessageId(replyToId), tag);
     }
 }
