@@ -11,7 +11,12 @@ public class AskNameFrame implements Frame {
 
     @Override
     public void exec(@NotNull FrameContext context) {
-        context.send(new SimpleMessageContent("Как тебя зовут? 😊", List.of()));
+        context.send(
+                new SimpleMessageContent(
+                        context.getTextProvider().getString("registration.user.name.ask"),
+                        List.of()
+                )
+        );
     }
 
     @Override

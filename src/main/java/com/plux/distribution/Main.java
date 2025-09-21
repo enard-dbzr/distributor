@@ -37,6 +37,7 @@ import com.plux.distribution.core.workflow.application.frame.utils.LastMessageDa
 import com.plux.distribution.core.workflow.application.frame.utils.SequenceFrame;
 import com.plux.distribution.core.workflow.application.service.WorkflowService;
 import com.plux.distribution.core.integration.domain.ServiceId;
+import com.plux.distribution.infrastructure.BundleTextProvider;
 import com.plux.distribution.infrastructure.notifier.WebhookNotifier;
 import com.plux.distribution.infrastructure.persistence.DbChatRepository;
 import com.plux.distribution.infrastructure.persistence.DbFeedbackRepository;
@@ -54,6 +55,7 @@ import com.plux.distribution.infrastructure.telegram.sender.TelegramMessageSende
 import jakarta.servlet.DispatcherType;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Locale;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.jetty.server.Server;
@@ -113,10 +115,12 @@ public class Main {
         var sessionService = new SessionService(sessionRepo, notifier);
         var sessionFeedbackProcessor = new SessionFeedbackProcessor(sessionService);
 
+        var textProvider = new BundleTextProvider(Locale.of("ru"));
         var frameRegistry = makeFrameRegistry(userService, chatService);
         var dataRegistry = makeDataRegistry();
         var frameContextManager = new DefaultContextManager(messageService, executeActionService);
-        var workflowService = new WorkflowService(frameRegistry, dataRegistry, frameRepo, frameContextManager);
+        var workflowService = new WorkflowService(frameRegistry, dataRegistry, frameRepo, frameContextManager,
+                textProvider);
         var flowFeedbackProcessor = new FlowFeedbackProcessor(workflowService, frameRegistry.get("flow.registration"));
 
         var mainFeedbackProcessor = new SequenceFeedbackProcessor(List.of(

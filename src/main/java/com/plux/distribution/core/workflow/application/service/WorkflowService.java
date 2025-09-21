@@ -14,6 +14,7 @@ import com.plux.distribution.core.workflow.domain.FrameContext.ContextSnapshot;
 import com.plux.distribution.core.workflow.domain.FrameContext.FrameEntry;
 import com.plux.distribution.core.workflow.domain.FrameContextManager;
 import com.plux.distribution.core.chat.domain.ChatId;
+import com.plux.distribution.core.workflow.domain.TextProvider;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -30,15 +31,17 @@ public class WorkflowService implements WorkflowUseCase {
     private final DataRegistry dataRegistry;
     private final ContextRepositoryPort repository;
     private final FrameContextManager frameContextManager;
+    private final TextProvider textProvider;
 
     private final ObjectMapper mapper = new ObjectMapper();
 
     public WorkflowService(FrameRegistry frameRegistry, DataRegistry dataRegistry, ContextRepositoryPort repository,
-            FrameContextManager frameContextManager) {
+            FrameContextManager frameContextManager, TextProvider textProvider) {
         this.frameRegistry = frameRegistry;
         this.dataRegistry = dataRegistry;
         this.repository = repository;
         this.frameContextManager = frameContextManager;
+        this.textProvider = textProvider;
     }
 
     public void save(@NotNull FrameContext frameContext) {
@@ -78,7 +81,7 @@ public class WorkflowService implements WorkflowUseCase {
         var serializedSnapshot = repository.getSnapshot(chatId);
 
         if (serializedSnapshot == null || serializedSnapshot.isEmpty()) {
-            return new FrameContext(frameContextManager, chatId);
+            return new FrameContext(frameContextManager, textProvider, chatId);
         }
 
         ContextSnapshotHolder snapshotHolder;
@@ -86,7 +89,7 @@ public class WorkflowService implements WorkflowUseCase {
             snapshotHolder = mapper.readValue(serializedSnapshot, ContextSnapshotHolder.class);
         } catch (JsonProcessingException e) {
             log.error("Failed to deserialize frame context, returning empty", e);
-            return new FrameContext(frameContextManager, chatId);
+            return new FrameContext(frameContextManager, textProvider, chatId);
         }
 
         Map<Class<?>, Object> data = new HashMap<>();
@@ -110,7 +113,7 @@ public class WorkflowService implements WorkflowUseCase {
             ));
         }
 
-        var context = new FrameContext(frameContextManager, chatId);
+        var context = new FrameContext(frameContextManager, textProvider, chatId);
         context.restore(new ContextSnapshot(data, stack));
 
         return context;

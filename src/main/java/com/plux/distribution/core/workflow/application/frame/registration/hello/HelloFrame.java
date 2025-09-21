@@ -15,11 +15,11 @@ public class HelloFrame implements Frame {
     @Override
     public void exec(@NotNull FrameContext context) {
         var message = new SimpleMessageContent(
-                "Добро пожаловать в бота компании 3DiVi! Я здесь, "
-                        + "чтобы помочь вам оценить и развить ваши профессиональные навыки. "
-                        + "Пройдите тесты, получите обратную связь и станьте еще более "
-                        + "квалифицированным специалистом. Начнем?\n(✿◠‿◠)",
-                List.of(new ButtonAttachment("Поехали", "start"))
+                context.getTextProvider().getString("registration.start.hello"),
+                List.of(new ButtonAttachment(
+                        context.getTextProvider().getString("registration.start.confirm_button"),
+                        "start"
+                ))
         );
 
         var messageId = context.send(message);

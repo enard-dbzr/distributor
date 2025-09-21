@@ -13,13 +13,17 @@ public class FrameContext {
 
     private final @NotNull FrameContextManager manager;
 
+    private final @NotNull TextProvider textProvider;
+
     private final @NotNull ChatId chatId;
 
     private final @NotNull FlowData data = new FlowData();
     private final @NotNull Stack<FrameEntry> frames = new Stack<>();
 
-    public FrameContext(@NotNull FrameContextManager manager, @NotNull ChatId chatId) {
+    public FrameContext(@NotNull FrameContextManager manager, @NotNull TextProvider textProvider,
+            @NotNull ChatId chatId) {
         this.manager = manager;
+        this.textProvider = textProvider;
         this.chatId = chatId;
     }
 
@@ -99,6 +103,10 @@ public class FrameContext {
 
     public @NotNull FlowData getData() {
         return data;
+    }
+
+    public @NotNull TextProvider getTextProvider() {
+        return textProvider;
     }
 
     public record FrameEntry(Frame frame, boolean execute) {

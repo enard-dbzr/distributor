@@ -17,7 +17,10 @@ public class CheckPasswordFrame implements Frame {
 
     @Override
     public void exec(@NotNull FrameContext context) {
-        var message = new SimpleMessageContent("Для продолжения необходимо ввести пароль", List.of());
+        var message = new SimpleMessageContent(
+                context.getTextProvider().getString("registration.password.ask_message"),
+                List.of()
+        );
 
         context.send(message);
     }

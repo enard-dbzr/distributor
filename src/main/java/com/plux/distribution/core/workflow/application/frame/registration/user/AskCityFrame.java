@@ -15,8 +15,8 @@ public class AskCityFrame implements Frame {
     @Override
     public void exec(@NotNull FrameContext context) {
         var messageId = context.send(new SimpleMessageContent(
-                "А из какого ты города? 🌍",
-                List.of(new ButtonAttachment("Пропустить", "skip"))
+                context.getTextProvider().getString("registration.user.city.ask"),
+                List.of(new ButtonAttachment(context.getTextProvider().getString("utils.skip_button"), "skip"))
         ));
 
         context.getData().put(LastMessageData.class, new LastMessageData(messageId));
