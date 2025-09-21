@@ -12,6 +12,7 @@ import com.plux.distribution.core.workflow.application.frame.registration.user.A
 import com.plux.distribution.core.workflow.application.frame.registration.user.AskEmailFrame;
 import com.plux.distribution.core.workflow.application.frame.registration.user.AskHobbyFrame;
 import com.plux.distribution.core.workflow.application.frame.registration.user.AskNameFrame;
+import com.plux.distribution.core.workflow.application.frame.registration.user.AskTimezoneFrame;
 import com.plux.distribution.core.workflow.application.frame.registration.user.FinalizeFrame;
 import com.plux.distribution.core.workflow.application.frame.registration.user.StartUserBuildingFrame;
 import com.plux.distribution.core.workflow.application.service.FlowFeedbackProcessor;
@@ -194,39 +195,23 @@ public class Main {
 
         var factory = new DefaultFrameRegistry();
 
-        factory.register("registration.hello_frame",
-                new HelloFrame());
-        factory.register("registration.post_hello",
-                new PostHelloFrame());
+        factory.register("registration.hello_frame", new HelloFrame());
+        factory.register("registration.post_hello", new PostHelloFrame());
 
-        factory.register("registration.check_pin",
-                new CheckPasswordFrame(pin));
-        factory.register("registration.check_pin.correct",
-                new CorrectPasswordFrame());
-        factory.register("registration.check_pin.incorrect",
-                new InorrectPasswordFrame());
+        factory.register("registration.check_pin", new CheckPasswordFrame(pin));
+        factory.register("registration.check_pin.correct", new CorrectPasswordFrame());
+        factory.register("registration.check_pin.incorrect", new InorrectPasswordFrame());
 
-        factory.register("registration.user.ask_name",
-                new AskNameFrame());
-        factory.register("registration.user.ask_email",
-                new AskEmailFrame());
-        factory.register("registration.user.ask_age",
-                new AskAgeFrame());
-        factory.register("registration.user.ask_city",
-                new AskCityFrame());
-        factory.register("registration.user.ask_hobby",
-                new AskHobbyFrame());
-        factory.register("registration.user.finalize",
-                new FinalizeFrame(
-                        userService, chatService
-                )
-        );
-        factory.register(
-                "registration.user.start_building",
-                new StartUserBuildingFrame(
-                        factory.get("registration.user.finalize")
-                )
-        );
+        factory.register("registration.user.ask_name", new AskNameFrame());
+        factory.register("registration.user.ask_timezone", new AskTimezoneFrame());
+        factory.register("registration.user.ask_email", new AskEmailFrame());
+        factory.register("registration.user.ask_age", new AskAgeFrame());
+        factory.register("registration.user.ask_city", new AskCityFrame());
+        factory.register("registration.user.ask_hobby", new AskHobbyFrame());
+        factory.register("registration.user.finalize", new FinalizeFrame(userService, chatService));
+        factory.register("registration.user.start_building", new StartUserBuildingFrame(
+                factory.get("registration.user.finalize")
+        ));
 
         factory.register("flow.registration", new SequenceFrame(List.of(
                 factory.get("registration.hello_frame"),

@@ -13,12 +13,16 @@ import jakarta.persistence.Table;
 @Entity
 @Table(name = "users")
 public class UserEntity {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(nullable = false)
     private String name;
+
+    @Column(nullable = false)
+    private String timezone;
 
     private String email;
     private Integer age;
@@ -29,7 +33,7 @@ public class UserEntity {
         var entity = new UserEntity();
 
         entity.name = userInfo.name();
-        entity.email = userInfo.email();
+        entity.timezone = userInfo.timezone();
         entity.age = userInfo.age();
         entity.city = userInfo.city();
         entity.hobby = userInfo.hobby();
@@ -38,7 +42,7 @@ public class UserEntity {
     }
 
     public User toModel() {
-        return new User(new UserId(id), new UserInfo(name, email, age, city, hobby));
+        return new User(new UserId(id), new UserInfo(name, timezone, email, age, city, hobby));
     }
 
     public Long getId() {

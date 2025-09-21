@@ -7,6 +7,7 @@ import org.apache.commons.validator.routines.EmailValidator;
 public class UserBuilder {
 
     private String name;
+    private String timezone;
     private String email;
     private Integer age;
     private String city;
@@ -22,6 +23,19 @@ public class UserBuilder {
     }
 
     @SuppressWarnings("unused")
+    public String getTimezone() {
+        return timezone;
+    }
+
+    public void setTimezone(String timezone) throws IllegalArgumentException {
+        if (timezone == null || timezone.matches("^UTC[+-]\\d{1,2}$")) {
+            this.timezone = timezone;
+        } else {
+            throw new IllegalArgumentException("timezone");
+        }
+    }
+
+    @SuppressWarnings("unused")
     public String getEmail() {
         return email;
     }
@@ -32,6 +46,7 @@ public class UserBuilder {
         }
         this.email = email;
     }
+
 
     @SuppressWarnings("unused")
     public Integer getAge() {
@@ -62,10 +77,13 @@ public class UserBuilder {
 
     public UserInfo buildUserInfo() {
         if (name == null) {
-            throw new IllegalStateException("name is null");
+            throw new IllegalStateException("name required");
+        }
+        if (timezone == null) {
+            throw new IllegalStateException("timezone required");
         }
 
-        return new UserInfo(name, email, age, city, hobby);
+        return new UserInfo(name, timezone, email, age, city, hobby);
     }
 
     public static class Serializer extends JsonDataSerializer<UserBuilder> {

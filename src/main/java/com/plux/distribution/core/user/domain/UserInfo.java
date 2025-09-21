@@ -5,6 +5,7 @@ import org.jetbrains.annotations.Nullable;
 
 public record UserInfo(
         @NotNull String name,
+        @NotNull String timezone,
         @Nullable String email,
         @Nullable Integer age,
         @Nullable String city,
