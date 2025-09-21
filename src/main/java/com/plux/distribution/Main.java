@@ -2,6 +2,7 @@ package com.plux.distribution;
 
 import com.plux.distribution.core.chat.application.service.ChatService;
 import com.plux.distribution.core.message.application.service.ExecuteActionService;
+import com.plux.distribution.core.session.application.service.ScheduleSettingsService;
 import com.plux.distribution.core.workflow.application.frame.registration.hello.HelloFrame;
 import com.plux.distribution.core.workflow.application.frame.registration.hello.PostHelloFrame;
 import com.plux.distribution.core.workflow.application.frame.registration.pin.CheckPasswordFrame;
@@ -45,6 +46,7 @@ import com.plux.distribution.infrastructure.persistence.DbFeedbackRepository;
 import com.plux.distribution.infrastructure.persistence.DbFrameRepository;
 import com.plux.distribution.infrastructure.persistence.DbIntegrationRepository;
 import com.plux.distribution.infrastructure.persistence.DbMessageRepository;
+import com.plux.distribution.infrastructure.persistence.DbScheduleSettingsRepository;
 import com.plux.distribution.infrastructure.persistence.DbSessionRepository;
 import com.plux.distribution.infrastructure.persistence.DbTgChatLinker;
 import com.plux.distribution.infrastructure.persistence.DbTgMessageLinker;
@@ -94,6 +96,7 @@ public class Main {
         var userRepo = new DbUserRepository(hibernateConfig.getSessionFactory());
         var sessionRepo = new DbSessionRepository(hibernateConfig.getSessionFactory());
         var integrationRepo = new DbIntegrationRepository(hibernateConfig.getSessionFactory());
+        var scheduleSettingsRepo = new DbScheduleSettingsRepository(hibernateConfig.getSessionFactory());
 
         var tgChatLinker = new DbTgChatLinker(hibernateConfig.getSessionFactory());
         var tgMessageLinker = new DbTgMessageLinker(hibernateConfig.getSessionFactory());
@@ -113,6 +116,7 @@ public class Main {
         var sendIntegrationMessageService = new SendServiceMessageService(messageService, integrationRepo);
         var integrationFeedbackProcessor = new IntegrationFeedbackProcessor(notifier);
 
+        var scheduleSettingsService = new ScheduleSettingsService(scheduleSettingsRepo);
         var sessionService = new SessionService(sessionRepo, notifier);
         var sessionFeedbackProcessor = new SessionFeedbackProcessor(sessionService);
 
