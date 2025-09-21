@@ -11,7 +11,10 @@ public class CorrectPasswordFrame implements Frame {
 
     @Override
     public void exec(@NotNull FrameContext context) {
-        context.send(new SimpleMessageContent("Отлично, можем продолжить \n(っ◔◡◔)っ❤", List.of()));
+        context.send(new SimpleMessageContent(
+                context.getTextProvider().getString("registration.password.correct"),
+                List.of()
+        ));
         context.changeState();
     }
 

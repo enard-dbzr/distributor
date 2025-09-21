@@ -30,7 +30,7 @@ public class FinalizeFrame implements Frame {
         context.getData().remove(UserBuilder.class);
 
         context.send(new SimpleMessageContent(
-                "Регистрация прошла успешно ✅\nРад тебя видеть здесь 🤗",
+                context.getTextProvider().getString("registration.user.finish.success"),
                 List.of()
         ));
         context.changeState();

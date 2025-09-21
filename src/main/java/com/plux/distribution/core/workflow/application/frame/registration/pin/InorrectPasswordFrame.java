@@ -13,7 +13,10 @@ public class InorrectPasswordFrame implements Frame {
     public void exec(@NotNull FrameContext context) {
         context.changeState();
 
-        context.send(new SimpleMessageContent("Неверный пароль \n(ง ͠▧. ͡▧)ง", List.of()));
+        context.send(new SimpleMessageContent(
+                context.getTextProvider().getString("registration.password.incorrect"),
+                List.of()
+        ));
     }
 
     @Override

@@ -16,8 +16,8 @@ public class AskAgeFrame implements Frame {
     @Override
     public void exec(@NotNull FrameContext context) {
         var messageId = context.send(new SimpleMessageContent(
-                "Сколько тебе лет? 😉",
-                List.of(new ButtonAttachment("Пропустить", "skip"))
+                context.getTextProvider().getString("registration.user.age.ask"),
+                List.of(new ButtonAttachment(context.getTextProvider().getString("utils.skip_button"), "skip"))
         ));
 
         context.getData().put(LastMessageData.class, new LastMessageData(messageId));
@@ -40,7 +40,11 @@ public class AskAgeFrame implements Frame {
                 goNext(context);
             } catch (NumberFormatException e) {
                 context.changeState(this, false);
-                context.push(new InfoMessageFrame("Введи число пожалуйста 😄"), true);
+                context.push(
+                        new InfoMessageFrame(
+                                context.getTextProvider().getString("registration.user.age.wrong_type")
+                        ), true
+                );
                 context.exec();
             }
         });

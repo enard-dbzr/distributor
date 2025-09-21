@@ -16,8 +16,8 @@ public class AskEmailFrame implements Frame {
     @Override
     public void exec(@NotNull FrameContext context) {
         var messageId = context.send(new SimpleMessageContent(
-                "Оставь, пожалуйста, свою почту ✉️",
-                List.of(new ButtonAttachment("Пропустить", "skip"))
+                context.getTextProvider().getString("registration.user.email.ask"),
+                List.of(new ButtonAttachment(context.getTextProvider().getString("utils.skip_button"), "skip"))
         ));
 
         context.getData().put(LastMessageData.class, new LastMessageData(messageId));
@@ -40,7 +40,11 @@ public class AskEmailFrame implements Frame {
                 goNext(context);
             } catch (IllegalArgumentException e) {
                 context.changeState(this, false);
-                context.push(new InfoMessageFrame("Неправильный email 🙁"), true);
+                context.push(
+                        new InfoMessageFrame(
+                                context.getTextProvider().getString("registration.user.email.wrong_type")
+                        ),
+                        true);
                 context.exec();
             }
         });

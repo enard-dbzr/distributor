@@ -11,7 +11,10 @@ public class PostHelloFrame implements Frame {
 
     @Override
     public void exec(@NotNull FrameContext context) {
-        context.send(new SimpleMessageContent("Хорошо, давай начнем", List.of()));
+        context.send(new SimpleMessageContent(
+                context.getTextProvider().getString("registration.start.confirmed"),
+                List.of()
+        ));
 
         context.changeState();
     }
