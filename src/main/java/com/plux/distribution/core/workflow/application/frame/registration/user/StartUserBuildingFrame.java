@@ -20,7 +20,6 @@ public class StartUserBuildingFrame implements Frame {
 
         var master = new SequenceFrame(List.of(
                 new AskNameFrame(),
-                new AskTimezoneFrame(),
                 new AskAgeFrame(),
                 new AskCityFrame(),
                 new AskHobbyFrame(),

@@ -61,7 +61,7 @@ public class RandomSessionInitializer implements InitSessionsStrategy {
     private List<LocalDateTime> generateDailySchedule(LocalDate date) {
         List<LocalDateTime> schedule = new ArrayList<>();
         for (int i = 0; i < 3; i++) {
-            var randomTime = LocalTime.of(random.nextInt(24), random.nextInt(60), random.nextInt(60));
+            var randomTime = LocalTime.of(random.nextInt(0, 24), random.nextInt(60), random.nextInt(60));
             var scheduleDateTime = LocalDateTime.of(date, randomTime);
 
             if (scheduleDateTime.isAfter(LocalDateTime.now())) {

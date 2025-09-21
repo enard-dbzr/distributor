@@ -1,9 +1,9 @@
-package com.plux.distribution.core.workflow.application.frame.registration.user;
+package com.plux.distribution.core.workflow.application.frame.settings.schedule;
 
 import com.plux.distribution.core.message.application.dto.action.ClearButtonsAction;
 import com.plux.distribution.core.message.domain.attachment.ButtonAttachment;
 import com.plux.distribution.core.message.domain.content.SimpleMessageContent;
-import com.plux.distribution.core.workflow.application.frame.utils.InfoMessageFrame;
+import com.plux.distribution.core.workflow.application.frame.registration.user.UserBuilder;
 import com.plux.distribution.core.workflow.application.frame.utils.LastMessageData;
 import com.plux.distribution.core.workflow.domain.Frame;
 import com.plux.distribution.core.workflow.domain.FrameContext;
@@ -40,30 +40,30 @@ public class AskTimezoneFrame implements Frame {
     public void handle(@NotNull FrameContext context, @NotNull FrameFeedback feedback) {
         var userBuilder = context.getData().get(UserBuilder.class);
 
-        feedback.buttonTag().ifPresent(value -> {
-            switch (value) {
-                case "timezone.moscow" -> userBuilder.setTimezone("UTC+3");
-                case "timezone.ekaterinburg" -> userBuilder.setTimezone("UTC+5");
-                case "timezone.krasnoyarsk" -> userBuilder.setTimezone("UTC+7");
-            }
-            goNext(context);
-        });
-
-        feedback.text().ifPresent(text -> {
-            try {
-                userBuilder.setTimezone(text);
-                goNext(context);
-            } catch (IllegalArgumentException e) {
-                context.changeState(this, false);
-                context.push(
-                        new InfoMessageFrame(
-                                context.getTextProvider().getString("registration.user.timezone.wrong_format")
-                        ),
-                        true
-                );
-                context.exec();
-            }
-        });
+//        feedback.buttonTag().ifPresent(value -> {
+//            switch (value) {
+//                case "timezone.moscow" -> userBuilder.setTimezone("UTC+3");
+//                case "timezone.ekaterinburg" -> userBuilder.setTimezone("UTC+5");
+//                case "timezone.krasnoyarsk" -> userBuilder.setTimezone("UTC+7");
+//            }
+//            goNext(context);
+//        });
+//
+//        feedback.text().ifPresent(text -> {
+//            try {
+//                userBuilder.setTimezone(text);
+//                goNext(context);
+//            } catch (IllegalArgumentException e) {
+//                context.changeState(this, false);
+//                context.push(
+//                        new InfoMessageFrame(
+//                                context.getTextProvider().getString("registration.user.timezone.wrong_format")
+//                        ),
+//                        true
+//                );
+//                context.exec();
+//            }
+//        });
     }
 
     private void goNext(@NotNull FrameContext context) {
