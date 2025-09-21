@@ -11,24 +11,24 @@ import com.plux.distribution.core.workflow.domain.FrameFeedback;
 import java.util.List;
 import org.jetbrains.annotations.NotNull;
 
-public class AskTimezoneFrame implements Frame {
+public class AskHoursFrame implements Frame {
 
     @Override
     public void exec(@NotNull FrameContext context) {
         var messageId = context.send(new SimpleMessageContent(
-                context.getTextProvider().getString("settings.schedule.timezone.ask"),
+                context.getTextProvider().getString("settings.schedule.hours.ask"),
                 List.of(
                         new ButtonAttachment(
-                                context.getTextProvider().getString("settings.schedule.timezone.option.moscow"),
-                                "timezone.moscow"
+                                context.getTextProvider().getString("settings.schedule.hours.option.all_day"),
+                                "hours.all_day"
                         ),
                         new ButtonAttachment(
-                                context.getTextProvider().getString("settings.schedule.timezone.option.ekaterinburg"),
-                                "timezone.ekaterinburg"
+                                context.getTextProvider().getString("settings.schedule.hours.option.extended"),
+                                "hours.extended"
                         ),
                         new ButtonAttachment(
-                                context.getTextProvider().getString("settings.schedule.timezone.option.krasnoyarsk"),
-                                "timezone.krasnoyarsk"
+                                context.getTextProvider().getString("settings.schedule.hours.option.work_day"),
+                                "hours.work_day"
                         )
                 )
         ));
@@ -42,22 +42,27 @@ public class AskTimezoneFrame implements Frame {
 
         feedback.buttonTag().ifPresent(value -> {
             switch (value) {
-                case "timezone.moscow" -> settingsBuilder.setTimezone("UTC+3");
-                case "timezone.ekaterinburg" -> settingsBuilder.setTimezone("UTC+5");
-                case "timezone.krasnoyarsk" -> settingsBuilder.setTimezone("UTC+7");
+                case "hours.all_day" -> settingsBuilder.setRange(0, 24);
+                case "hours.extended" -> settingsBuilder.setRange(9, 23);
+                case "hours.work_day" -> settingsBuilder.setRange(9, 18);
             }
             goNext(context);
         });
 
         feedback.text().ifPresent(text -> {
-            try {
-                settingsBuilder.setTimezone(text);
+            if (text.matches("^([01]?\\d|2[0-3])-([01]?\\d|2[0-4])$")) {
+                String[] parts = text.split("-");
+                int startHour = Integer.parseInt(parts[0]);
+                int endHour = Integer.parseInt(parts[1]);
+
+                settingsBuilder.setRange(startHour, endHour);
+
                 goNext(context);
-            } catch (IllegalArgumentException e) {
+            } else {
                 context.changeState(this, false);
                 context.push(
                         new InfoMessageFrame(
-                                context.getTextProvider().getString("settings.schedule.timezone.wrong_format")
+                                context.getTextProvider().getString("settings.schedule.hours.wrong_format")
                         ),
                         true
                 );

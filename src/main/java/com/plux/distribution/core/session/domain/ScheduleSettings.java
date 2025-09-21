@@ -5,6 +5,10 @@ import org.jetbrains.annotations.NotNull;
 public record ScheduleSettings(@NotNull HoursRange hoursRange, @NotNull String timezone) {
 
     public ScheduleSettings {
+        checkTimezoneValid(timezone);
+    }
+
+    public static void checkTimezoneValid(String timezone) throws IllegalArgumentException {
         if (!timezone.matches("^UTC[+-]\\d{1,2}$")) {
             throw new IllegalArgumentException("Invalid time zone");
         }

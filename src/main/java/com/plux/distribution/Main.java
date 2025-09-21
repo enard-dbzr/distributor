@@ -3,6 +3,8 @@ package com.plux.distribution;
 import com.plux.distribution.core.chat.application.service.ChatService;
 import com.plux.distribution.core.message.application.service.ExecuteActionService;
 import com.plux.distribution.core.session.application.service.ScheduleSettingsService;
+import com.plux.distribution.core.workflow.application.frame.registration.ChangeSettingsMessage;
+import com.plux.distribution.core.workflow.application.frame.registration.RegistrationSuccessMessage;
 import com.plux.distribution.core.workflow.application.frame.registration.hello.HelloFrame;
 import com.plux.distribution.core.workflow.application.frame.registration.hello.PostHelloFrame;
 import com.plux.distribution.core.workflow.application.frame.registration.pin.CheckPasswordFrame;
@@ -13,9 +15,13 @@ import com.plux.distribution.core.workflow.application.frame.registration.user.A
 import com.plux.distribution.core.workflow.application.frame.registration.user.AskEmailFrame;
 import com.plux.distribution.core.workflow.application.frame.registration.user.AskHobbyFrame;
 import com.plux.distribution.core.workflow.application.frame.registration.user.AskNameFrame;
+import com.plux.distribution.core.workflow.application.frame.settings.schedule.AskHoursFrame;
 import com.plux.distribution.core.workflow.application.frame.settings.schedule.AskTimezoneFrame;
 import com.plux.distribution.core.workflow.application.frame.registration.user.FinalizeFrame;
 import com.plux.distribution.core.workflow.application.frame.registration.user.StartUserBuildingFrame;
+import com.plux.distribution.core.workflow.application.frame.settings.schedule.FinalizeScheduleSettingsFrame;
+import com.plux.distribution.core.workflow.application.frame.settings.schedule.ScheduleSettingsBuilder;
+import com.plux.distribution.core.workflow.application.frame.settings.schedule.StartScheduleSettingsFrame;
 import com.plux.distribution.core.workflow.application.service.FlowFeedbackProcessor;
 import com.plux.distribution.core.feedback.application.service.FeedbackResolver;
 import com.plux.distribution.core.feedback.application.service.SequenceFeedbackProcessor;
@@ -121,7 +127,7 @@ public class Main {
         var sessionFeedbackProcessor = new SessionFeedbackProcessor(sessionService);
 
         var textProvider = new BundleTextProvider(Locale.of("ru"));
-        var frameRegistry = makeFrameRegistry(userService, chatService);
+        var frameRegistry = makeFrameRegistry(userService, chatService, scheduleSettingsService);
         var dataRegistry = makeDataRegistry();
         var frameContextManager = new DefaultContextManager(messageService, executeActionService);
         var workflowService = new WorkflowService(frameRegistry, dataRegistry, frameRepo, frameContextManager,
@@ -194,7 +200,9 @@ public class Main {
         }
     }
 
-    private static FrameRegistry makeFrameRegistry(UserService userService, ChatService chatService) {
+    private static FrameRegistry makeFrameRegistry(
+            UserService userService, ChatService chatService, ScheduleSettingsService scheduleSettingsService
+    ) {
         var pin = System.getenv("BOT_PIN");
 
         var factory = new DefaultFrameRegistry();
@@ -216,12 +224,23 @@ public class Main {
                 factory.get("registration.user.finalize")
         ));
 
+        factory.register("registration.change_settings", new ChangeSettingsMessage());
+        factory.register("registration.finish.success", new RegistrationSuccessMessage());
+
         factory.register("settings.schedule.ask_timezone", new AskTimezoneFrame());
+        factory.register("settings.schedule.ask_hours", new AskHoursFrame());
+        factory.register("settings.schedule.finalize", new FinalizeScheduleSettingsFrame(scheduleSettingsService));
+        factory.register("settings.schedule.start_building", new StartScheduleSettingsFrame(
+                factory.get("settings.schedule.finalize")
+        ));
 
         factory.register("flow.registration", new SequenceFrame(List.of(
                 factory.get("registration.hello_frame"),
                 factory.get("registration.check_pin"),
-                factory.get("registration.user.start_building")
+                factory.get("registration.user.start_building"),
+                factory.get("registration.change_settings"),
+                factory.get("settings.schedule.start_building"),
+                factory.get("registration.finish.success")
         )));
 
         return factory;
@@ -232,6 +251,8 @@ public class Main {
 
         registry.register("utils.last_message", LastMessageData.class, new LastMessageData.Serializer());
         registry.register("registration.user_builder", UserBuilder.class, new UserBuilder.Serializer());
+        registry.register("settings.schedule_settings_builder", ScheduleSettingsBuilder.class,
+                new ScheduleSettingsBuilder.Serializer());
 
         return registry;
     }
