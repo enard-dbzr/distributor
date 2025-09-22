@@ -1,13 +1,16 @@
 package com.plux.distribution.core.session.application.service;
 
 import com.plux.distribution.core.chat.application.port.in.GetAllChatsUseCase;
+import com.plux.distribution.core.session.application.port.in.GetScheduleSettingsUseCase;
 import com.plux.distribution.core.session.application.port.in.OpenSessionUseCase;
 import com.plux.distribution.core.session.application.port.in.InitSessionsStrategy;
 import com.plux.distribution.core.chat.domain.ChatId;
 import com.plux.distribution.core.integration.domain.ServiceId;
+import com.plux.distribution.core.session.domain.ScheduleSettings;
 import java.time.LocalDate;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.ZoneId;
+import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -23,6 +26,7 @@ public class RandomSessionInitializer implements InitSessionsStrategy {
 
     private final @NotNull OpenSessionUseCase openSessionUseCase;
     private final @NotNull GetAllChatsUseCase getAllChatsUseCase;
+    private final @NotNull GetScheduleSettingsUseCase getScheduleSettingsUseCase;
     private final @NotNull ServiceId serviceId;  // TODO: Remove this mock
 
     private final Map<ChatId, ChatSchedule> chatSchedules = new ConcurrentHashMap<>();
@@ -30,50 +34,63 @@ public class RandomSessionInitializer implements InitSessionsStrategy {
 
     public RandomSessionInitializer(@NotNull OpenSessionUseCase openSessionUseCase,
             @NotNull GetAllChatsUseCase getAllChatsUseCase,
+            @NotNull GetScheduleSettingsUseCase getScheduleSettingsUseCase,
             @NotNull ServiceId serviceId) {
         this.openSessionUseCase = openSessionUseCase;
         this.getAllChatsUseCase = getAllChatsUseCase;
+        this.getScheduleSettingsUseCase = getScheduleSettingsUseCase;
         this.serviceId = serviceId;
     }
 
     @Override
     public void initSessions() {
         generateScheduleIfNeeded();
-        checkAndOpenSessions(LocalDateTime.now());
+        checkAndOpenSessions(ZonedDateTime.now());
         cleanupOldSchedules();
     }
 
     private void generateScheduleIfNeeded() {
         var chats = getAllChatsUseCase.getAllChatIds();
-        var today = LocalDate.now();
 
         for (var chatId : chats) {
             var schedule = chatSchedules.get(chatId);
+            var settings = getScheduleSettingsUseCase.get(chatId);
 
-            if (schedule == null || !schedule.generationDate().equals(today)) {
-                List<LocalDateTime> newSchedule = generateDailySchedule(today);
-                chatSchedules.put(chatId, new ChatSchedule(today, newSchedule));
+            var zoneId = ZoneId.of(settings.timezone());
+            var zonedNow = ZonedDateTime.now(zoneId);
+            var today = zonedNow.toLocalDate();
+
+            if (schedule == null || !schedule.generationTime().toLocalDate().equals(today)) {
+                List<ZonedDateTime> newSchedule = generateDailySchedule(today, settings);
+                chatSchedules.put(chatId, new ChatSchedule(zonedNow, newSchedule));
                 log.info("Scheduled for {}: {}", chatId, newSchedule);
             }
         }
     }
 
-    private List<LocalDateTime> generateDailySchedule(LocalDate date) {
-        List<LocalDateTime> schedule = new ArrayList<>();
-        for (int i = 0; i < 3; i++) {
-            var randomTime = LocalTime.of(random.nextInt(0, 24), random.nextInt(60), random.nextInt(60));
-            var scheduleDateTime = LocalDateTime.of(date, randomTime);
+    private List<ZonedDateTime> generateDailySchedule(LocalDate date, ScheduleSettings settings) {
+        List<ZonedDateTime> schedule = new ArrayList<>();
 
-            if (scheduleDateTime.isAfter(LocalDateTime.now())) {
+        var zoneId = ZoneId.of(settings.timezone());
+
+        for (int i = 0; i < 3; i++) {
+            var randomTime = LocalTime.of(
+                    random.nextInt(settings.hoursRange().from(), settings.hoursRange().to()),
+                    random.nextInt(60),
+                    random.nextInt(60)
+            );
+            var scheduleDateTime = ZonedDateTime.of(date, randomTime, zoneId);
+
+            if (scheduleDateTime.isAfter(ZonedDateTime.now())) {
                 schedule.add(scheduleDateTime);
             }
         }
 
-        schedule.sort(LocalDateTime::compareTo);
+        schedule.sort(ZonedDateTime::compareTo);
         return schedule;
     }
 
-    private void checkAndOpenSessions(LocalDateTime now) {
+    private void checkAndOpenSessions(ZonedDateTime now) {
         for (var entry : chatSchedules.entrySet()) {
             var chatId = entry.getKey();
             var schedule = entry.getValue();
@@ -91,12 +108,15 @@ public class RandomSessionInitializer implements InitSessionsStrategy {
     }
 
     private void cleanupOldSchedules() {
-        var today = LocalDate.now();
-        chatSchedules.entrySet().removeIf(entry ->
-                !entry.getValue().generationDate().equals(today));
+        chatSchedules.entrySet().removeIf(entry -> {
+            var zoneId = entry.getValue().generationTime().getZone();
+            var today = ZonedDateTime.now(zoneId).toLocalDate();
+
+            return !entry.getValue().generationTime().toLocalDate().equals(today);
+        });
     }
 
-    private record ChatSchedule(LocalDate generationDate, List<LocalDateTime> scheduledSessions) {
+    private record ChatSchedule(ZonedDateTime generationTime, List<ZonedDateTime> scheduledSessions) {
 
     }
 }

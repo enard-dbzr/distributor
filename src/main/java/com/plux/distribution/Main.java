@@ -145,7 +145,8 @@ public class Main {
         var registerFeedbackService = new RegisterFeedbackService(messageService, feedbackRepo,
                 chatService, mainFeedbackProcessor);
 
-        var sessionInitializer = new RandomSessionInitializer(sessionService, chatService, new ServiceId(1L));
+        var sessionInitializer = new RandomSessionInitializer(sessionService, chatService, scheduleSettingsService,
+                new ServiceId(1L));
 
         var schedulerRunner = new SessionSchedulerRunner(sessionInitializer, 60);
         schedulerRunner.start();
