@@ -6,6 +6,7 @@ import com.plux.distribution.core.session.application.port.in.OpenSessionUseCase
 import com.plux.distribution.core.session.application.port.in.InitSessionsStrategy;
 import com.plux.distribution.core.chat.domain.ChatId;
 import com.plux.distribution.core.integration.domain.ServiceId;
+import com.plux.distribution.core.session.application.port.in.ScheduleSettingsChangedHandler;
 import com.plux.distribution.core.session.domain.ScheduleSettings;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -20,7 +21,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 
-public class RandomSessionInitializer implements InitSessionsStrategy {
+public class RandomSessionInitializer implements InitSessionsStrategy, ScheduleSettingsChangedHandler {
 
     private static final Logger log = LogManager.getLogger(RandomSessionInitializer.class);
 
@@ -47,6 +48,16 @@ public class RandomSessionInitializer implements InitSessionsStrategy {
         generateScheduleIfNeeded();
         checkAndOpenSessions(ZonedDateTime.now());
         cleanupOldSchedules();
+    }
+
+    @Override
+    public void onSettingsChanged(ChatId chatId, ScheduleSettings settings) {
+        var zonedNow = ZonedDateTime.now(ZoneId.of(settings.timezone()));
+        var today = zonedNow.toLocalDate();
+
+        List<ZonedDateTime> newSchedule = generateDailySchedule(today, settings);
+        chatSchedules.put(chatId, new ChatSchedule(zonedNow, newSchedule));
+        log.info("Regenerated schedule for {}: {}", chatId, newSchedule);
     }
 
     private void generateScheduleIfNeeded() {

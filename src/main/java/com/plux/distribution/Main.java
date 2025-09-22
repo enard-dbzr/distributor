@@ -123,9 +123,13 @@ public class Main {
         var sendIntegrationMessageService = new SendServiceMessageService(messageService, integrationRepo);
         var integrationFeedbackProcessor = new IntegrationFeedbackProcessor(notifier);
 
-        var scheduleSettingsService = new ScheduleSettingsService(scheduleSettingsRepo);
         var sessionService = new SessionService(sessionRepo, notifier);
         var sessionFeedbackProcessor = new SessionFeedbackProcessor(sessionService);
+        var scheduleSettingsService = new ScheduleSettingsService(scheduleSettingsRepo);
+
+        var sessionInitializer = new RandomSessionInitializer(sessionService, chatService, scheduleSettingsService,
+                new ServiceId(1L));
+        scheduleSettingsService.setHandler(sessionInitializer);
 
         var textProvider = new BundleTextProvider(Locale.of("ru"));
         var frameRegistry = makeFrameRegistry(userService, chatService, scheduleSettingsService);
@@ -145,9 +149,6 @@ public class Main {
 
         var registerFeedbackService = new RegisterFeedbackService(messageService, feedbackRepo,
                 chatService, mainFeedbackProcessor);
-
-        var sessionInitializer = new RandomSessionInitializer(sessionService, chatService, scheduleSettingsService,
-                new ServiceId(1L));
 
         var schedulerRunner = new SessionSchedulerRunner(sessionInitializer, 60);
         schedulerRunner.start();
