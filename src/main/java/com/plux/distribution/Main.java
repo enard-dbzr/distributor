@@ -15,6 +15,7 @@ import com.plux.distribution.core.workflow.application.frame.registration.user.A
 import com.plux.distribution.core.workflow.application.frame.registration.user.AskEmailFrame;
 import com.plux.distribution.core.workflow.application.frame.registration.user.AskHobbyFrame;
 import com.plux.distribution.core.workflow.application.frame.registration.user.AskNameFrame;
+import com.plux.distribution.core.workflow.application.frame.settings.SettingsAppliedMessage;
 import com.plux.distribution.core.workflow.application.frame.settings.schedule.AskHoursFrame;
 import com.plux.distribution.core.workflow.application.frame.settings.schedule.AskSpdFrame;
 import com.plux.distribution.core.workflow.application.frame.settings.schedule.AskTimezoneFrame;
@@ -137,7 +138,11 @@ public class Main {
         var frameContextManager = new DefaultContextManager(messageService, executeActionService);
         var workflowService = new WorkflowService(frameRegistry, dataRegistry, frameRepo, frameContextManager,
                 textProvider);
-        var flowFeedbackProcessor = new FlowFeedbackProcessor(workflowService, frameRegistry.get("flow.registration"));
+        var flowFeedbackProcessor = new FlowFeedbackProcessor(
+                workflowService,
+                frameRegistry.get("flow.registration"),
+                frameRegistry.get("flow.schedule_settings")
+        );
 
         var mainFeedbackProcessor = new SequenceFeedbackProcessor(List.of(
                 flowFeedbackProcessor,
@@ -238,6 +243,8 @@ public class Main {
                 factory.get("settings.schedule.finalize")
         ));
 
+        factory.register("settings.success", new SettingsAppliedMessage());
+
         factory.register("flow.registration", new SequenceFrame(List.of(
                 factory.get("registration.hello_frame"),
                 factory.get("registration.check_pin"),
@@ -245,6 +252,11 @@ public class Main {
                 factory.get("registration.change_settings"),
                 factory.get("settings.schedule.start_building"),
                 factory.get("registration.finish.success")
+        )));
+
+        factory.register("flow.schedule_settings", new SequenceFrame(List.of(
+                factory.get("settings.schedule.start_building"),
+                factory.get("settings.success")
         )));
 
         return factory;
