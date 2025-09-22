@@ -5,5 +5,9 @@
                    https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
 
     <include file="db/changelog/2025/09/14-01-initial.xml"/>
-    <include file="/db/changelog/2025/09/14-02-add-reply-content.xml"/>
+    <include file="db/changelog/2025/09/14-02-add-reply-content.xml"/>
+    <include file="db/changelog/2025/09/21-01-add-timezone.xml"/>
+    <include file="db/changelog/2025/09/21-02-add-schedule-settings.xml"/>
+    <include file="db/changelog/2025/09/21-03-move-timezone.xml"/>
+    <include file="db/changelog/2025/09/22-01-add-spd.xml"/>
 </databaseChangeLog>

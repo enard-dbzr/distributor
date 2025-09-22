@@ -33,6 +33,7 @@ public class UserBuilder {
         this.email = email;
     }
 
+
     @SuppressWarnings("unused")
     public Integer getAge() {
         return age;
@@ -62,7 +63,7 @@ public class UserBuilder {
 
     public UserInfo buildUserInfo() {
         if (name == null) {
-            throw new IllegalStateException("name is null");
+            throw new IllegalStateException("name required");
         }
 
         return new UserInfo(name, email, age, city, hobby);

@@ -13,6 +13,7 @@ import jakarta.persistence.Table;
 @Entity
 @Table(name = "users")
 public class UserEntity {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -29,7 +30,6 @@ public class UserEntity {
         var entity = new UserEntity();
 
         entity.name = userInfo.name();
-        entity.email = userInfo.email();
         entity.age = userInfo.age();
         entity.city = userInfo.city();
         entity.hobby = userInfo.hobby();

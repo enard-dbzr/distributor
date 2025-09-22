@@ -78,6 +78,10 @@ public class FrameContext {
         frames.clear();
     }
 
+    public boolean isEmpty() {
+        return frames.isEmpty();
+    }
+
     public void push(@NotNull Frame frame, boolean execute) {
         frames.push(new FrameEntry(frame, execute));
     }

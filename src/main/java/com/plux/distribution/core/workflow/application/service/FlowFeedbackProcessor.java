@@ -23,10 +23,16 @@ public class FlowFeedbackProcessor implements FeedbackProcessor {
 
     private final WorkflowUseCase workflowUseCase;
     private final Frame registrationWorkflow;
+    private final Frame scheduleSettingsWorkflow;
 
-    public FlowFeedbackProcessor(WorkflowUseCase workflowUseCase, Frame registrationWorkflow) {
+    public FlowFeedbackProcessor(
+            WorkflowUseCase workflowUseCase,
+            Frame registrationWorkflow,
+            Frame scheduleSettingsWorkflow
+    ) {
         this.workflowUseCase = workflowUseCase;
         this.registrationWorkflow = registrationWorkflow;
+        this.scheduleSettingsWorkflow = scheduleSettingsWorkflow;
     }
 
     @Override
@@ -38,6 +44,9 @@ public class FlowFeedbackProcessor implements FeedbackProcessor {
         createFrameFeedback(feedback).text().ifPresent(text -> {
             if (text.equals("/start")) {
                 startRegistration(frameContext);
+                newTriggered.set(true);
+            } else if (text.equals("/schedule_settings")) {
+                startScheduleSettings(frameContext);
                 newTriggered.set(true);
             }
         });
@@ -53,6 +62,13 @@ public class FlowFeedbackProcessor implements FeedbackProcessor {
         frameContext.clear();
         frameContext.push(registrationWorkflow, true);
         frameContext.exec();
+    }
+
+    private void startScheduleSettings(FrameContext frameContext) {
+        if (frameContext.isEmpty()) {
+            frameContext.push(scheduleSettingsWorkflow, true);
+            frameContext.exec();
+        }
     }
 
     private FrameFeedback createFrameFeedback(Feedback feedback) {

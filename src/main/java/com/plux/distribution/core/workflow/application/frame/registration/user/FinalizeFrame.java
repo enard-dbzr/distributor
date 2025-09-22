@@ -6,8 +6,6 @@ import com.plux.distribution.core.user.application.port.in.CreateUserUseCase;
 import com.plux.distribution.core.workflow.domain.Frame;
 import com.plux.distribution.core.workflow.domain.FrameContext;
 import com.plux.distribution.core.workflow.domain.FrameFeedback;
-import com.plux.distribution.core.message.domain.content.SimpleMessageContent;
-import java.util.List;
 import org.jetbrains.annotations.NotNull;
 
 public class FinalizeFrame implements Frame {
@@ -29,10 +27,6 @@ public class FinalizeFrame implements Frame {
 
         context.getData().remove(UserBuilder.class);
 
-        context.send(new SimpleMessageContent(
-                context.getTextProvider().getString("registration.user.finish.success"),
-                List.of()
-        ));
         context.changeState();
     }
 
