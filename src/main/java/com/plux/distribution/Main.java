@@ -16,6 +16,7 @@ import com.plux.distribution.core.workflow.application.frame.registration.user.A
 import com.plux.distribution.core.workflow.application.frame.registration.user.AskHobbyFrame;
 import com.plux.distribution.core.workflow.application.frame.registration.user.AskNameFrame;
 import com.plux.distribution.core.workflow.application.frame.settings.schedule.AskHoursFrame;
+import com.plux.distribution.core.workflow.application.frame.settings.schedule.AskSpdFrame;
 import com.plux.distribution.core.workflow.application.frame.settings.schedule.AskTimezoneFrame;
 import com.plux.distribution.core.workflow.application.frame.registration.user.FinalizeFrame;
 import com.plux.distribution.core.workflow.application.frame.registration.user.StartUserBuildingFrame;
@@ -230,6 +231,7 @@ public class Main {
 
         factory.register("settings.schedule.ask_timezone", new AskTimezoneFrame());
         factory.register("settings.schedule.ask_hours", new AskHoursFrame());
+        factory.register("settings.schedule.ask_spd", new AskSpdFrame());
         factory.register("settings.schedule.finalize", new FinalizeScheduleSettingsFrame(scheduleSettingsService));
         factory.register("settings.schedule.start_building", new StartScheduleSettingsFrame(
                 factory.get("settings.schedule.finalize")

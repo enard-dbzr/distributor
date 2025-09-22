@@ -25,11 +25,15 @@ public class ScheduleSettingsEntity {
     @Column(nullable = false)
     private String timezone;
 
-    private ScheduleSettingsEntity(Long chatId, Integer fromHour, Integer toHour, String timezone) {
+    @Column(nullable = false)
+    private Integer spd;
+
+    private ScheduleSettingsEntity(Long chatId, Integer fromHour, Integer toHour, String timezone, Integer spd) {
         this.chatId = chatId;
         this.fromHour = fromHour;
         this.toHour = toHour;
         this.timezone = timezone;
+        this.spd = spd;
     }
 
     public ScheduleSettingsEntity() {
@@ -37,7 +41,7 @@ public class ScheduleSettingsEntity {
     }
 
     public ScheduleSettings toModel() {
-        return new ScheduleSettings(new HoursRange(fromHour, toHour), timezone);
+        return new ScheduleSettings(new HoursRange(fromHour, toHour), timezone, spd);
     }
 
     public static ScheduleSettingsEntity of(ChatId chatId, ScheduleSettings settings) {
@@ -45,7 +49,8 @@ public class ScheduleSettingsEntity {
                 chatId.value(),
                 settings.hoursRange().from(),
                 settings.hoursRange().to(),
-                settings.timezone()
+                settings.timezone(),
+                settings.sessionsPerDay()
         );
     }
 }

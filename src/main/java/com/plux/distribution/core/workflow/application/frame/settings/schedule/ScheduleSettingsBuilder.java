@@ -9,9 +9,10 @@ public class ScheduleSettingsBuilder {
     private String timezone;
     private Integer fromHour;
     private Integer toHour;
+    private Integer sessionsPerDay;
 
     public ScheduleSettings buildSettings() {
-        return new ScheduleSettings(new HoursRange(fromHour, toHour), timezone);
+        return new ScheduleSettings(new HoursRange(fromHour, toHour), timezone, sessionsPerDay);
     }
 
     @SuppressWarnings("unused")
@@ -40,6 +41,15 @@ public class ScheduleSettingsBuilder {
         new HoursRange(fromHour, toHour);  // mb throws exception
         this.fromHour = fromHour;
         this.toHour = toHour;
+    }
+
+    @SuppressWarnings("unused")
+    public Integer getSessionsPerDay() {
+        return sessionsPerDay;
+    }
+
+    public void setSessionsPerDay(Integer sessionsPerDay) {
+        this.sessionsPerDay = sessionsPerDay;
     }
 
     public static class Serializer extends JsonDataSerializer<ScheduleSettingsBuilder> {

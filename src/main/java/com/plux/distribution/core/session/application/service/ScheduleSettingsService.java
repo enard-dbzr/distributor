@@ -18,7 +18,7 @@ public class ScheduleSettingsService implements SetScheduleSettingsUseCase, GetS
 
     @Override
     public @NotNull ScheduleSettings get(@NotNull ChatId chatId) {
-        return repository.get(chatId).orElse(new ScheduleSettings(new HoursRange(0, 24), "UTC+5"));
+        return repository.get(chatId).orElse(new ScheduleSettings(new HoursRange(0, 24), "UTC+5", 3));
     }
 
     @Override

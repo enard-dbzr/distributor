@@ -2,7 +2,11 @@ package com.plux.distribution.core.session.domain;
 
 import org.jetbrains.annotations.NotNull;
 
-public record ScheduleSettings(@NotNull HoursRange hoursRange, @NotNull String timezone) {
+public record ScheduleSettings(
+        @NotNull HoursRange hoursRange,
+        @NotNull String timezone,
+        @NotNull Integer sessionsPerDay
+) {
 
     public ScheduleSettings {
         checkTimezoneValid(timezone);

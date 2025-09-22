@@ -22,6 +22,7 @@ public class StartScheduleSettingsFrame implements Frame {
         var master = new SequenceFrame(List.of(
                 new AskTimezoneFrame(),
                 new AskHoursFrame(),
+                new AskSpdFrame(),
                 finalizeFrame
         ));
 
