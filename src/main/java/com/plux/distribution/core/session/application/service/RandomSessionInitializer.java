@@ -73,7 +73,7 @@ public class RandomSessionInitializer implements InitSessionsStrategy {
 
         var zoneId = ZoneId.of(settings.timezone());
 
-        for (int i = 0; i < 3; i++) {
+        for (int i = 0; i < settings.sessionsPerDay(); i++) {
             var randomTime = LocalTime.of(
                     random.nextInt(settings.hoursRange().from(), settings.hoursRange().to()),
                     random.nextInt(60),
