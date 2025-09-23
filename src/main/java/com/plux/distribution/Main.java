@@ -227,7 +227,9 @@ public class Main {
         factory.register("registration.user.ask_age", new AskAgeFrame());
         factory.register("registration.user.ask_city", new AskCityFrame());
         factory.register("registration.user.ask_hobby", new AskHobbyFrame());
-        factory.register("registration.user.finalize", new FinalizeFrame(userService, chatService));
+        factory.register("registration.user.finalize", new FinalizeFrame(
+                userService, userService, chatService, chatService
+        ));
         factory.register("registration.user.start_building", new StartUserBuildingFrame(
                 factory.get("registration.user.finalize")
         ));

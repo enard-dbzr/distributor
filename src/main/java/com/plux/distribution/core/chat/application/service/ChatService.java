@@ -4,6 +4,7 @@ import com.plux.distribution.core.chat.application.dto.ChatDto;
 import com.plux.distribution.core.chat.application.port.in.AssignUserToChatUseCase;
 import com.plux.distribution.core.chat.application.port.in.CreateChatUseCase;
 import com.plux.distribution.core.chat.application.port.in.GetAllChatsUseCase;
+import com.plux.distribution.core.chat.application.port.in.GetChatUseCase;
 import com.plux.distribution.core.chat.application.port.out.CreateChatPort;
 import com.plux.distribution.core.chat.application.port.out.GetChatPort;
 import com.plux.distribution.core.chat.application.port.out.UpdateChatPort;
@@ -12,7 +13,7 @@ import com.plux.distribution.core.user.domain.UserId;
 import java.util.List;
 import org.jetbrains.annotations.NotNull;
 
-public class ChatService implements CreateChatUseCase, AssignUserToChatUseCase, GetAllChatsUseCase {
+public class ChatService implements CreateChatUseCase, AssignUserToChatUseCase, GetAllChatsUseCase, GetChatUseCase {
 
     private final @NotNull CreateChatPort createChatPort;
     private final @NotNull GetChatPort getChatPort;
@@ -40,5 +41,11 @@ public class ChatService implements CreateChatUseCase, AssignUserToChatUseCase, 
     @Override
     public @NotNull List<ChatId> getAllChatIds() {
         return getChatPort.getAllChatIds();
+    }
+
+    @Override
+    public @NotNull ChatDto get(@NotNull ChatId chatId) {
+        var chat = getChatPort.get(chatId);
+        return new ChatDto(chat);
     }
 }

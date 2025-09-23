@@ -9,6 +9,6 @@ public record UserDto(
         UserInfo userInfo
 ) {
     public UserDto (User model) {
-        this(model.getUserId(), model.getUserInfo());
+        this(model.getId(), model.getUserInfo());
     }
 }
