@@ -1,4 +1,4 @@
-package com.plux.distribution.core.workflow.application.frame.registration.user;
+package com.plux.distribution.core.workflow.application.frame.settings.user;
 
 import com.plux.distribution.core.chat.application.port.in.GetChatUseCase;
 import com.plux.distribution.core.user.application.command.UserCommand;
