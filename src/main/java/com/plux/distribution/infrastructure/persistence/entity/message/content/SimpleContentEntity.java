@@ -4,6 +4,7 @@ import com.plux.distribution.core.message.domain.content.MessageContent;
 import com.plux.distribution.core.message.domain.content.SimpleMessageContent;
 import com.plux.distribution.infrastructure.persistence.entity.message.attachment.AttachmentEntity;
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -16,6 +17,7 @@ import java.util.List;
 @DiscriminatorValue("SIMPLE")
 public class SimpleContentEntity extends MessageContentEntity {
 
+    @Column(columnDefinition = "TEXT")
     private String text;
 
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
