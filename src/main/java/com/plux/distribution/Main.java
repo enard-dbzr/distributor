@@ -141,7 +141,8 @@ public class Main {
         var flowFeedbackProcessor = new FlowFeedbackProcessor(
                 workflowService,
                 frameRegistry.get("flow.registration"),
-                frameRegistry.get("flow.schedule_settings")
+                frameRegistry.get("flow.schedule_settings"),
+                frameRegistry.get("flow.update_user_info")
         );
 
         var mainFeedbackProcessor = new SequenceFeedbackProcessor(List.of(
@@ -258,6 +259,11 @@ public class Main {
 
         factory.register("flow.schedule_settings", new SequenceFrame(List.of(
                 factory.get("settings.schedule.start_building"),
+                factory.get("settings.success")
+        )));
+
+        factory.register("flow.update_user_info", new SequenceFrame(List.of(
+                factory.get("registration.user.start_building"),
                 factory.get("settings.success")
         )));
 
