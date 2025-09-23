@@ -33,6 +33,7 @@ public class TelegramMessageSender implements MessageSenderPort {
     public void send(@NotNull MessageId messageId, @NotNull Participant recipient,
             @NotNull MessageContent messageContent) {
         var context = new RenderingContext();
+        context.sendMessageBuilder.parseMode("Markdown");
 
         var uidExtractor = new ChatIdExtractor();
         recipient.accept(uidExtractor);
