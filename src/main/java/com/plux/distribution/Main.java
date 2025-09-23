@@ -247,7 +247,6 @@ public class Main {
 
         factory.register("flow.registration", new SequenceFrame(List.of(
                 factory.get("registration.hello_frame"),
-                factory.get("registration.check_pin"),
                 factory.get("registration.user.start_building"),
                 factory.get("registration.change_settings"),
                 factory.get("settings.schedule.start_building"),
