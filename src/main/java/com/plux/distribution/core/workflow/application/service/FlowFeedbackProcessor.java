@@ -21,6 +21,7 @@ import org.jetbrains.annotations.NotNull;
 
 public class FlowFeedbackProcessor implements FeedbackProcessor {
 
+    private final FeedbackProcessor next;
     private final WorkflowUseCase workflowUseCase;
 
     private final Frame registrationWorkflow;
@@ -29,12 +30,14 @@ public class FlowFeedbackProcessor implements FeedbackProcessor {
     private final Frame helpWorkflow;
 
     public FlowFeedbackProcessor(
+            FeedbackProcessor next,
             WorkflowUseCase workflowUseCase,
             Frame registrationWorkflow,
             Frame scheduleSettingsWorkflow,
             Frame updateUserWorkflow,
             Frame helpWorkflow
     ) {
+        this.next = next;
         this.workflowUseCase = workflowUseCase;
         this.registrationWorkflow = registrationWorkflow;
         this.scheduleSettingsWorkflow = scheduleSettingsWorkflow;
@@ -68,6 +71,11 @@ public class FlowFeedbackProcessor implements FeedbackProcessor {
                 }
             }
         });
+
+        if (!newTriggered.get() && frameContext.isEmpty()) {
+            next.process(feedback);
+            return;
+        }
 
         if (!newTriggered.get()) {
             frameContext.handle(createFrameFeedback(feedback));

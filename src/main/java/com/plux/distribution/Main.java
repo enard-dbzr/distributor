@@ -27,7 +27,6 @@ import com.plux.distribution.core.workflow.application.frame.settings.schedule.S
 import com.plux.distribution.core.workflow.application.frame.settings.schedule.StartScheduleSettingsFrame;
 import com.plux.distribution.core.workflow.application.service.FlowFeedbackProcessor;
 import com.plux.distribution.core.feedback.application.service.FeedbackResolver;
-import com.plux.distribution.core.feedback.application.service.SequenceFeedbackProcessor;
 import com.plux.distribution.core.integration.application.service.IntegrationFeedbackProcessor;
 import com.plux.distribution.core.integration.application.service.IntegrationService;
 import com.plux.distribution.core.message.application.service.MessageService;
@@ -133,6 +132,11 @@ public class Main {
                 new ServiceId(1L));
         scheduleSettingsService.setHandler(sessionInitializer);
 
+        var feedbackResolverProcessor = new FeedbackResolver(List.of(
+                sessionFeedbackProcessor,
+                integrationFeedbackProcessor
+        ), messageService);
+
         var textProvider = new BundleTextProvider(Locale.of("ru"));
         var frameRegistry = makeFrameRegistry(userService, chatService, scheduleSettingsService);
         var dataRegistry = makeDataRegistry();
@@ -140,6 +144,7 @@ public class Main {
         var workflowService = new WorkflowService(frameRegistry, dataRegistry, frameRepo, frameContextManager,
                 textProvider);
         var flowFeedbackProcessor = new FlowFeedbackProcessor(
+                feedbackResolverProcessor,
                 workflowService,
                 frameRegistry.get("flow.registration"),
                 frameRegistry.get("flow.schedule_settings"),
@@ -147,16 +152,8 @@ public class Main {
                 frameRegistry.get("flow.help")
         );
 
-        var mainFeedbackProcessor = new SequenceFeedbackProcessor(List.of(
-                flowFeedbackProcessor,
-                new FeedbackResolver(List.of(
-                        sessionFeedbackProcessor,
-                        integrationFeedbackProcessor
-                ), messageService)
-        ));
-
         var registerFeedbackService = new RegisterFeedbackService(messageService, feedbackRepo,
-                chatService, mainFeedbackProcessor);
+                chatService, flowFeedbackProcessor);
 
         var schedulerRunner = new SessionSchedulerRunner(sessionInitializer, 60);
         schedulerRunner.start();
