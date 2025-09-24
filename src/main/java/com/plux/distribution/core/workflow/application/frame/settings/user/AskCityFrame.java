@@ -1,9 +1,8 @@
-package com.plux.distribution.core.workflow.application.frame.registration.user;
+package com.plux.distribution.core.workflow.application.frame.settings.user;
 
 import com.plux.distribution.core.workflow.domain.Frame;
 import com.plux.distribution.core.workflow.domain.FrameContext;
 import com.plux.distribution.core.workflow.domain.FrameFeedback;
-import com.plux.distribution.core.workflow.application.frame.utils.InfoMessageFrame;
 import com.plux.distribution.core.workflow.application.frame.utils.LastMessageData;
 import com.plux.distribution.core.message.application.dto.action.ClearButtonsAction;
 import com.plux.distribution.core.message.domain.attachment.ButtonAttachment;
@@ -11,12 +10,12 @@ import com.plux.distribution.core.message.domain.content.SimpleMessageContent;
 import java.util.List;
 import org.jetbrains.annotations.NotNull;
 
-public class AskAgeFrame implements Frame {
+public class AskCityFrame implements Frame {
 
     @Override
     public void exec(@NotNull FrameContext context) {
         var messageId = context.send(new SimpleMessageContent(
-                context.getTextProvider().getString("registration.user.age.ask"),
+                context.getTextProvider().getString("registration.user.city.ask"),
                 List.of(new ButtonAttachment(context.getTextProvider().getString("utils.skip_button"), "skip"))
         ));
 
@@ -29,24 +28,14 @@ public class AskAgeFrame implements Frame {
 
         feedback.buttonTag().ifPresent(value -> {
             if (value.equals("skip")) {
-                userBuilder.setAge(null);
+                userBuilder.setCity(null);
                 goNext(context);
             }
         });
 
         feedback.text().ifPresent(text -> {
-            try {
-                userBuilder.setAge(Integer.valueOf(text));
-                goNext(context);
-            } catch (NumberFormatException e) {
-                context.changeState(this, false);
-                context.push(
-                        new InfoMessageFrame(
-                                context.getTextProvider().getString("registration.user.age.wrong_type")
-                        ), true
-                );
-                context.exec();
-            }
+            userBuilder.setCity(text);
+            goNext(context);
         });
     }
 

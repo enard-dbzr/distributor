@@ -10,17 +10,17 @@ import com.plux.distribution.core.workflow.application.frame.registration.hello.
 import com.plux.distribution.core.workflow.application.frame.registration.pin.CheckPasswordFrame;
 import com.plux.distribution.core.workflow.application.frame.registration.pin.CorrectPasswordFrame;
 import com.plux.distribution.core.workflow.application.frame.registration.pin.InorrectPasswordFrame;
-import com.plux.distribution.core.workflow.application.frame.registration.user.AskAgeFrame;
-import com.plux.distribution.core.workflow.application.frame.registration.user.AskCityFrame;
-import com.plux.distribution.core.workflow.application.frame.registration.user.AskEmailFrame;
-import com.plux.distribution.core.workflow.application.frame.registration.user.AskHobbyFrame;
-import com.plux.distribution.core.workflow.application.frame.registration.user.AskNameFrame;
+import com.plux.distribution.core.workflow.application.frame.settings.user.AskAgeFrame;
+import com.plux.distribution.core.workflow.application.frame.settings.user.AskCityFrame;
+import com.plux.distribution.core.workflow.application.frame.settings.user.AskEmailFrame;
+import com.plux.distribution.core.workflow.application.frame.settings.user.AskHobbyFrame;
+import com.plux.distribution.core.workflow.application.frame.settings.user.AskNameFrame;
 import com.plux.distribution.core.workflow.application.frame.settings.SettingsAppliedMessage;
 import com.plux.distribution.core.workflow.application.frame.settings.schedule.AskHoursFrame;
 import com.plux.distribution.core.workflow.application.frame.settings.schedule.AskSpdFrame;
 import com.plux.distribution.core.workflow.application.frame.settings.schedule.AskTimezoneFrame;
-import com.plux.distribution.core.workflow.application.frame.registration.user.FinalizeFrame;
-import com.plux.distribution.core.workflow.application.frame.registration.user.StartUserBuildingFrame;
+import com.plux.distribution.core.workflow.application.frame.settings.user.FinalizeFrame;
+import com.plux.distribution.core.workflow.application.frame.settings.user.StartUserBuildingFrame;
 import com.plux.distribution.core.workflow.application.frame.settings.schedule.FinalizeScheduleSettingsFrame;
 import com.plux.distribution.core.workflow.application.frame.settings.schedule.ScheduleSettingsBuilder;
 import com.plux.distribution.core.workflow.application.frame.settings.schedule.StartScheduleSettingsFrame;
@@ -42,7 +42,7 @@ import com.plux.distribution.core.workflow.application.port.out.DataRegistry;
 import com.plux.distribution.core.workflow.application.port.out.FrameRegistry;
 import com.plux.distribution.core.workflow.application.frame.DefaultDataRegistry;
 import com.plux.distribution.core.workflow.application.frame.DefaultFrameRegistry;
-import com.plux.distribution.core.workflow.application.frame.registration.user.UserBuilder;
+import com.plux.distribution.core.workflow.application.frame.settings.user.UserBuilder;
 import com.plux.distribution.core.workflow.application.frame.utils.LastMessageData;
 import com.plux.distribution.core.workflow.application.frame.utils.SequenceFrame;
 import com.plux.distribution.core.workflow.application.service.WorkflowService;
@@ -141,7 +141,8 @@ public class Main {
         var flowFeedbackProcessor = new FlowFeedbackProcessor(
                 workflowService,
                 frameRegistry.get("flow.registration"),
-                frameRegistry.get("flow.schedule_settings")
+                frameRegistry.get("flow.schedule_settings"),
+                frameRegistry.get("flow.update_user_info")
         );
 
         var mainFeedbackProcessor = new SequenceFeedbackProcessor(List.of(
@@ -227,7 +228,9 @@ public class Main {
         factory.register("registration.user.ask_age", new AskAgeFrame());
         factory.register("registration.user.ask_city", new AskCityFrame());
         factory.register("registration.user.ask_hobby", new AskHobbyFrame());
-        factory.register("registration.user.finalize", new FinalizeFrame(userService, chatService));
+        factory.register("registration.user.finalize", new FinalizeFrame(
+                userService, userService, chatService, chatService
+        ));
         factory.register("registration.user.start_building", new StartUserBuildingFrame(
                 factory.get("registration.user.finalize")
         ));
@@ -255,6 +258,11 @@ public class Main {
 
         factory.register("flow.schedule_settings", new SequenceFrame(List.of(
                 factory.get("settings.schedule.start_building"),
+                factory.get("settings.success")
+        )));
+
+        factory.register("flow.update_user_info", new SequenceFrame(List.of(
+                factory.get("registration.user.start_building"),
                 factory.get("settings.success")
         )));
 
