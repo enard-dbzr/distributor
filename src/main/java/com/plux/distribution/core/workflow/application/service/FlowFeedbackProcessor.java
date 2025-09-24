@@ -1,7 +1,9 @@
 package com.plux.distribution.core.workflow.application.service;
 
+import com.plux.distribution.core.chat.domain.ChatId;
 import com.plux.distribution.core.feedback.application.dto.Feedback;
 import com.plux.distribution.core.feedback.application.port.in.FeedbackProcessor;
+import com.plux.distribution.core.workflow.application.port.in.CheckChatBusyUseCase;
 import com.plux.distribution.core.workflow.application.port.in.WorkflowUseCase;
 import com.plux.distribution.core.workflow.domain.Frame;
 import com.plux.distribution.core.workflow.domain.FrameContext;
@@ -19,8 +21,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import org.jetbrains.annotations.NotNull;
 
-public class FlowFeedbackProcessor implements FeedbackProcessor {
+public class FlowFeedbackProcessor implements FeedbackProcessor, CheckChatBusyUseCase {
 
+    private final FeedbackProcessor next;
     private final WorkflowUseCase workflowUseCase;
 
     private final Frame registrationWorkflow;
@@ -29,12 +32,14 @@ public class FlowFeedbackProcessor implements FeedbackProcessor {
     private final Frame helpWorkflow;
 
     public FlowFeedbackProcessor(
+            FeedbackProcessor next,
             WorkflowUseCase workflowUseCase,
             Frame registrationWorkflow,
             Frame scheduleSettingsWorkflow,
             Frame updateUserWorkflow,
             Frame helpWorkflow
     ) {
+        this.next = next;
         this.workflowUseCase = workflowUseCase;
         this.registrationWorkflow = registrationWorkflow;
         this.scheduleSettingsWorkflow = scheduleSettingsWorkflow;
@@ -68,6 +73,11 @@ public class FlowFeedbackProcessor implements FeedbackProcessor {
                 }
             }
         });
+
+        if (!newTriggered.get() && frameContext.isEmpty()) {
+            next.process(feedback);
+            return;
+        }
 
         if (!newTriggered.get()) {
             frameContext.handle(createFrameFeedback(feedback));
@@ -136,6 +146,12 @@ public class FlowFeedbackProcessor implements FeedbackProcessor {
                 Optional.ofNullable(text.get()),
                 Optional.ofNullable(buttonTag.get())
         );
+    }
+
+    // FIXME: Исправить это недоразумение
+    @Override
+    public boolean isBusy(@NotNull ChatId chatId) {
+        return !workflowUseCase.load(chatId).isEmpty();
     }
 
     private static class ExtractMessageText implements MessageContentVisitor<String> {

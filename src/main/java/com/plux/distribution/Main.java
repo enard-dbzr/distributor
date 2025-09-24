@@ -27,7 +27,6 @@ import com.plux.distribution.core.workflow.application.frame.settings.schedule.S
 import com.plux.distribution.core.workflow.application.frame.settings.schedule.StartScheduleSettingsFrame;
 import com.plux.distribution.core.workflow.application.service.FlowFeedbackProcessor;
 import com.plux.distribution.core.feedback.application.service.FeedbackResolver;
-import com.plux.distribution.core.feedback.application.service.SequenceFeedbackProcessor;
 import com.plux.distribution.core.integration.application.service.IntegrationFeedbackProcessor;
 import com.plux.distribution.core.integration.application.service.IntegrationService;
 import com.plux.distribution.core.message.application.service.MessageService;
@@ -68,6 +67,7 @@ import jakarta.servlet.DispatcherType;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.jetty.server.Server;
@@ -91,6 +91,9 @@ public class Main {
         SLF4JBridgeHandler.install();
 
         var botToken = System.getenv("TG_TOKEN");
+        var scheduleServiceId = Optional.ofNullable(System.getenv("SERVICE_ID"))
+                .map(value -> new ServiceId(Long.parseLong(value)))
+                .orElse(new ServiceId(1L));
 
         var hibernateConfig = new HibernateConfig(
                 System.getenv("DB_URL"),
@@ -129,9 +132,10 @@ public class Main {
         var sessionFeedbackProcessor = new SessionFeedbackProcessor(sessionService);
         var scheduleSettingsService = new ScheduleSettingsService(scheduleSettingsRepo);
 
-        var sessionInitializer = new RandomSessionInitializer(sessionService, chatService, scheduleSettingsService,
-                new ServiceId(1L));
-        scheduleSettingsService.setHandler(sessionInitializer);
+        var feedbackResolverProcessor = new FeedbackResolver(List.of(
+                sessionFeedbackProcessor,
+                integrationFeedbackProcessor
+        ), messageService);
 
         var textProvider = new BundleTextProvider(Locale.of("ru"));
         var frameRegistry = makeFrameRegistry(userService, chatService, scheduleSettingsService);
@@ -140,6 +144,7 @@ public class Main {
         var workflowService = new WorkflowService(frameRegistry, dataRegistry, frameRepo, frameContextManager,
                 textProvider);
         var flowFeedbackProcessor = new FlowFeedbackProcessor(
+                feedbackResolverProcessor,
                 workflowService,
                 frameRegistry.get("flow.registration"),
                 frameRegistry.get("flow.schedule_settings"),
@@ -147,16 +152,14 @@ public class Main {
                 frameRegistry.get("flow.help")
         );
 
-        var mainFeedbackProcessor = new SequenceFeedbackProcessor(List.of(
-                flowFeedbackProcessor,
-                new FeedbackResolver(List.of(
-                        sessionFeedbackProcessor,
-                        integrationFeedbackProcessor
-                ), messageService)
-        ));
+        var sessionInitializer = new RandomSessionInitializer(
+                sessionService, chatService, flowFeedbackProcessor, scheduleSettingsService,
+                scheduleServiceId
+        );
+        scheduleSettingsService.setHandler(sessionInitializer);
 
         var registerFeedbackService = new RegisterFeedbackService(messageService, feedbackRepo,
-                chatService, mainFeedbackProcessor);
+                chatService, flowFeedbackProcessor);
 
         var schedulerRunner = new SessionSchedulerRunner(sessionInitializer, 60);
         schedulerRunner.start();
