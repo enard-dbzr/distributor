@@ -67,6 +67,7 @@ import jakarta.servlet.DispatcherType;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.eclipse.jetty.server.Server;
@@ -90,6 +91,9 @@ public class Main {
         SLF4JBridgeHandler.install();
 
         var botToken = System.getenv("TG_TOKEN");
+        var scheduleServiceId = Optional.ofNullable(System.getenv("SERVICE_ID"))
+                .map(value -> new ServiceId(Long.parseLong(value)))
+                .orElse(new ServiceId(1L));
 
         var hibernateConfig = new HibernateConfig(
                 System.getenv("DB_URL"),
@@ -150,7 +154,7 @@ public class Main {
 
         var sessionInitializer = new RandomSessionInitializer(
                 sessionService, chatService, flowFeedbackProcessor, scheduleSettingsService,
-                new ServiceId(1L)
+                scheduleServiceId
         );
         scheduleSettingsService.setHandler(sessionInitializer);
 
