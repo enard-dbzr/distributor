@@ -24,15 +24,17 @@ public class FlowFeedbackProcessor implements FeedbackProcessor {
     private final WorkflowUseCase workflowUseCase;
     private final Frame registrationWorkflow;
     private final Frame scheduleSettingsWorkflow;
+    private final Frame updateUserWorkflow;
 
     public FlowFeedbackProcessor(
             WorkflowUseCase workflowUseCase,
             Frame registrationWorkflow,
-            Frame scheduleSettingsWorkflow
+            Frame scheduleSettingsWorkflow, Frame updateUserWorkflow
     ) {
         this.workflowUseCase = workflowUseCase;
         this.registrationWorkflow = registrationWorkflow;
         this.scheduleSettingsWorkflow = scheduleSettingsWorkflow;
+        this.updateUserWorkflow = updateUserWorkflow;
     }
 
     @Override
@@ -42,12 +44,19 @@ public class FlowFeedbackProcessor implements FeedbackProcessor {
         AtomicBoolean newTriggered = new AtomicBoolean(false);
 
         createFrameFeedback(feedback).text().ifPresent(text -> {
-            if (text.equals("/start")) {
-                startRegistration(frameContext);
-                newTriggered.set(true);
-            } else if (text.equals("/schedule_settings")) {
-                startScheduleSettings(frameContext);
-                newTriggered.set(true);
+            switch (text) {
+                case "/start" -> {
+                    startRegistration(frameContext);
+                    newTriggered.set(true);
+                }
+                case "/schedule_settings" -> {
+                    startScheduleSettings(frameContext);
+                    newTriggered.set(true);
+                }
+                case "/update_user" -> {
+                    stratUpdateUser(frameContext);
+                    newTriggered.set(true);
+                }
             }
         });
 
@@ -67,6 +76,13 @@ public class FlowFeedbackProcessor implements FeedbackProcessor {
     private void startScheduleSettings(FrameContext frameContext) {
         if (frameContext.isEmpty()) {
             frameContext.push(scheduleSettingsWorkflow, true);
+            frameContext.exec();
+        }
+    }
+
+    private void stratUpdateUser(FrameContext frameContext) {
+        if (frameContext.isEmpty()) {
+            frameContext.push(updateUserWorkflow, true);
             frameContext.exec();
         }
     }

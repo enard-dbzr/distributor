@@ -29,12 +29,16 @@ public class UserEntity {
     public static UserEntity create(UserInfo userInfo) {
         var entity = new UserEntity();
 
-        entity.name = userInfo.name();
-        entity.age = userInfo.age();
-        entity.city = userInfo.city();
-        entity.hobby = userInfo.hobby();
+        entity.setUserInfo(userInfo);
 
         return entity;
+    }
+
+    public void setUserInfo(UserInfo userInfo) {
+        this.name = userInfo.name();
+        this.age = userInfo.age();
+        this.city = userInfo.city();
+        this.hobby = userInfo.hobby();
     }
 
     public User toModel() {

@@ -1,4 +1,4 @@
-package com.plux.distribution.core.workflow.application.frame.registration.user;
+package com.plux.distribution.core.workflow.application.frame.settings.user;
 
 import com.plux.distribution.core.workflow.domain.Frame;
 import com.plux.distribution.core.workflow.domain.FrameContext;

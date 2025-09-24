@@ -1,16 +1,16 @@
 package com.plux.distribution.core.user.domain;
 
 public class User {
-    private final UserId userId;
+    private final UserId id;
     private UserInfo userInfo;
 
-    public User(UserId userId, UserInfo userInfo) {
-        this.userId = userId;
+    public User(UserId id, UserInfo userInfo) {
+        this.id = id;
         this.userInfo = userInfo;
     }
 
-    public UserId getUserId() {
-        return userId;
+    public UserId getId() {
+        return id;
     }
 
     public UserInfo getUserInfo() {
