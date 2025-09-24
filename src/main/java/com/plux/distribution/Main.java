@@ -128,10 +128,6 @@ public class Main {
         var sessionFeedbackProcessor = new SessionFeedbackProcessor(sessionService);
         var scheduleSettingsService = new ScheduleSettingsService(scheduleSettingsRepo);
 
-        var sessionInitializer = new RandomSessionInitializer(sessionService, chatService, scheduleSettingsService,
-                new ServiceId(1L));
-        scheduleSettingsService.setHandler(sessionInitializer);
-
         var feedbackResolverProcessor = new FeedbackResolver(List.of(
                 sessionFeedbackProcessor,
                 integrationFeedbackProcessor
@@ -151,6 +147,12 @@ public class Main {
                 frameRegistry.get("flow.update_user_info"),
                 frameRegistry.get("flow.help")
         );
+
+        var sessionInitializer = new RandomSessionInitializer(
+                sessionService, chatService, flowFeedbackProcessor, scheduleSettingsService,
+                new ServiceId(1L)
+        );
+        scheduleSettingsService.setHandler(sessionInitializer);
 
         var registerFeedbackService = new RegisterFeedbackService(messageService, feedbackRepo,
                 chatService, flowFeedbackProcessor);
