@@ -3,6 +3,7 @@ package com.plux.distribution;
 import com.plux.distribution.core.chat.application.service.ChatService;
 import com.plux.distribution.core.message.application.service.ExecuteActionService;
 import com.plux.distribution.core.session.application.service.ScheduleSettingsService;
+import com.plux.distribution.core.workflow.application.frame.message.HelpFrame;
 import com.plux.distribution.core.workflow.application.frame.registration.ChangeSettingsMessage;
 import com.plux.distribution.core.workflow.application.frame.registration.RegistrationSuccessMessage;
 import com.plux.distribution.core.workflow.application.frame.registration.hello.HelloFrame;
@@ -142,7 +143,8 @@ public class Main {
                 workflowService,
                 frameRegistry.get("flow.registration"),
                 frameRegistry.get("flow.schedule_settings"),
-                frameRegistry.get("flow.update_user_info")
+                frameRegistry.get("flow.update_user_info"),
+                frameRegistry.get("flow.help")
         );
 
         var mainFeedbackProcessor = new SequenceFeedbackProcessor(List.of(
@@ -250,7 +252,6 @@ public class Main {
 
         factory.register("flow.registration", new SequenceFrame(List.of(
                 factory.get("registration.hello_frame"),
-                factory.get("registration.check_pin"),
                 factory.get("registration.user.start_building"),
                 factory.get("registration.change_settings"),
                 factory.get("settings.schedule.start_building"),
@@ -266,6 +267,8 @@ public class Main {
                 factory.get("registration.user.start_building"),
                 factory.get("settings.success")
         )));
+
+        factory.register("flow.help", new HelpFrame());
 
         return factory;
     }

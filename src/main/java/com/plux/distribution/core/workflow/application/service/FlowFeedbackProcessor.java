@@ -22,19 +22,24 @@ import org.jetbrains.annotations.NotNull;
 public class FlowFeedbackProcessor implements FeedbackProcessor {
 
     private final WorkflowUseCase workflowUseCase;
+
     private final Frame registrationWorkflow;
     private final Frame scheduleSettingsWorkflow;
     private final Frame updateUserWorkflow;
+    private final Frame helpWorkflow;
 
     public FlowFeedbackProcessor(
             WorkflowUseCase workflowUseCase,
             Frame registrationWorkflow,
-            Frame scheduleSettingsWorkflow, Frame updateUserWorkflow
+            Frame scheduleSettingsWorkflow,
+            Frame updateUserWorkflow,
+            Frame helpWorkflow
     ) {
         this.workflowUseCase = workflowUseCase;
         this.registrationWorkflow = registrationWorkflow;
         this.scheduleSettingsWorkflow = scheduleSettingsWorkflow;
         this.updateUserWorkflow = updateUserWorkflow;
+        this.helpWorkflow = helpWorkflow;
     }
 
     @Override
@@ -55,6 +60,10 @@ public class FlowFeedbackProcessor implements FeedbackProcessor {
                 }
                 case "/update_user" -> {
                     stratUpdateUser(frameContext);
+                    newTriggered.set(true);
+                }
+                case "/help" -> {
+                    startHelp(frameContext);
                     newTriggered.set(true);
                 }
             }
@@ -83,6 +92,13 @@ public class FlowFeedbackProcessor implements FeedbackProcessor {
     private void stratUpdateUser(FrameContext frameContext) {
         if (frameContext.isEmpty()) {
             frameContext.push(updateUserWorkflow, true);
+            frameContext.exec();
+        }
+    }
+
+    private void startHelp(FrameContext frameContext) {
+        if (frameContext.isEmpty()) {
+            frameContext.push(helpWorkflow, true);
             frameContext.exec();
         }
     }
