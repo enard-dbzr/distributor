@@ -105,6 +105,14 @@ public class WebhookNotifier implements NotifySessionEventPort, NotifyServiceFee
     }
 
     @Override
+    public void notifyClosed(@NotNull SessionDto session) {
+        var sessionView = new SessionView(session);
+
+        sendEvent(session.serviceId(),
+                new EventView(EventType.SESSION, new SessionEvent(SessionEventType.STOPED, sessionView)));
+    }
+
+    @Override
     public void notifyGotFeedback(@NotNull ServiceId serviceId, @NotNull ResolvedFeedback resolvedFeedback) {
         var feedbackView = new ResolvedFeedbackView(resolvedFeedback);
 

@@ -9,4 +9,6 @@ public interface NotifySessionEventPort {
 
     void notifyStarted(@NotNull SessionDto session);
 
+    void notifyClosed(@NotNull SessionDto session);
+
 }

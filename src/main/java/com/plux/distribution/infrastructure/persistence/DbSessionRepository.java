@@ -5,9 +5,11 @@ import com.plux.distribution.core.session.application.port.out.SessionRepository
 import com.plux.distribution.core.chat.domain.ChatId;
 import com.plux.distribution.core.integration.domain.ServiceId;
 import com.plux.distribution.core.session.domain.Session;
+import com.plux.distribution.core.session.domain.SessionId;
 import com.plux.distribution.core.session.domain.SessionState;
 import com.plux.distribution.infrastructure.persistence.entity.session.SessionEntity;
 import java.util.Collection;
+import java.util.Optional;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.jetbrains.annotations.NotNull;
@@ -44,6 +46,14 @@ public class DbSessionRepository implements SessionRepositoryPort {
             session.merge(entity);
 
             transaction.commit();
+        }
+    }
+
+    @Override
+    public @Nullable Session get(@NotNull SessionId sessionId) {
+        try (var session = sessionFactory.openSession()) {
+            return Optional.ofNullable(session.find(SessionEntity.class, sessionId.value()))
+                    .map(SessionEntity::toModel).orElse(null);
         }
     }
 

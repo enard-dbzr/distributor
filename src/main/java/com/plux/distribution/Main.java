@@ -2,6 +2,7 @@ package com.plux.distribution;
 
 import com.plux.distribution.core.chat.application.service.ChatService;
 import com.plux.distribution.core.message.application.service.ExecuteActionService;
+import com.plux.distribution.core.session.application.service.RandomSessionCloser;
 import com.plux.distribution.core.session.application.service.ScheduleSettingsService;
 import com.plux.distribution.core.workflow.application.frame.message.HelpFrame;
 import com.plux.distribution.core.workflow.application.frame.registration.ChangeSettingsMessage;
@@ -55,6 +56,7 @@ import com.plux.distribution.infrastructure.persistence.DbFrameRepository;
 import com.plux.distribution.infrastructure.persistence.DbIntegrationRepository;
 import com.plux.distribution.infrastructure.persistence.DbMessageRepository;
 import com.plux.distribution.infrastructure.persistence.DbScheduleSettingsRepository;
+import com.plux.distribution.infrastructure.persistence.DbSessionInteractionsRepository;
 import com.plux.distribution.infrastructure.persistence.DbSessionRepository;
 import com.plux.distribution.infrastructure.persistence.DbTgChatLinker;
 import com.plux.distribution.infrastructure.persistence.DbTgMessageLinker;
@@ -107,6 +109,7 @@ public class Main {
         var frameRepo = new DbFrameRepository(hibernateConfig.getSessionFactory());
         var userRepo = new DbUserRepository(hibernateConfig.getSessionFactory());
         var sessionRepo = new DbSessionRepository(hibernateConfig.getSessionFactory());
+        var sessionInteractionsRepo = new DbSessionInteractionsRepository(hibernateConfig.getSessionFactory());
         var integrationRepo = new DbIntegrationRepository(hibernateConfig.getSessionFactory());
         var scheduleSettingsRepo = new DbScheduleSettingsRepository(hibernateConfig.getSessionFactory());
 
@@ -128,9 +131,13 @@ public class Main {
         var sendIntegrationMessageService = new SendServiceMessageService(messageService, integrationRepo);
         var integrationFeedbackProcessor = new IntegrationFeedbackProcessor(notifier);
 
-        var sessionService = new SessionService(sessionRepo, notifier);
-        var sessionFeedbackProcessor = new SessionFeedbackProcessor(sessionService);
         var scheduleSettingsService = new ScheduleSettingsService(scheduleSettingsRepo);
+        var sessionService = new SessionService(sessionRepo, notifier);
+
+        var sessionCloser = new RandomSessionCloser(sessionInteractionsRepo);
+
+        var sessionFeedbackProcessor = new SessionFeedbackProcessor(sessionService, sessionService, sessionCloser,
+                sessionRepo);
 
         var feedbackResolverProcessor = new FeedbackResolver(List.of(
                 sessionFeedbackProcessor,
