@@ -129,7 +129,6 @@ public class Main {
         var integrationService = new IntegrationService(integrationRepo);
         var notifier = new WebhookNotifier(integrationService);
         var sendIntegrationMessageService = new SendServiceMessageService(messageService, integrationRepo);
-        var integrationFeedbackProcessor = new IntegrationFeedbackProcessor(notifier);
 
         var scheduleSettingsService = new ScheduleSettingsService(scheduleSettingsRepo);
         var sessionService = new SessionService(sessionRepo, notifier);
@@ -138,6 +137,8 @@ public class Main {
 
         var sessionFeedbackProcessor = new SessionFeedbackProcessor(sessionService, sessionService, sessionCloser,
                 sessionRepo);
+
+        var integrationFeedbackProcessor = new IntegrationFeedbackProcessor(notifier, sessionService);
 
         var feedbackResolverProcessor = new FeedbackResolver(List.of(
                 sessionFeedbackProcessor,

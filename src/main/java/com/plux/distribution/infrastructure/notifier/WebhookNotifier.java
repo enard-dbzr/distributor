@@ -10,7 +10,7 @@ import com.plux.distribution.core.session.application.port.out.NotifySessionEven
 import com.plux.distribution.core.integration.domain.ServiceId;
 import com.plux.distribution.infrastructure.notifier.view.EventType;
 import com.plux.distribution.infrastructure.notifier.view.EventView;
-import com.plux.distribution.infrastructure.notifier.view.feedback.ResolvedFeedbackView;
+import com.plux.distribution.infrastructure.notifier.view.feedback.UserInteractionView;
 import com.plux.distribution.infrastructure.notifier.view.session.SessionEvent;
 import com.plux.distribution.infrastructure.notifier.view.session.SessionEventType;
 import com.plux.distribution.infrastructure.notifier.view.session.SessionView;
@@ -29,6 +29,7 @@ import java.net.http.HttpResponse;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.springframework.stereotype.Component;
 
 @Webhooks({
@@ -113,8 +114,9 @@ public class WebhookNotifier implements NotifySessionEventPort, NotifyServiceFee
     }
 
     @Override
-    public void notifyGotFeedback(@NotNull ServiceId serviceId, @NotNull ResolvedFeedback resolvedFeedback) {
-        var feedbackView = new ResolvedFeedbackView(resolvedFeedback);
+    public void notifyGotFeedback(@NotNull ServiceId serviceId, @NotNull ResolvedFeedback resolvedFeedback,
+            @Nullable SessionDto session) {
+        var feedbackView = new UserInteractionView(resolvedFeedback, session);
 
         sendEvent(serviceId, new EventView(EventType.FEEDBACK, feedbackView));
     }
