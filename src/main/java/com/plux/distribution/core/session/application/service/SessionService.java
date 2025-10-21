@@ -2,6 +2,8 @@ package com.plux.distribution.core.session.application.service;
 
 import com.plux.distribution.core.session.application.command.CreateSessionCommand;
 import com.plux.distribution.core.session.application.dto.SessionDto;
+import com.plux.distribution.core.session.application.port.in.CloseSessionUseCase;
+import com.plux.distribution.core.session.application.port.in.GetCurrentSessionUseCase;
 import com.plux.distribution.core.session.application.port.in.OpenSessionUseCase;
 import com.plux.distribution.core.session.application.port.in.StartSessionUseCase;
 import com.plux.distribution.core.session.application.port.out.NotifySessionEventPort;
@@ -9,13 +11,19 @@ import com.plux.distribution.core.session.application.port.out.SessionRepository
 import com.plux.distribution.core.chat.domain.ChatId;
 import com.plux.distribution.core.integration.domain.ServiceId;
 import com.plux.distribution.core.session.domain.Session;
+import com.plux.distribution.core.session.domain.SessionId;
 import com.plux.distribution.core.session.domain.SessionState;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 
-public class SessionService implements OpenSessionUseCase, StartSessionUseCase {
+public class SessionService implements OpenSessionUseCase, StartSessionUseCase, CloseSessionUseCase,
+        GetCurrentSessionUseCase {
 
+    private static final Logger log = LogManager.getLogger(SessionService.class);
     private final @NotNull SessionRepositoryPort sessionRepositoryPort;
     private final @NotNull NotifySessionEventPort notifySessionEventPort;
 
@@ -45,6 +53,33 @@ public class SessionService implements OpenSessionUseCase, StartSessionUseCase {
         sessionRepositoryPort.update(session);
 
         notifySessionEventPort.notifyStarted(new SessionDto(session));
+    }
+
+    @Override
+    public void close(@NotNull SessionId sessionId) {
+        var session = sessionRepositoryPort.get(sessionId);
+
+        if (session == null) {
+            throw new IllegalArgumentException("Unknown session id: %s".formatted(sessionId));
+        }
+
+        if (session.getState().equals(SessionState.CLOSED)) {
+            log.warn("Attempt to close already closed session");
+            return;
+        }
+
+        session.close(new Date());
+
+        sessionRepositoryPort.update(session);
+
+        notifySessionEventPort.notifyClosed(new SessionDto(session));
+    }
+
+    @Override
+    public Optional<SessionDto> get(@NotNull ChatId chatId, @NotNull ServiceId serviceId) {
+        return Optional.ofNullable(sessionRepositoryPort.findWithStates(
+                chatId, serviceId, List.of(SessionState.OPEN, SessionState.STARTED)
+        )).map(SessionDto::new);
     }
 
     private @NotNull Session createOrGet(@NotNull ChatId chatId, @NotNull ServiceId serviceId) {
