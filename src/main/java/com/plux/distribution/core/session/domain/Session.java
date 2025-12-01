@@ -11,8 +11,8 @@ public class Session {
     private final @NotNull SessionId id;
     private final @NotNull ChatId chatId;
     private final @NotNull ServiceId serviceId;
-    private @NotNull SessionState state;
     private final @NotNull Date openTime;
+    private @NotNull SessionState state;
     private @Nullable Date closeTime;
 
     public Session(@NotNull SessionId id, @NotNull ChatId chatId, @NotNull ServiceId serviceId,

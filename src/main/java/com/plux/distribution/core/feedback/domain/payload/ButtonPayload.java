@@ -1,10 +1,10 @@
 package com.plux.distribution.core.feedback.domain.payload;
 
-import com.plux.distribution.core.message.domain.MessageId;
+import com.plux.distribution.core.interaction.domain.InteractionId;
 import org.jetbrains.annotations.NotNull;
 
 public record ButtonPayload(
-        MessageId replyTo,
+        InteractionId replyTo,
         String tag
 ) implements FeedbackPayload {
 

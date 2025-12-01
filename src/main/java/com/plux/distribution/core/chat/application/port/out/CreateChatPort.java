@@ -4,5 +4,6 @@ import com.plux.distribution.core.chat.domain.Chat;
 import org.jetbrains.annotations.NotNull;
 
 public interface CreateChatPort {
+
     @NotNull Chat create();
 }

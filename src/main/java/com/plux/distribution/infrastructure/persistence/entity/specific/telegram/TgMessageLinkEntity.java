@@ -10,8 +10,8 @@ import jakarta.persistence.Table;
 public class TgMessageLinkEntity {
 
     @Id
-    @Column(name = "message_id", nullable = false, unique = true)
-    private Long messageId;
+    @Column(name = "interaction_id", nullable = false, unique = true)
+    private Long interactionId;
 
     @Column(name = "tg_message_id", nullable = false)
     private Integer tgMessageId;
@@ -22,14 +22,14 @@ public class TgMessageLinkEntity {
     public TgMessageLinkEntity() {
     }
 
-    public TgMessageLinkEntity(Long messageId, Integer tgMessageId, Long tgChatId) {
-        this.messageId = messageId;
+    public TgMessageLinkEntity(Long interactionId, Integer tgMessageId, Long tgChatId) {
+        this.interactionId = interactionId;
         this.tgMessageId = tgMessageId;
         this.tgChatId = tgChatId;
     }
 
-    public Long getMessageId() {
-        return messageId;
+    public Long getInteractionId() {
+        return interactionId;
     }
 
     public Integer getTgMessageId() {

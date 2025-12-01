@@ -1,13 +1,13 @@
 package com.plux.distribution.core.workflow.application.frame.settings.user;
 
+import com.plux.distribution.core.interaction.application.dto.action.ClearButtonsAction;
+import com.plux.distribution.core.interaction.domain.content.MessageAttachment.ButtonAttachment;
+import com.plux.distribution.core.interaction.domain.content.SimpleMessageContent;
+import com.plux.distribution.core.workflow.application.frame.utils.InfoMessageFrame;
+import com.plux.distribution.core.workflow.application.frame.utils.LastMessageData;
 import com.plux.distribution.core.workflow.domain.Frame;
 import com.plux.distribution.core.workflow.domain.FrameContext;
 import com.plux.distribution.core.workflow.domain.FrameFeedback;
-import com.plux.distribution.core.workflow.application.frame.utils.InfoMessageFrame;
-import com.plux.distribution.core.workflow.application.frame.utils.LastMessageData;
-import com.plux.distribution.core.message.application.dto.action.ClearButtonsAction;
-import com.plux.distribution.core.message.domain.attachment.ButtonAttachment;
-import com.plux.distribution.core.message.domain.content.SimpleMessageContent;
 import java.util.List;
 import org.jetbrains.annotations.NotNull;
 
@@ -55,7 +55,7 @@ public class AskEmailFrame implements Frame {
             context.dispatch(
                     new ClearButtonsAction(
                             context.getChatId(),
-                            context.getData().get(LastMessageData.class).messageId()
+                            context.getData().get(LastMessageData.class).interactionId()
                     )
             );
 

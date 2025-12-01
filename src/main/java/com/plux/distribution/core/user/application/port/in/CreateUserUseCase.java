@@ -5,5 +5,6 @@ import com.plux.distribution.core.user.application.dto.UserDto;
 import org.jetbrains.annotations.NotNull;
 
 public interface CreateUserUseCase {
+
     @NotNull UserDto create(@NotNull UserCommand command);
 }

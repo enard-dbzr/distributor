@@ -5,5 +5,6 @@ import com.plux.distribution.core.chat.domain.ChatId;
 import org.jetbrains.annotations.NotNull;
 
 public interface GetChatUseCase {
+
     @NotNull ChatDto get(@NotNull ChatId chatId);
 }

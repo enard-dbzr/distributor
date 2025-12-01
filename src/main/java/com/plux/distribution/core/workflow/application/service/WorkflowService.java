@@ -3,6 +3,7 @@ package com.plux.distribution.core.workflow.application.service;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.plux.distribution.core.chat.domain.ChatId;
 import com.plux.distribution.core.workflow.application.exception.DataProcessingException;
 import com.plux.distribution.core.workflow.application.port.in.WorkflowUseCase;
 import com.plux.distribution.core.workflow.application.port.out.ContextRepositoryPort;
@@ -13,7 +14,6 @@ import com.plux.distribution.core.workflow.domain.FrameContext;
 import com.plux.distribution.core.workflow.domain.FrameContext.ContextSnapshot;
 import com.plux.distribution.core.workflow.domain.FrameContext.FrameEntry;
 import com.plux.distribution.core.workflow.domain.FrameContextManager;
-import com.plux.distribution.core.chat.domain.ChatId;
 import com.plux.distribution.core.workflow.domain.TextProvider;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -95,11 +95,17 @@ public class WorkflowService implements WorkflowUseCase {
         Map<Class<?>, Object> data = new HashMap<>();
         for (var dataHolder : snapshotHolder.data().entrySet()) {
             var key = dataRegistry.keyById(dataHolder.getKey());
+
+            if (key == null) {
+                log.error("Not found serializer with id={}", dataHolder.getKey());
+                continue;
+            }
+
             try {
                 var value = key.serializer().deserialize(dataHolder.getValue().value());
                 data.put(key.type(), value);
             } catch (DataProcessingException e) {
-                log.error("Failed to deserialize data entry: {}", key, e);
+                log.error("Failed to deserialize data entry: {}", key);
             }
 
 

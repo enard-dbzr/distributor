@@ -1,16 +1,16 @@
 package com.plux.distribution.infrastructure.telegram;
 
-import com.plux.distribution.core.feedback.application.port.in.register.RegisterFeedbackUseCase;
+import com.plux.distribution.core.chat.domain.ChatId;
+import com.plux.distribution.core.feedback.application.exception.ChatIdNotFound;
 import com.plux.distribution.core.feedback.application.port.in.register.ButtonContext;
 import com.plux.distribution.core.feedback.application.port.in.register.MessageContext;
-import com.plux.distribution.core.feedback.application.exception.ChatIdNotFound;
-import com.plux.distribution.infrastructure.telegram.port.message.GetMessageIdByTgPort;
+import com.plux.distribution.core.feedback.application.port.in.register.RegisterFeedbackUseCase;
+import com.plux.distribution.core.interaction.domain.InteractionId;
 import com.plux.distribution.infrastructure.telegram.port.chat.GetChatIdByTgPort;
+import com.plux.distribution.infrastructure.telegram.port.chat.TgChatLinker;
+import com.plux.distribution.infrastructure.telegram.port.message.GetMessageIdByTgPort;
 import com.plux.distribution.infrastructure.telegram.port.message.TgMessageGlobalId;
 import com.plux.distribution.infrastructure.telegram.port.message.TgMessageLinker;
-import com.plux.distribution.infrastructure.telegram.port.chat.TgChatLinker;
-import com.plux.distribution.core.message.domain.MessageId;
-import com.plux.distribution.core.chat.domain.ChatId;
 import java.util.Date;
 import java.util.Optional;
 import org.jetbrains.annotations.NotNull;
@@ -61,9 +61,9 @@ public class TelegramHandler implements LongPollingSingleThreadUpdateConsumer {
             }
 
             @Override
-            public MessageId getReplyTo() {
+            public InteractionId getReplyTo() {
                 if (message.isReply()) {
-                    return getMessageIdByTgPort.getMessageId(
+                    return getMessageIdByTgPort.getInteractionId(
                             new TgMessageGlobalId(
                                     message.getReplyToMessage().getMessageId(),
                                     message.getChatId()
@@ -85,7 +85,7 @@ public class TelegramHandler implements LongPollingSingleThreadUpdateConsumer {
             }
 
             @Override
-            public void onMessageCreated(@NotNull MessageId messageId) {
+            public void onMessageCreated(@NotNull InteractionId messageId) {
                 messageLinker.link(messageId, new TgMessageGlobalId(message.getMessageId(), message.getChatId()));
             }
 
@@ -110,8 +110,8 @@ public class TelegramHandler implements LongPollingSingleThreadUpdateConsumer {
             }
 
             @Override
-            public @NotNull MessageId getReplyTo() {
-                return getMessageIdByTgPort.getMessageId(new TgMessageGlobalId(tgMessageId, tgChatId));
+            public @NotNull InteractionId getReplyTo() {
+                return getMessageIdByTgPort.getInteractionId(new TgMessageGlobalId(tgMessageId, tgChatId));
             }
 
             @Override

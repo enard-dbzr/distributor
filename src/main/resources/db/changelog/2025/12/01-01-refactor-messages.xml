@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        objectQuotingStrategy="QUOTE_ONLY_RESERVED_WORDS"
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.33.xsd">
+
+    <changeSet author="enard" id="1764566770803-rename-message-to-interaction">
+        <renameColumn columnDataType="BIGINT"
+                newColumnName="interaction_id"
+                oldColumnName="message_id"
+                tableName="tg_message_links"/>
+        <renameSequence
+                newSequenceName="interactions_id_seq"
+                oldSequenceName="messages_id_seq"/>
+        <renameSequence
+                newSequenceName="interaction_contents_id_seq"
+                oldSequenceName="message_contents_id_seq"/>
+
+        <renameSequence
+                newSequenceName="interaction_states_id_seq"
+                oldSequenceName="message_states_id_seq"/>
+
+        <renameTable newTableName="interaction_contents" oldTableName="message_contents"/>
+        <renameTable newTableName="interaction_states" oldTableName="message_states"/>
+        <renameTable newTableName="interactions" oldTableName="messages"/>
+    </changeSet>
+
+    <changeSet author="enard" id="1764566770803-fix-data">
+        <dropColumn columnName="receive_time" tableName="interaction_states"/>
+
+        <sql>
+            UPDATE interaction_states
+            SET type          = 'TRANSFERRED',
+                transfer_time = receive_time
+            WHERE type = 'RECEIVED';
+        </sql>
+
+        <update tableName="participants">
+            <column name="type" value="BOT"/>
+            <where>type IN ('UNK_SERVICE', 'SELF')</where>
+        </update>
+    </changeSet>
+
+</databaseChangeLog>

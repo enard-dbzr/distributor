@@ -1,12 +1,12 @@
 package com.plux.distribution.core.workflow.application.frame.registration.hello;
 
-import com.plux.distribution.core.workflow.domain.FrameFeedback;
+import com.plux.distribution.core.interaction.application.dto.action.ClearButtonsAction;
+import com.plux.distribution.core.interaction.domain.content.MessageAttachment.ButtonAttachment;
+import com.plux.distribution.core.interaction.domain.content.SimpleMessageContent;
 import com.plux.distribution.core.workflow.application.frame.utils.LastMessageData;
-import com.plux.distribution.core.message.application.dto.action.ClearButtonsAction;
-import com.plux.distribution.core.message.domain.attachment.ButtonAttachment;
-import com.plux.distribution.core.message.domain.content.SimpleMessageContent;
 import com.plux.distribution.core.workflow.domain.Frame;
 import com.plux.distribution.core.workflow.domain.FrameContext;
+import com.plux.distribution.core.workflow.domain.FrameFeedback;
 import java.util.List;
 import org.jetbrains.annotations.NotNull;
 
@@ -32,7 +32,7 @@ public class HelloFrame implements Frame {
             var data = context.getData().get(LastMessageData.class);
             context.dispatch(new ClearButtonsAction(
                     context.getChatId(),
-                    data.messageId()
+                    data.interactionId()
             ));
             context.getData().remove(LastMessageData.class);
         }

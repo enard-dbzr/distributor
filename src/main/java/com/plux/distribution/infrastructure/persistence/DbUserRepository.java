@@ -10,6 +10,7 @@ import org.hibernate.Transaction;
 import org.jetbrains.annotations.NotNull;
 
 public class DbUserRepository implements UserRepositoryPort {
+
     private final @NotNull SessionFactory sessionFactory;
 
     public DbUserRepository(@NotNull SessionFactory sessionFactory) {

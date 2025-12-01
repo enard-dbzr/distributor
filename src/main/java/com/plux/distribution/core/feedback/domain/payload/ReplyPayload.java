@@ -1,12 +1,12 @@
 package com.plux.distribution.core.feedback.domain.payload;
 
-import com.plux.distribution.core.message.application.dto.MessageDto;
-import com.plux.distribution.core.message.domain.MessageId;
+import com.plux.distribution.core.interaction.application.dto.InteractionDto;
+import com.plux.distribution.core.interaction.domain.InteractionId;
 import org.jetbrains.annotations.NotNull;
 
 public record ReplyPayload(
-        MessageId replyTo,
-        MessageDto content
+        InteractionId replyTo,
+        InteractionDto content
 ) implements FeedbackPayload {
 
 

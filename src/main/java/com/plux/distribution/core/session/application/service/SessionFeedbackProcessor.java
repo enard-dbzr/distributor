@@ -2,12 +2,12 @@ package com.plux.distribution.core.session.application.service;
 
 import com.plux.distribution.core.feedback.application.dto.ResolvedFeedback;
 import com.plux.distribution.core.feedback.application.port.in.ResolvedFeedbackProcessor;
+import com.plux.distribution.core.integration.domain.ServiceId;
+import com.plux.distribution.core.interaction.domain.Participant.ServiceParticipant;
 import com.plux.distribution.core.session.application.dto.SessionDto;
 import com.plux.distribution.core.session.application.port.in.CloseSessionStrategy;
 import com.plux.distribution.core.session.application.port.in.CloseSessionUseCase;
 import com.plux.distribution.core.session.application.port.in.StartSessionUseCase;
-import com.plux.distribution.core.message.domain.participant.ServiceParticipant;
-import com.plux.distribution.core.integration.domain.ServiceId;
 import com.plux.distribution.core.session.application.port.out.SessionRepositoryPort;
 import com.plux.distribution.core.session.domain.SessionState;
 import java.util.List;

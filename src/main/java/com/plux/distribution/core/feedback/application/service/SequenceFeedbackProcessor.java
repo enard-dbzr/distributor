@@ -6,6 +6,7 @@ import java.util.List;
 import org.jetbrains.annotations.NotNull;
 
 public class SequenceFeedbackProcessor implements FeedbackProcessor {
+
     private final List<FeedbackProcessor> processors;
 
     public SequenceFeedbackProcessor(List<FeedbackProcessor> processors) {

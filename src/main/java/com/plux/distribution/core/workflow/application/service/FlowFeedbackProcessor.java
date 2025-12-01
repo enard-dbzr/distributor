@@ -3,19 +3,18 @@ package com.plux.distribution.core.workflow.application.service;
 import com.plux.distribution.core.chat.domain.ChatId;
 import com.plux.distribution.core.feedback.application.dto.Feedback;
 import com.plux.distribution.core.feedback.application.port.in.FeedbackProcessor;
+import com.plux.distribution.core.feedback.domain.payload.ButtonPayload;
+import com.plux.distribution.core.feedback.domain.payload.FeedbackPayloadVisitor;
+import com.plux.distribution.core.feedback.domain.payload.MessagePayload;
+import com.plux.distribution.core.feedback.domain.payload.ReplyPayload;
+import com.plux.distribution.core.interaction.domain.content.InteractionContent;
+import com.plux.distribution.core.interaction.domain.content.ReplyMessageContent;
+import com.plux.distribution.core.interaction.domain.content.SimpleMessageContent;
 import com.plux.distribution.core.workflow.application.port.in.CheckChatBusyUseCase;
 import com.plux.distribution.core.workflow.application.port.in.WorkflowUseCase;
 import com.plux.distribution.core.workflow.domain.Frame;
 import com.plux.distribution.core.workflow.domain.FrameContext;
 import com.plux.distribution.core.workflow.domain.FrameFeedback;
-import com.plux.distribution.core.feedback.domain.payload.ButtonPayload;
-import com.plux.distribution.core.feedback.domain.payload.FeedbackPayloadVisitor;
-import com.plux.distribution.core.feedback.domain.payload.MessagePayload;
-import com.plux.distribution.core.feedback.domain.payload.ReplyPayload;
-import com.plux.distribution.core.message.domain.content.MessageContent;
-import com.plux.distribution.core.message.domain.content.MessageContentVisitor;
-import com.plux.distribution.core.message.domain.content.ReplyMessageContent;
-import com.plux.distribution.core.message.domain.content.SimpleMessageContent;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
@@ -45,6 +44,13 @@ public class FlowFeedbackProcessor implements FeedbackProcessor, CheckChatBusyUs
         this.scheduleSettingsWorkflow = scheduleSettingsWorkflow;
         this.updateUserWorkflow = updateUserWorkflow;
         this.helpWorkflow = helpWorkflow;
+    }
+
+    private static String extractMessageText(@NotNull InteractionContent content) {
+        return switch (content) {
+            case SimpleMessageContent c -> c.text();
+            case ReplyMessageContent c -> extractMessageText(c.original());
+        };
     }
 
     @Override
@@ -116,7 +122,7 @@ public class FlowFeedbackProcessor implements FeedbackProcessor, CheckChatBusyUs
     private FrameFeedback createFrameFeedback(Feedback feedback) {
         var text = new AtomicReference<String>();
         var buttonTag = new AtomicReference<String>();
-        var content = new AtomicReference<MessageContent>();
+        var content = new AtomicReference<InteractionContent>();
 
         feedback.payload().accept(new FeedbackPayloadVisitor<Void>() {
             @Override
@@ -128,14 +134,14 @@ public class FlowFeedbackProcessor implements FeedbackProcessor, CheckChatBusyUs
             @Override
             public Void visit(@NotNull MessagePayload entity) {
                 content.set(entity.content().content());
-                text.set(entity.content().content().accept(new ExtractMessageText()));
+                text.set(extractMessageText(entity.content().content()));
                 return null;
             }
 
             @Override
             public Void visit(@NotNull ReplyPayload entity) {
                 content.set(entity.content().content());
-                text.set(entity.content().content().accept(new ExtractMessageText()));
+                text.set(extractMessageText(entity.content().content()));
                 return null;
             }
         });
@@ -152,18 +158,5 @@ public class FlowFeedbackProcessor implements FeedbackProcessor, CheckChatBusyUs
     @Override
     public boolean isBusy(@NotNull ChatId chatId) {
         return !workflowUseCase.load(chatId).isEmpty();
-    }
-
-    private static class ExtractMessageText implements MessageContentVisitor<String> {
-
-        @Override
-        public String visit(SimpleMessageContent content) {
-            return content.text().isEmpty() ? null : content.text();
-        }
-
-        @Override
-        public String visit(ReplyMessageContent content) {
-            return content.original().accept(this);
-        }
     }
 }

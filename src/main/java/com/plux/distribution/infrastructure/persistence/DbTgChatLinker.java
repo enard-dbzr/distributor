@@ -1,16 +1,17 @@
 package com.plux.distribution.infrastructure.persistence;
 
+import com.plux.distribution.core.chat.domain.ChatId;
 import com.plux.distribution.core.feedback.application.exception.ChatIdNotFound;
+import com.plux.distribution.infrastructure.persistence.entity.specific.telegram.TgChatLinkEntity;
 import com.plux.distribution.infrastructure.telegram.port.chat.GetChatIdByTgPort;
 import com.plux.distribution.infrastructure.telegram.port.chat.GetTgChatIdPort;
 import com.plux.distribution.infrastructure.telegram.port.chat.TgChatLinker;
-import com.plux.distribution.core.chat.domain.ChatId;
-import com.plux.distribution.infrastructure.persistence.entity.specific.telegram.TgChatLinkEntity;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.jetbrains.annotations.NotNull;
 
 public class DbTgChatLinker implements GetTgChatIdPort, GetChatIdByTgPort, TgChatLinker {
+
     private final SessionFactory sessionFactory;
 
     public DbTgChatLinker(SessionFactory sessionFactory) {

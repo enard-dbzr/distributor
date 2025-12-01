@@ -5,5 +5,6 @@ import com.plux.distribution.core.session.application.dto.SessionDto;
 import org.jetbrains.annotations.NotNull;
 
 public interface CloseSessionStrategy {
+
     boolean isCloseNeeded(@NotNull SessionDto session, @NotNull Feedback feedback);
 }

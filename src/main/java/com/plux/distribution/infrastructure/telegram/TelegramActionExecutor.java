@@ -1,17 +1,18 @@
 package com.plux.distribution.infrastructure.telegram;
 
-import com.plux.distribution.core.message.application.port.out.ActionExecutorPort;
+import com.plux.distribution.core.interaction.application.dto.action.ChatAction;
+import com.plux.distribution.core.interaction.application.dto.action.ChatActionVisitor;
+import com.plux.distribution.core.interaction.application.dto.action.ClearButtonsAction;
+import com.plux.distribution.core.interaction.application.port.out.ActionExecutorPort;
 import com.plux.distribution.infrastructure.telegram.port.chat.GetTgChatIdPort;
 import com.plux.distribution.infrastructure.telegram.port.message.GetTgMessageIdPort;
-import com.plux.distribution.core.message.application.dto.action.ChatAction;
-import com.plux.distribution.core.message.application.dto.action.ChatActionVisitor;
-import com.plux.distribution.core.message.application.dto.action.ClearButtonsAction;
 import org.jetbrains.annotations.NotNull;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageReplyMarkup;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
 public class TelegramActionExecutor implements ActionExecutorPort {
+
     private final @NotNull TelegramClient client;
     private final @NotNull GetTgChatIdPort getTgChatIdPort;
     private final @NotNull GetTgMessageIdPort getTgMessageIdPort;

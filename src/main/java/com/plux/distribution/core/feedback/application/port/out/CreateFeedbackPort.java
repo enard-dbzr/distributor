@@ -5,5 +5,6 @@ import com.plux.distribution.core.feedback.application.dto.Feedback;
 import org.jetbrains.annotations.NotNull;
 
 public interface CreateFeedbackPort {
+
     @NotNull Feedback create(@NotNull CreateFeedbackCommand command);
 }

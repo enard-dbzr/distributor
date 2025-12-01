@@ -1,8 +1,8 @@
 package com.plux.distribution.core.workflow.application.frame.settings.schedule;
 
-import com.plux.distribution.core.message.application.dto.action.ClearButtonsAction;
-import com.plux.distribution.core.message.domain.attachment.ButtonAttachment;
-import com.plux.distribution.core.message.domain.content.SimpleMessageContent;
+import com.plux.distribution.core.interaction.application.dto.action.ClearButtonsAction;
+import com.plux.distribution.core.interaction.domain.content.MessageAttachment.ButtonAttachment;
+import com.plux.distribution.core.interaction.domain.content.SimpleMessageContent;
 import com.plux.distribution.core.workflow.application.frame.utils.InfoMessageFrame;
 import com.plux.distribution.core.workflow.application.frame.utils.LastMessageData;
 import com.plux.distribution.core.workflow.domain.Frame;
@@ -76,7 +76,7 @@ public class AskHoursFrame implements Frame {
             context.dispatch(
                     new ClearButtonsAction(
                             context.getChatId(),
-                            context.getData().get(LastMessageData.class).messageId()
+                            context.getData().get(LastMessageData.class).interactionId()
                     )
             );
 

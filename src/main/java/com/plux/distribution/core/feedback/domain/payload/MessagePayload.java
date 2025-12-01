@@ -1,10 +1,10 @@
 package com.plux.distribution.core.feedback.domain.payload;
 
-import com.plux.distribution.core.message.application.dto.MessageDto;
+import com.plux.distribution.core.interaction.application.dto.InteractionDto;
 import org.jetbrains.annotations.NotNull;
 
 public record MessagePayload(
-        MessageDto content
+        InteractionDto content
 ) implements FeedbackPayload {
 
 

@@ -9,7 +9,7 @@ import com.plux.distribution.infrastructure.notifier.view.feedback.payload.Butto
 import com.plux.distribution.infrastructure.notifier.view.feedback.payload.FeedbackPayloadView;
 import com.plux.distribution.infrastructure.notifier.view.feedback.payload.MessageFeedbackPayloadView;
 import com.plux.distribution.infrastructure.notifier.view.feedback.payload.ReplyFeedbackPayloadView;
-import com.plux.distribution.infrastructure.notifier.view.message.MessageView;
+import com.plux.distribution.infrastructure.notifier.view.interaction.InteractionView;
 import java.util.Date;
 import org.jetbrains.annotations.NotNull;
 
@@ -29,12 +29,12 @@ public class FeedbackView {
 
             @Override
             public FeedbackPayloadView visit(@NotNull MessagePayload entity) {
-                return new MessageFeedbackPayloadView(new MessageView(entity.content()));
+                return new MessageFeedbackPayloadView(new InteractionView(entity.content()));
             }
 
             @Override
             public FeedbackPayloadView visit(@NotNull ReplyPayload entity) {
-                return new ReplyFeedbackPayloadView(entity.replyTo().value(), new MessageView(entity.content()));
+                return new ReplyFeedbackPayloadView(entity.replyTo().value(), new InteractionView(entity.content()));
             }
         });
 
