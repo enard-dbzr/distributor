@@ -3,7 +3,6 @@ package com.plux.distribution.infrastructure.persistence.entity.interaction.part
 import com.plux.distribution.core.interaction.domain.Participant;
 import com.plux.distribution.core.interaction.domain.Participant.BotParticipant;
 import com.plux.distribution.core.interaction.domain.Participant.ChatParticipant;
-import com.plux.distribution.core.interaction.domain.Participant.ServiceParticipant;
 import jakarta.persistence.DiscriminatorColumn;
 import jakarta.persistence.DiscriminatorType;
 import jakarta.persistence.Entity;
@@ -28,7 +27,6 @@ public abstract class ParticipantEntity {
     public static ParticipantEntity fromModel(Participant participant) {
         return switch (participant) {
             case ChatParticipant p -> new ChatParticipantEntity(p.chatId().value());
-            case ServiceParticipant p -> new ServiceParticipantEntity(p.serviceId().value());
             case BotParticipant _ -> new BotParticipantEntity();
         };
     }

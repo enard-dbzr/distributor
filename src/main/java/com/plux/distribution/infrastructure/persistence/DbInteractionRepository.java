@@ -1,15 +1,12 @@
 package com.plux.distribution.infrastructure.persistence;
 
 import com.plux.distribution.core.interaction.application.command.CreateInteractionCommand;
-import com.plux.distribution.core.interaction.application.port.out.CreateInteractionPort;
-import com.plux.distribution.core.interaction.application.port.out.GetInteractionPort;
-import com.plux.distribution.core.interaction.application.port.out.UpdateInteractionPort;
+import com.plux.distribution.core.interaction.application.port.out.InteractionRepositoryPort;
 import com.plux.distribution.core.interaction.domain.Interaction;
 import com.plux.distribution.core.interaction.domain.InteractionId;
 import com.plux.distribution.core.interaction.domain.Participant;
 import com.plux.distribution.core.interaction.domain.Participant.BotParticipant;
 import com.plux.distribution.core.interaction.domain.Participant.ChatParticipant;
-import com.plux.distribution.core.interaction.domain.Participant.ServiceParticipant;
 import com.plux.distribution.infrastructure.persistence.entity.interaction.InteractionEntity;
 import com.plux.distribution.infrastructure.persistence.entity.interaction.state.InteractionStateEntity;
 import org.apache.logging.log4j.LogManager;
@@ -19,7 +16,7 @@ import org.hibernate.Transaction;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class DbInteractionRepository implements CreateInteractionPort, UpdateInteractionPort, GetInteractionPort {
+public class DbInteractionRepository implements InteractionRepositoryPort {
 
     private static final Logger log = LogManager.getLogger(DbInteractionRepository.class);
     private final SessionFactory sessionFactory;
@@ -83,18 +80,7 @@ public class DbInteractionRepository implements CreateInteractionPort, UpdateInt
 
                     yield q;
                 }
-                case ServiceParticipant p -> {
-                    var q = session.createQuery("from InteractionEntity m "
-                            + "join ServiceParticipantEntity p on m.recipient = p "
-                            + "where p.serviceId = :sid "
-                            + "order by m.id desc "
-                            + "fetch first 1 rows only", InteractionEntity.class);
-
-                    q.setParameter("sid", p.serviceId().value());
-
-                    yield q;
-                }
-                case BotParticipant p -> session.createQuery("from InteractionEntity m "
+                case BotParticipant _ -> session.createQuery("from InteractionEntity m "
                         + "join BotParticipantEntity p on m.recipient = p "
                         + "order by m.id desc "
                         + "fetch first 1 rows only", InteractionEntity.class);

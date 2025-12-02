@@ -2,15 +2,13 @@ package com.plux.distribution.infrastructure.persistence;
 
 import com.plux.distribution.core.interaction.domain.InteractionId;
 import com.plux.distribution.infrastructure.persistence.entity.specific.telegram.TgMessageLinkEntity;
-import com.plux.distribution.infrastructure.telegram.port.message.GetMessageIdByTgPort;
-import com.plux.distribution.infrastructure.telegram.port.message.GetTgMessageIdPort;
-import com.plux.distribution.infrastructure.telegram.port.message.TgMessageGlobalId;
-import com.plux.distribution.infrastructure.telegram.port.message.TgMessageLinker;
+import com.plux.distribution.infrastructure.telegram.port.TgMessageGlobalId;
+import com.plux.distribution.infrastructure.telegram.port.TgMessageLinker;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.jetbrains.annotations.NotNull;
 
-public class DbTgMessageLinker implements TgMessageLinker, GetMessageIdByTgPort, GetTgMessageIdPort {
+public class DbTgMessageLinker implements TgMessageLinker {
 
     private final @NotNull SessionFactory sessionFactory;
 

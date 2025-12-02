@@ -2,9 +2,9 @@ package com.plux.distribution.infrastructure.notifier;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.plux.distribution.core.feedback.application.dto.ResolvedFeedback;
+import com.plux.distribution.core.feedback.domain.ResolvedFeedback;
 import com.plux.distribution.core.integration.application.port.in.GetWebhookUseCase;
-import com.plux.distribution.core.integration.application.port.in.NotifyServiceFeedbackPort;
+import com.plux.distribution.core.integration.application.port.out.NotifyServiceFeedbackPort;
 import com.plux.distribution.core.integration.domain.ServiceId;
 import com.plux.distribution.core.session.application.dto.SessionDto;
 import com.plux.distribution.core.session.application.port.out.NotifySessionEventPort;

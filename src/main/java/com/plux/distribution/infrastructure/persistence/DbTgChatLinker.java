@@ -1,16 +1,15 @@
 package com.plux.distribution.infrastructure.persistence;
 
 import com.plux.distribution.core.chat.domain.ChatId;
-import com.plux.distribution.core.feedback.application.exception.ChatIdNotFound;
 import com.plux.distribution.infrastructure.persistence.entity.specific.telegram.TgChatLinkEntity;
-import com.plux.distribution.infrastructure.telegram.port.chat.GetChatIdByTgPort;
-import com.plux.distribution.infrastructure.telegram.port.chat.GetTgChatIdPort;
-import com.plux.distribution.infrastructure.telegram.port.chat.TgChatLinker;
+import com.plux.distribution.infrastructure.telegram.port.TgChatLinker;
+import java.util.Optional;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
-public class DbTgChatLinker implements GetTgChatIdPort, GetChatIdByTgPort, TgChatLinker {
+public class DbTgChatLinker implements TgChatLinker {
 
     private final SessionFactory sessionFactory;
 
@@ -19,20 +18,16 @@ public class DbTgChatLinker implements GetTgChatIdPort, GetChatIdByTgPort, TgCha
     }
 
     @Override
-    public @NotNull ChatId getChatId(@NotNull Long tgChatId) throws ChatIdNotFound {
+    public @Nullable ChatId getChatId(@NotNull Long tgChatId) {
         try (var session = sessionFactory.openSession()) {
             var query = session.createQuery(
                     "from TgChatLinkEntity where tgChatId = :tgId",
                     TgChatLinkEntity.class
             );
             query.setParameter("tgId", tgChatId);
-            var entity = query.uniqueResult();
+            var entity = Optional.ofNullable(query.uniqueResult());
 
-            if (entity == null) {
-                throw new ChatIdNotFound("ChatId not found");
-            }
-
-            return new ChatId(entity.getChatId());
+            return entity.map(e -> new ChatId(e.getChatId())).orElse(null);
         }
     }
 

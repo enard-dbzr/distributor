@@ -1,14 +1,16 @@
 package com.plux.distribution;
 
 import com.plux.distribution.core.chat.application.service.ChatService;
+import com.plux.distribution.core.feedback.application.service.FeedbackBotHandler;
 import com.plux.distribution.core.feedback.application.service.FeedbackResolver;
-import com.plux.distribution.core.feedback.application.service.RegisterFeedbackService;
+import com.plux.distribution.core.integration.application.service.FindInteractionSourceService;
 import com.plux.distribution.core.integration.application.service.IntegrationFeedbackProcessor;
 import com.plux.distribution.core.integration.application.service.IntegrationService;
-import com.plux.distribution.core.integration.application.service.SendServiceMessageService;
+import com.plux.distribution.core.integration.application.service.SendServiceInteractionService;
 import com.plux.distribution.core.integration.domain.ServiceId;
 import com.plux.distribution.core.interaction.application.service.ExecuteActionService;
 import com.plux.distribution.core.interaction.application.service.InteractionDeliveryService;
+import com.plux.distribution.core.interaction.application.service.InteractionService;
 import com.plux.distribution.core.session.application.service.RandomSessionCloser;
 import com.plux.distribution.core.session.application.service.RandomSessionInitializer;
 import com.plux.distribution.core.session.application.service.ScheduleSettingsService;
@@ -51,11 +53,11 @@ import com.plux.distribution.core.workflow.application.utils.DefaultContextManag
 import com.plux.distribution.infrastructure.BundleTextProvider;
 import com.plux.distribution.infrastructure.notifier.WebhookNotifier;
 import com.plux.distribution.infrastructure.persistence.DbChatRepository;
-import com.plux.distribution.infrastructure.persistence.DbFeedbackRepository;
 import com.plux.distribution.infrastructure.persistence.DbFrameRepository;
 import com.plux.distribution.infrastructure.persistence.DbIntegrationRepository;
 import com.plux.distribution.infrastructure.persistence.DbInteractionRepository;
 import com.plux.distribution.infrastructure.persistence.DbScheduleSettingsRepository;
+import com.plux.distribution.infrastructure.persistence.DbServiceSendingRepository;
 import com.plux.distribution.infrastructure.persistence.DbSessionInteractionsRepository;
 import com.plux.distribution.infrastructure.persistence.DbSessionRepository;
 import com.plux.distribution.infrastructure.persistence.DbTgChatLinker;
@@ -64,7 +66,7 @@ import com.plux.distribution.infrastructure.persistence.DbUserRepository;
 import com.plux.distribution.infrastructure.persistence.config.HibernateConfig;
 import com.plux.distribution.infrastructure.telegram.TelegramActionExecutor;
 import com.plux.distribution.infrastructure.telegram.TelegramHandler;
-import com.plux.distribution.infrastructure.telegram.sender.TelegramMessageSender;
+import com.plux.distribution.infrastructure.telegram.sender.TelegramInteractionSender;
 import jakarta.servlet.DispatcherType;
 import java.util.EnumSet;
 import java.util.List;
@@ -103,32 +105,35 @@ public class Main {
                 System.getenv("DB_PASSWORD")
         );
 
-        var messageRepo = new DbInteractionRepository(hibernateConfig.getSessionFactory());
-        var feedbackRepo = new DbFeedbackRepository(hibernateConfig.getSessionFactory());
         var chatRepo = new DbChatRepository(hibernateConfig.getSessionFactory());
-        var frameRepo = new DbFrameRepository(hibernateConfig.getSessionFactory());
         var userRepo = new DbUserRepository(hibernateConfig.getSessionFactory());
+        var frameRepo = new DbFrameRepository(hibernateConfig.getSessionFactory());
         var sessionRepo = new DbSessionRepository(hibernateConfig.getSessionFactory());
-        var sessionInteractionsRepo = new DbSessionInteractionsRepository(hibernateConfig.getSessionFactory());
         var integrationRepo = new DbIntegrationRepository(hibernateConfig.getSessionFactory());
+        var interactionsRepo = new DbInteractionRepository(hibernateConfig.getSessionFactory());
+        var serviceSendingRepo = new DbServiceSendingRepository(hibernateConfig.getSessionFactory());
         var scheduleSettingsRepo = new DbScheduleSettingsRepository(hibernateConfig.getSessionFactory());
+        var sessionInteractionsRepo = new DbSessionInteractionsRepository(hibernateConfig.getSessionFactory());
 
         var tgChatLinker = new DbTgChatLinker(hibernateConfig.getSessionFactory());
         var tgMessageLinker = new DbTgMessageLinker(hibernateConfig.getSessionFactory());
         var tgClient = new OkHttpTelegramClient(botToken);
 
-        var sender = new TelegramMessageSender(tgClient, tgChatLinker, tgMessageLinker, tgMessageLinker);
+        var sender = new TelegramInteractionSender(tgClient, tgChatLinker, tgMessageLinker);
         var executor = new TelegramActionExecutor(tgClient, tgChatLinker, tgMessageLinker);
 
-        var messageService = new InteractionDeliveryService(sender, messageRepo, messageRepo, messageRepo);
+        var interactionService = new InteractionService(interactionsRepo);
+        var interactionDeliveryService = new InteractionDeliveryService(interactionsRepo, sender);
         var executeActionService = new ExecuteActionService(executor);
 
         var chatService = new ChatService(chatRepo, chatRepo, chatRepo);
         var userService = new UserService(userRepo);
 
         var integrationService = new IntegrationService(integrationRepo);
+        var findInteractionSourceService = new FindInteractionSourceService(serviceSendingRepo);
         var notifier = new WebhookNotifier(integrationService);
-        var sendIntegrationMessageService = new SendServiceMessageService(messageService, integrationRepo);
+        var sendIntegrationMessageService = new SendServiceInteractionService(interactionDeliveryService,
+                integrationRepo, serviceSendingRepo);
 
         var scheduleSettingsService = new ScheduleSettingsService(scheduleSettingsRepo);
         var sessionService = new SessionService(sessionRepo, notifier);
@@ -136,19 +141,20 @@ public class Main {
         var sessionCloser = new RandomSessionCloser(sessionInteractionsRepo);
 
         var sessionFeedbackProcessor = new SessionFeedbackProcessor(sessionService, sessionService, sessionCloser,
-                sessionRepo);
+                sessionRepo, findInteractionSourceService);
 
-        var integrationFeedbackProcessor = new IntegrationFeedbackProcessor(notifier, sessionService);
+        var integrationFeedbackProcessor = new IntegrationFeedbackProcessor(notifier, sessionService,
+                serviceSendingRepo);
 
         var feedbackResolverProcessor = new FeedbackResolver(List.of(
                 sessionFeedbackProcessor,
                 integrationFeedbackProcessor
-        ), messageService);
+        ), interactionService);
 
         var textProvider = new BundleTextProvider(Locale.of("ru"));
         var frameRegistry = makeFrameRegistry(userService, chatService, scheduleSettingsService);
         var dataRegistry = makeDataRegistry();
-        var frameContextManager = new DefaultContextManager(messageService, executeActionService);
+        var frameContextManager = new DefaultContextManager(interactionDeliveryService, executeActionService);
         var workflowService = new WorkflowService(frameRegistry, dataRegistry, frameRepo, frameContextManager,
                 textProvider);
         var flowFeedbackProcessor = new FlowFeedbackProcessor(
@@ -160,21 +166,20 @@ public class Main {
                 frameRegistry.get("flow.help")
         );
 
+        var botHandler = new FeedbackBotHandler(List.of(flowFeedbackProcessor));
+        interactionDeliveryService.setBotInteractionHandler(botHandler);
+
         var sessionInitializer = new RandomSessionInitializer(
                 sessionService, chatService, flowFeedbackProcessor, scheduleSettingsService,
                 scheduleServiceId
         );
         scheduleSettingsService.setHandler(sessionInitializer);
 
-        var registerFeedbackService = new RegisterFeedbackService(messageService, feedbackRepo,
-                chatService, flowFeedbackProcessor);
-
         var schedulerRunner = new SessionSchedulerRunner(sessionInitializer, 60);
         schedulerRunner.start();
         log.info("Session scheduler successfully started");
 
-        var tgHandler = new TelegramHandler(registerFeedbackService, tgMessageLinker,
-                tgMessageLinker, tgChatLinker, tgChatLinker);
+        var tgHandler = new TelegramHandler(interactionDeliveryService, chatService, tgMessageLinker, tgChatLinker);
 
         AnnotationConfigWebApplicationContext springContext = new AnnotationConfigWebApplicationContext();
 

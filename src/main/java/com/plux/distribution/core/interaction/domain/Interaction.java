@@ -27,7 +27,7 @@ public class Interaction {
         this.content = content;
     }
 
-    public void markSent(@NotNull Date time) {
+    public void markTransferred(@NotNull Date time) {
         this.state = new Transferred(time);
     }
 

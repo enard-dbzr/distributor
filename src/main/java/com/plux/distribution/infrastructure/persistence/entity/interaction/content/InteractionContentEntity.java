@@ -1,5 +1,6 @@
 package com.plux.distribution.infrastructure.persistence.entity.interaction.content;
 
+import com.plux.distribution.core.interaction.domain.content.ButtonClickContent;
 import com.plux.distribution.core.interaction.domain.content.InteractionContent;
 import com.plux.distribution.core.interaction.domain.content.ReplyMessageContent;
 import com.plux.distribution.core.interaction.domain.content.SimpleMessageContent;
@@ -34,6 +35,7 @@ public abstract class InteractionContentEntity {
                             .toList()
             );
             case ReplyMessageContent c -> new ReplyContentEntity(fromModel(c.original()), c.replyTo().value());
+            case ButtonClickContent c -> new ButtonClickContentEntity(c.tag(), c.source().value());
         };
     }
 

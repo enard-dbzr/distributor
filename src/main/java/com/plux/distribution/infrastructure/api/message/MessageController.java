@@ -1,8 +1,8 @@
 package com.plux.distribution.infrastructure.api.message;
 
-import com.plux.distribution.core.integration.application.command.SendServiceMessageCommand;
+import com.plux.distribution.core.integration.application.command.SendServiceInteractionCommand;
 import com.plux.distribution.core.integration.application.exception.InvalidToken;
-import com.plux.distribution.core.integration.application.port.in.SendServiceMessageUseCase;
+import com.plux.distribution.core.integration.application.port.in.SendServiceInteractionUseCase;
 import com.plux.distribution.infrastructure.api.message.request.SendMessageRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -23,10 +23,10 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = "Interaction")
 public class MessageController {
 
-    private final SendServiceMessageUseCase sendServiceMessageUseCase;
+    private final SendServiceInteractionUseCase sendServiceMessageUseCase;
 
     @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
-    public MessageController(SendServiceMessageUseCase sendServiceMessageUseCase) {
+    public MessageController(SendServiceInteractionUseCase sendServiceMessageUseCase) {
         this.sendServiceMessageUseCase = sendServiceMessageUseCase;
     }
 
@@ -53,7 +53,7 @@ public class MessageController {
 
         try {
             var messageId = sendServiceMessageUseCase.send(
-                    new SendServiceMessageCommand(token, request.chatId(), request.content().toModel()));
+                    new SendServiceInteractionCommand(token, request.chatId(), request.content().toModel()));
 
             return ResponseEntity.status(HttpStatus.CREATED).body(new SendMessageResult(messageId.value()));
         } catch (InvalidToken e) {

@@ -26,7 +26,7 @@ public class DefaultContextManager implements FrameContextManager {
 
     @Override
     public InteractionId send(FrameContext context, Frame frame, InteractionContent message) {
-        return deliveryUseCase.send(new DeliverInteractionCommand(
+        return deliveryUseCase.deliver(new DeliverInteractionCommand(
                 new BotParticipant(),
                 new ChatParticipant(context.getChatId()),
                 message

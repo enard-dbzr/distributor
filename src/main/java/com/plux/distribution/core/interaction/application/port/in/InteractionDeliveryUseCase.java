@@ -6,5 +6,5 @@ import org.jetbrains.annotations.NotNull;
 
 public interface InteractionDeliveryUseCase {
 
-    @NotNull InteractionId send(@NotNull DeliverInteractionCommand command);
+    @NotNull InteractionId deliver(@NotNull DeliverInteractionCommand command);
 }

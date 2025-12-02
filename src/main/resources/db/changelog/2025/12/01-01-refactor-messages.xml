@@ -28,8 +28,6 @@
     </changeSet>
 
     <changeSet author="enard" id="1764566770803-fix-data">
-        <dropColumn columnName="receive_time" tableName="interaction_states"/>
-
         <sql>
             UPDATE interaction_states
             SET type          = 'TRANSFERRED',
@@ -41,6 +39,8 @@
             <column name="type" value="BOT"/>
             <where>type IN ('UNK_SERVICE', 'SELF')</where>
         </update>
+
+        <dropColumn columnName="receive_time" tableName="interaction_states"/>
     </changeSet>
 
 </databaseChangeLog>
