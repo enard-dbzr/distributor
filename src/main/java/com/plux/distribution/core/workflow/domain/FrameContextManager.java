@@ -6,7 +6,7 @@ import com.plux.distribution.core.interaction.domain.content.InteractionContent;
 
 public interface FrameContextManager {
 
-    InteractionId send(FrameContext context, Frame frame, InteractionContent message);
+    InteractionId send(FrameContext context, InteractionContent message);
 
     void dispatch(FrameContext context, ChatAction action);
 }

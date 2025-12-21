@@ -11,6 +11,7 @@ import com.plux.distribution.core.integration.domain.ServiceId;
 import com.plux.distribution.core.interaction.application.service.ExecuteActionService;
 import com.plux.distribution.core.interaction.application.service.InteractionDeliveryService;
 import com.plux.distribution.core.interaction.application.service.InteractionService;
+import com.plux.distribution.core.interaction.domain.InteractionId;
 import com.plux.distribution.core.session.application.service.RandomSessionCloser;
 import com.plux.distribution.core.session.application.service.RandomSessionInitializer;
 import com.plux.distribution.core.session.application.service.ScheduleSettingsService;
@@ -18,38 +19,31 @@ import com.plux.distribution.core.session.application.service.SessionFeedbackPro
 import com.plux.distribution.core.session.application.service.SessionSchedulerRunner;
 import com.plux.distribution.core.session.application.service.SessionService;
 import com.plux.distribution.core.user.application.service.UserService;
-import com.plux.distribution.core.workflow.application.frame.DefaultDataRegistry;
 import com.plux.distribution.core.workflow.application.frame.DefaultFrameRegistry;
-import com.plux.distribution.core.workflow.application.frame.message.HelpFrame;
-import com.plux.distribution.core.workflow.application.frame.registration.ChangeSettingsMessage;
-import com.plux.distribution.core.workflow.application.frame.registration.RegistrationSuccessMessage;
 import com.plux.distribution.core.workflow.application.frame.registration.hello.HelloFrame;
-import com.plux.distribution.core.workflow.application.frame.registration.hello.PostHelloFrame;
+import com.plux.distribution.core.workflow.application.frame.registration.hello.HelloFrame.HelloFrameFactory;
 import com.plux.distribution.core.workflow.application.frame.registration.pin.CheckPasswordFrame;
-import com.plux.distribution.core.workflow.application.frame.registration.pin.CorrectPasswordFrame;
-import com.plux.distribution.core.workflow.application.frame.registration.pin.InorrectPasswordFrame;
-import com.plux.distribution.core.workflow.application.frame.settings.SettingsAppliedMessage;
-import com.plux.distribution.core.workflow.application.frame.settings.schedule.AskHoursFrame;
-import com.plux.distribution.core.workflow.application.frame.settings.schedule.AskSpdFrame;
-import com.plux.distribution.core.workflow.application.frame.settings.schedule.AskTimezoneFrame;
-import com.plux.distribution.core.workflow.application.frame.settings.schedule.FinalizeScheduleSettingsFrame;
-import com.plux.distribution.core.workflow.application.frame.settings.schedule.ScheduleSettingsBuilder;
-import com.plux.distribution.core.workflow.application.frame.settings.schedule.StartScheduleSettingsFrame;
-import com.plux.distribution.core.workflow.application.frame.settings.user.AskAgeFrame;
-import com.plux.distribution.core.workflow.application.frame.settings.user.AskCityFrame;
-import com.plux.distribution.core.workflow.application.frame.settings.user.AskEmailFrame;
-import com.plux.distribution.core.workflow.application.frame.settings.user.AskHobbyFrame;
+import com.plux.distribution.core.workflow.application.frame.registration.pin.CheckPasswordFrame.CheckPasswordFrameFactory;
 import com.plux.distribution.core.workflow.application.frame.settings.user.AskNameFrame;
-import com.plux.distribution.core.workflow.application.frame.settings.user.FinalizeFrame;
-import com.plux.distribution.core.workflow.application.frame.settings.user.StartUserBuildingFrame;
+import com.plux.distribution.core.workflow.application.frame.settings.user.AskNameFrame.AskNameFrameFactory;
 import com.plux.distribution.core.workflow.application.frame.settings.user.UserBuilder;
-import com.plux.distribution.core.workflow.application.frame.utils.LastMessageData;
+import com.plux.distribution.core.workflow.application.frame.settings.user.UserBuilder.Serializer;
+import com.plux.distribution.core.workflow.application.frame.utils.InfoMessageFrame;
+import com.plux.distribution.core.workflow.application.frame.utils.InfoMessageFrame.InfoMessageFrameFactory;
+import com.plux.distribution.core.workflow.application.frame.utils.RootFrame;
+import com.plux.distribution.core.workflow.application.frame.utils.RootFrame.RootFrameFactory;
 import com.plux.distribution.core.workflow.application.frame.utils.SequenceFrame;
-import com.plux.distribution.core.workflow.application.port.out.DataRegistry;
-import com.plux.distribution.core.workflow.application.port.out.FrameRegistry;
+import com.plux.distribution.core.workflow.application.frame.utils.SequenceFrame.SequenceFrameFactory;
+import com.plux.distribution.core.workflow.application.frame.utils.data.FrameMetadata;
+import com.plux.distribution.core.workflow.application.frame.utils.data.FrameMetadata.FrameMetadataSerializer;
+import com.plux.distribution.core.workflow.application.serializer.DefaultSerializerRegistry;
+import com.plux.distribution.core.workflow.application.serializer.FrameSerializer;
+import com.plux.distribution.core.workflow.application.serializer.InteractionIdDataSerializer;
+import com.plux.distribution.core.workflow.application.serializer.JsonDataSerializer;
 import com.plux.distribution.core.workflow.application.service.FlowFeedbackProcessor;
 import com.plux.distribution.core.workflow.application.service.WorkflowService;
 import com.plux.distribution.core.workflow.application.utils.DefaultContextManager;
+import com.plux.distribution.core.workflow.domain.FrameRegistry;
 import com.plux.distribution.infrastructure.BundleTextProvider;
 import com.plux.distribution.infrastructure.notifier.WebhookNotifier;
 import com.plux.distribution.infrastructure.persistence.DbChatRepository;
@@ -153,17 +147,40 @@ public class Main {
 
         var textProvider = new BundleTextProvider(Locale.of("ru"));
         var frameRegistry = makeFrameRegistry(userService, chatService, scheduleSettingsService);
-        var dataRegistry = makeDataRegistry();
         var frameContextManager = new DefaultContextManager(interactionDeliveryService, executeActionService);
-        var workflowService = new WorkflowService(frameRegistry, dataRegistry, frameRepo, frameContextManager,
-                textProvider);
+        var serializerRegistry = new DefaultSerializerRegistry(new FrameSerializer(frameRegistry));
+
+        serializerRegistry.register(InteractionId.class, new InteractionIdDataSerializer());
+        serializerRegistry.register(FrameMetadata.class, new FrameMetadataSerializer());
+        serializerRegistry.register(UserBuilder.class, new UserBuilder.Serializer());
+
+        var workflowService = new WorkflowService(frameRegistry, frameRepo, frameContextManager,
+                textProvider, serializerRegistry);
+//        var flowFeedbackProcessor = new FlowFeedbackProcessor(
+//                feedbackResolverProcessor,
+//                workflowService,
+//                frameRegistry.getInstance("flow.registration"),
+//                frameRegistry.getInstance("flow.schedule_settings"),
+//                frameRegistry.getInstance("flow.update_user_info"),
+//                frameRegistry.getInstance("flow.help")
+//        );
         var flowFeedbackProcessor = new FlowFeedbackProcessor(
                 feedbackResolverProcessor,
                 workflowService,
-                frameRegistry.get("flow.registration"),
-                frameRegistry.get("flow.schedule_settings"),
-                frameRegistry.get("flow.update_user_info"),
-                frameRegistry.get("flow.help")
+                context -> {
+                    var pin = System.getenv("BOT_PIN");
+
+                    var workflow = new SequenceFrame(context, context.getRoot());
+                    workflow.setFrames(List.of(
+                            new HelloFrame(context, workflow),
+                            new CheckPasswordFrame(context, workflow, pin)
+                    ));
+
+                    return workflow;
+                },
+                null,
+                null,
+                null
         );
 
         var botHandler = new FeedbackBotHandler(List.of(flowFeedbackProcessor));
@@ -232,71 +249,62 @@ public class Main {
     ) {
         var pin = System.getenv("BOT_PIN");
 
-        var factory = new DefaultFrameRegistry();
+        var registry = new DefaultFrameRegistry();
 
-        factory.register("registration.hello_frame", new HelloFrame());
-        factory.register("registration.post_hello", new PostHelloFrame());
+        registry.register("utils.root", RootFrame.class, new RootFrameFactory());
+        registry.register("utils.info_message", InfoMessageFrame.class, new InfoMessageFrameFactory());
+        registry.register("utils.sequence", SequenceFrame.class, new SequenceFrameFactory());
 
-        factory.register("registration.check_pin", new CheckPasswordFrame(pin));
-        factory.register("registration.check_pin.correct", new CorrectPasswordFrame());
-        factory.register("registration.check_pin.incorrect", new InorrectPasswordFrame());
+        registry.register("registration.hello_frame", HelloFrame.class, new HelloFrameFactory());
 
-        factory.register("registration.user.ask_name", new AskNameFrame());
-        factory.register("registration.user.ask_email", new AskEmailFrame());
-        factory.register("registration.user.ask_age", new AskAgeFrame());
-        factory.register("registration.user.ask_city", new AskCityFrame());
-        factory.register("registration.user.ask_hobby", new AskHobbyFrame());
-        factory.register("registration.user.finalize", new FinalizeFrame(
-                userService, userService, chatService, chatService
-        ));
-        factory.register("registration.user.start_building", new StartUserBuildingFrame(
-                factory.get("registration.user.finalize")
-        ));
+        registry.register("registration.check_pin", CheckPasswordFrame.class, new CheckPasswordFrameFactory(pin));
 
-        factory.register("registration.change_settings", new ChangeSettingsMessage());
-        factory.register("registration.finish.success", new RegistrationSuccessMessage());
-
-        factory.register("settings.schedule.ask_timezone", new AskTimezoneFrame());
-        factory.register("settings.schedule.ask_hours", new AskHoursFrame());
-        factory.register("settings.schedule.ask_spd", new AskSpdFrame());
-        factory.register("settings.schedule.finalize", new FinalizeScheduleSettingsFrame(scheduleSettingsService));
-        factory.register("settings.schedule.start_building", new StartScheduleSettingsFrame(
-                factory.get("settings.schedule.finalize")
-        ));
-
-        factory.register("settings.success", new SettingsAppliedMessage());
-
-        factory.register("flow.registration", new SequenceFrame(List.of(
-                factory.get("registration.hello_frame"),
-                factory.get("registration.user.start_building"),
-                factory.get("registration.change_settings"),
-                factory.get("settings.schedule.start_building"),
-                factory.get("registration.finish.success")
-        )));
-
-        factory.register("flow.schedule_settings", new SequenceFrame(List.of(
-                factory.get("settings.schedule.start_building"),
-                factory.get("settings.success")
-        )));
-
-        factory.register("flow.update_user_info", new SequenceFrame(List.of(
-                factory.get("registration.user.start_building"),
-                factory.get("settings.success")
-        )));
-
-        factory.register("flow.help", new HelpFrame());
-
-        return factory;
-    }
-
-    private static DataRegistry makeDataRegistry() {
-        var registry = new DefaultDataRegistry();
-
-        registry.register("utils.last_interaction", LastMessageData.class, new LastMessageData.Serializer());
-        registry.register("registration.user_builder", UserBuilder.class, new UserBuilder.Serializer());
-        registry.register("settings.schedule_settings_builder", ScheduleSettingsBuilder.class,
-                new ScheduleSettingsBuilder.Serializer());
+        registry.register("registration.user.ask_name", AskNameFrame.class, new AskNameFrameFactory());
+//        factory.register("registration.user.ask_email", new AskEmailFrame());
+//        factory.register("registration.user.ask_age", new AskAgeFrame());
+//        factory.register("registration.user.ask_city", new AskCityFrame());
+//        factory.register("registration.user.ask_hobby", new AskHobbyFrame());
+//        factory.register("registration.user.finalize", new FinalizeFrame(
+//                userService, userService, chatService, chatService
+//        ));
+//        factory.register("registration.user.start_building", new StartUserBuildingFrame(
+//                factory.getInstance("registration.user.finalize")
+//        ));
+//
+//        factory.register("registration.change_settings", new ChangeSettingsMessage());
+//        factory.register("registration.finish.success", new RegistrationSuccessMessage());
+//
+//        factory.register("settings.schedule.ask_timezone", new AskTimezoneFrame());
+//        factory.register("settings.schedule.ask_hours", new AskHoursFrame());
+//        factory.register("settings.schedule.ask_spd", new AskSpdFrame());
+//        factory.register("settings.schedule.finalize", new FinalizeScheduleSettingsFrame(scheduleSettingsService));
+//        factory.register("settings.schedule.start_building", new StartScheduleSettingsFrame(
+//                factory.getInstance("settings.schedule.finalize")
+//        ));
+//
+//        factory.register("settings.success", new SettingsAppliedMessage());
+//
+//        factory.register("flow.registration", new SequenceFrame(List.of(
+//                factory.getInstance("registration.hello_frame"),
+//                factory.getInstance("registration.user.start_building"),
+//                factory.getInstance("registration.change_settings"),
+//                factory.getInstance("settings.schedule.start_building"),
+//                factory.getInstance("registration.finish.success")
+//        )));
+//
+//        factory.register("flow.schedule_settings", new SequenceFrame(List.of(
+//                factory.getInstance("settings.schedule.start_building"),
+//                factory.getInstance("settings.success")
+//        )));
+//
+//        factory.register("flow.update_user_info", new SequenceFrame(List.of(
+//                factory.getInstance("registration.user.start_building"),
+//                factory.getInstance("settings.success")
+//        )));
+//
+//        factory.register("flow.help", new HelpFrame());
 
         return registry;
     }
+
 }

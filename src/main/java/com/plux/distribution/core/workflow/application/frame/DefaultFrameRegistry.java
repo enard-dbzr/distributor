@@ -1,32 +1,29 @@
 package com.plux.distribution.core.workflow.application.frame;
 
-import com.plux.distribution.core.workflow.application.port.out.FrameRegistry;
 import com.plux.distribution.core.workflow.domain.Frame;
+import com.plux.distribution.core.workflow.domain.FrameRegistry;
+import com.plux.distribution.core.workflow.domain.FrameFactory;
 import java.util.HashMap;
 import java.util.Map;
 import org.jetbrains.annotations.NotNull;
 
 public class DefaultFrameRegistry implements FrameRegistry {
 
-    private final Map<String, Frame> idToFrame = new HashMap<>();
     private final Map<Class<? extends Frame>, String> typeToId = new HashMap<>();
+    private final Map<String, FrameFactory<?>> idToFactory = new HashMap<>();
 
-    public void register(String id, Frame frame) {
-        idToFrame.put(id, frame);
-        typeToId.put(frame.getClass(), id);
+    public <T extends Frame> void register(String id, Class<T> frameClass, FrameFactory<T> factory) {
+        typeToId.put(frameClass, id);
+        idToFactory.put(id, factory);
     }
 
     @Override
-    public @NotNull Frame get(@NotNull String key) {
-        var frame = idToFrame.get(key);
-        if (frame == null) {
-            throw new IllegalArgumentException("Frame with key=%s was not found".formatted(key));
-        }
-        return frame;
+    public String getFrameId(@NotNull Class<? extends Frame> frameType) {
+        return typeToId.get(frameType);
     }
 
     @Override
-    public @NotNull String idByType(@NotNull Class<? extends Frame> type) {
-        return typeToId.get(type);
+    public @NotNull FrameFactory<?> getFactory(@NotNull String frameId) {
+        return idToFactory.get(frameId);
     }
 }

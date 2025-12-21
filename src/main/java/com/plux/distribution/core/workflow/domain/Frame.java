@@ -1,11 +1,18 @@
 package com.plux.distribution.core.workflow.domain;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public interface Frame {
 
-    void exec(@NotNull FrameContext context);
+    default void onEnter() {}
 
-    void handle(@NotNull FrameContext context, @NotNull FrameFeedback feedback);
+    default void handle(@NotNull FrameFeedback feedback) {}
+
+    default void onExit() {}
+
+    void changeState(@Nullable Frame nextFrame);
+
+    void changeState();
 
 }

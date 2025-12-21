@@ -7,6 +7,8 @@ import com.plux.distribution.core.interaction.domain.content.ButtonClickContent;
 import com.plux.distribution.core.interaction.domain.content.InteractionContent;
 import com.plux.distribution.core.interaction.domain.content.ReplyMessageContent;
 import com.plux.distribution.core.interaction.domain.content.SimpleMessageContent;
+import com.plux.distribution.core.workflow.application.frame.registration.hello.HelloFrame;
+import com.plux.distribution.core.workflow.application.frame.utils.SequenceFrame;
 import com.plux.distribution.core.workflow.application.port.in.CheckChatBusyUseCase;
 import com.plux.distribution.core.workflow.application.port.in.WorkflowUseCase;
 import com.plux.distribution.core.workflow.domain.Frame;
@@ -14,6 +16,7 @@ import com.plux.distribution.core.workflow.domain.FrameContext;
 import com.plux.distribution.core.workflow.domain.FrameFeedback;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Function;
 import org.jetbrains.annotations.NotNull;
 
 public class FlowFeedbackProcessor implements FeedbackProcessor, CheckChatBusyUseCase {
@@ -21,7 +24,7 @@ public class FlowFeedbackProcessor implements FeedbackProcessor, CheckChatBusyUs
     private final FeedbackProcessor next;
     private final WorkflowUseCase workflowUseCase;
 
-    private final Frame registrationWorkflow;
+    private final Function<FrameContext, Frame> registrationWorkflowMaker;
     private final Frame scheduleSettingsWorkflow;
     private final Frame updateUserWorkflow;
     private final Frame helpWorkflow;
@@ -29,14 +32,14 @@ public class FlowFeedbackProcessor implements FeedbackProcessor, CheckChatBusyUs
     public FlowFeedbackProcessor(
             FeedbackProcessor next,
             WorkflowUseCase workflowUseCase,
-            Frame registrationWorkflow,
+            Function<FrameContext, Frame> registrationWorkflowMaker,
             Frame scheduleSettingsWorkflow,
             Frame updateUserWorkflow,
             Frame helpWorkflow
     ) {
         this.next = next;
         this.workflowUseCase = workflowUseCase;
-        this.registrationWorkflow = registrationWorkflow;
+        this.registrationWorkflowMaker = registrationWorkflowMaker;
         this.scheduleSettingsWorkflow = scheduleSettingsWorkflow;
         this.updateUserWorkflow = updateUserWorkflow;
         this.helpWorkflow = helpWorkflow;
@@ -52,68 +55,43 @@ public class FlowFeedbackProcessor implements FeedbackProcessor, CheckChatBusyUs
 
     @Override
     public void process(@NotNull Feedback feedback) {
-        var frameContext = workflowUseCase.load(feedback.chatId());
+
+        var context = workflowUseCase.load(feedback.chatId());
 
         AtomicBoolean newTriggered = new AtomicBoolean(false);
 
         createFrameFeedback(feedback).text().ifPresent(text -> {
             switch (text) {
                 case "/start" -> {
-                    startRegistration(frameContext);
+                    var frame = registrationWorkflowMaker.apply(context);
+                    context.getRoot().changeState(frame);
                     newTriggered.set(true);
                 }
-                case "/schedule_settings" -> {
-                    startScheduleSettings(frameContext);
-                    newTriggered.set(true);
-                }
-                case "/update_user" -> {
-                    stratUpdateUser(frameContext);
-                    newTriggered.set(true);
-                }
+//                case "/schedule_settings" -> {
+//                    startScheduleSettings(frameContext);
+//                    newTriggered.set(true);
+//                }
+//                case "/update_user" -> {
+//                    stratUpdateUser(frameContext);
+//                    newTriggered.set(true);
+//                }
                 case "/help" -> {
-                    startHelp(frameContext);
+                    context.getRoot().changeState(new HelloFrame(context, context.getRoot()));
                     newTriggered.set(true);
                 }
             }
         });
 
-        if (!newTriggered.get() && frameContext.isEmpty()) {
-            next.process(feedback);
-            return;
-        }
-
+//        if (!newTriggered.get() && frameContext.isEmpty()) {
+//            next.process(feedback);
+//            return;
+//        }
+//
         if (!newTriggered.get()) {
-            frameContext.handle(createFrameFeedback(feedback));
+            context.getRoot().handle(createFrameFeedback(feedback));
         }
 
-        workflowUseCase.save(frameContext);
-    }
-
-    private void startRegistration(FrameContext frameContext) {
-        frameContext.clear();
-        frameContext.push(registrationWorkflow, true);
-        frameContext.exec();
-    }
-
-    private void startScheduleSettings(FrameContext frameContext) {
-        if (frameContext.isEmpty()) {
-            frameContext.push(scheduleSettingsWorkflow, true);
-            frameContext.exec();
-        }
-    }
-
-    private void stratUpdateUser(FrameContext frameContext) {
-        if (frameContext.isEmpty()) {
-            frameContext.push(updateUserWorkflow, true);
-            frameContext.exec();
-        }
-    }
-
-    private void startHelp(FrameContext frameContext) {
-        if (frameContext.isEmpty()) {
-            frameContext.push(helpWorkflow, true);
-            frameContext.exec();
-        }
+        workflowUseCase.save(context);
     }
 
     private FrameFeedback createFrameFeedback(Feedback feedback) {
@@ -133,6 +111,7 @@ public class FlowFeedbackProcessor implements FeedbackProcessor, CheckChatBusyUs
     // FIXME: Исправить это недоразумение
     @Override
     public boolean isBusy(@NotNull ChatId chatId) {
-        return !workflowUseCase.load(chatId).isEmpty();
+//        return !workflowUseCase.load(chatId).isEmpty();
+        return true;
     }
 }
