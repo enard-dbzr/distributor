@@ -5,9 +5,8 @@ import com.plux.distribution.core.interaction.domain.InteractionId;
 import com.plux.distribution.core.interaction.domain.content.MessageAttachment.ButtonAttachment;
 import com.plux.distribution.core.interaction.domain.content.SimpleMessageContent;
 import com.plux.distribution.core.workflow.application.frame.utils.InfoMessageFrame;
-import com.plux.distribution.core.workflow.application.frame.utils.PassThroughFrame;
 import com.plux.distribution.core.workflow.application.frame.utils.WithBuilderFrameFactory;
-import com.plux.distribution.core.workflow.domain.Frame;
+import com.plux.distribution.core.workflow.domain.AbstractFrame;
 import com.plux.distribution.core.workflow.domain.FrameContext;
 import com.plux.distribution.core.workflow.domain.FrameFeedback;
 import com.plux.distribution.core.workflow.domain.FrameSnapshot;
@@ -15,20 +14,12 @@ import com.plux.distribution.core.workflow.domain.FrameSnapshotBuilder;
 import java.util.List;
 import org.jetbrains.annotations.NotNull;
 
-public class HelloFrame extends PassThroughFrame {
+public class HelloFrame extends AbstractFrame {
 
     private InteractionId lastMessageId = null;
 
-    public HelloFrame(FrameContext context, Frame parent) {
-        super(context, parent);
-    }
-
-    public HelloFrame(@NotNull FrameContext context) {
-        super(context);
-    }
-
     @Override
-    public void onEnter() {
+    public void onEnter(@NotNull FrameContext context) {
         var message = new SimpleMessageContent(
                 context.getTextProvider().getString("registration.start.hello"),
                 List.of(new ButtonAttachment(
@@ -41,7 +32,7 @@ public class HelloFrame extends PassThroughFrame {
     }
 
     @Override
-    public void handle(@NotNull FrameFeedback feedback) {
+    public void handle(@NotNull FrameContext context, @NotNull FrameFeedback feedback) {
         if (lastMessageId != null) {
             context.getManager().dispatch(context, new ClearButtonsAction(
                     context.getChatId(),
@@ -49,10 +40,8 @@ public class HelloFrame extends PassThroughFrame {
             ));
         }
 
-        changeState(new InfoMessageFrame(
-                context, this, null,
-                context.getTextProvider().getString("registration.start.confirmed")
-        ));
+        new InfoMessageFrame(context.getTextProvider().getString("registration.start.confirmed"));
+        markFinished();
     }
 
     public static class HelloFrameFactory extends WithBuilderFrameFactory<HelloFrame> {
@@ -65,20 +54,14 @@ public class HelloFrame extends PassThroughFrame {
         }
 
         @Override
-        public @NotNull HelloFrame create(@NotNull FrameContext context) {
-            return new HelloFrame(context);
-        }
-
-        @Override
-        public void restore(@NotNull FrameContext context, @NotNull HelloFrame instance,
-                @NotNull FrameSnapshot snapshot) {
-            super.restore(context, instance, snapshot);
-
-            instance.lastMessageId = context.getObjectPool().getData(
+        public @NotNull HelloFrame create(@NotNull FrameContext context, @NotNull FrameSnapshot snapshot) {
+            var frame = new HelloFrame();
+            frame.lastMessageId = context.getObjectPool().getData(
                     context,
                     snapshot.data().get("lastMessageId"),
                     InteractionId.class
             );
+            return frame;
         }
     }
 

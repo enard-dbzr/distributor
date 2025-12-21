@@ -7,6 +7,4 @@ public interface DataSerializer<T> {
     JsonNode serialize(@NotNull FrameContext context, T data);
 
     T create(FrameContext context, JsonNode data);
-
-    void restore(FrameContext context, T instance, JsonNode data);
 }

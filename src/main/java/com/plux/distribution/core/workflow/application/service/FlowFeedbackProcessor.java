@@ -8,7 +8,6 @@ import com.plux.distribution.core.interaction.domain.content.InteractionContent;
 import com.plux.distribution.core.interaction.domain.content.ReplyMessageContent;
 import com.plux.distribution.core.interaction.domain.content.SimpleMessageContent;
 import com.plux.distribution.core.workflow.application.frame.registration.hello.HelloFrame;
-import com.plux.distribution.core.workflow.application.frame.utils.SequenceFrame;
 import com.plux.distribution.core.workflow.application.port.in.CheckChatBusyUseCase;
 import com.plux.distribution.core.workflow.application.port.in.WorkflowUseCase;
 import com.plux.distribution.core.workflow.domain.Frame;
@@ -64,7 +63,7 @@ public class FlowFeedbackProcessor implements FeedbackProcessor, CheckChatBusyUs
             switch (text) {
                 case "/start" -> {
                     var frame = registrationWorkflowMaker.apply(context);
-                    context.getRoot().changeState(frame);
+                    context.getRoot().changeState(context, frame);
                     newTriggered.set(true);
                 }
 //                case "/schedule_settings" -> {
@@ -76,7 +75,7 @@ public class FlowFeedbackProcessor implements FeedbackProcessor, CheckChatBusyUs
 //                    newTriggered.set(true);
 //                }
                 case "/help" -> {
-                    context.getRoot().changeState(new HelloFrame(context, context.getRoot()));
+                    context.getRoot().changeState(context, new HelloFrame());
                     newTriggered.set(true);
                 }
             }
@@ -88,7 +87,7 @@ public class FlowFeedbackProcessor implements FeedbackProcessor, CheckChatBusyUs
 //        }
 //
         if (!newTriggered.get()) {
-            context.getRoot().handle(createFrameFeedback(feedback));
+            context.getRoot().handle(context, createFrameFeedback(feedback));
         }
 
         workflowUseCase.save(context);

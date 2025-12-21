@@ -13,38 +13,38 @@ import java.util.stream.Collectors;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-public class SequenceFrame extends PassThroughFrame {
+public class SequenceFrame extends AbstractFrame {
 
     private List<Frame> frames;
 
-    public SequenceFrame(@NotNull FrameContext context) {
-        super(context);
-    }
-
-    public SequenceFrame(@NotNull FrameContext context, Frame parent) {
-        super(context, parent);
+    public SequenceFrame(List<Frame> frames) {
+        this.frames = frames;
     }
 
     @Override
-    public void onEnter() {
+    public void onEnter(@NotNull FrameContext context) {
         if (frames == null) {
             throw new IllegalStateException("frames is null");
         }
 
-        frames.getFirst().onEnter();
+        frames.getFirst().onEnter(context);
+
+        changeStateAttempt(context);
     }
 
     @Override
-    public void handle(@NotNull FrameFeedback feedback) {
+    public void handle(@NotNull FrameContext context, @NotNull FrameFeedback feedback) {
         if (frames == null) {
             throw new IllegalStateException("frames is null");
         }
 
-        frames.getFirst().handle(feedback);
+        frames.getFirst().handle(context, feedback);
+
+        changeStateAttempt(context);
     }
 
     @Override
-    public void onExit() {
+    public void onExit(@NotNull FrameContext context) {
         if (frames == null) {
             throw new IllegalStateException("frames is null");
         }
@@ -53,36 +53,29 @@ public class SequenceFrame extends PassThroughFrame {
             return;
         }
 
-        frames.getFirst().onExit();
+        frames.getFirst().onExit(context);
     }
 
-    @Override
-    public void changeState(@Nullable Frame nextFrame) {
+    public void changeStateAttempt(@NotNull FrameContext context) {
         if (frames == null) {
             throw new IllegalStateException("frames is null");
         }
 
         if (frames.isEmpty()) {
-            parent.changeState(nextFrame);
+            markFinished();
+            return;
         }
 
-        var current = frames.removeFirst();
-        current.onExit();
+        if (frames.getFirst().isFinished()) {
+            var current = frames.removeFirst();
+            current.onExit(context);
 
-        if (nextFrame == null) {
             if (frames.isEmpty()) {
-                parent.changeState();
+                markFinished();
             } else {
-                frames.getFirst().onEnter();
+                frames.getFirst().onEnter(context);
             }
-        } else {
-            frames.addFirst(nextFrame);
-            frames.getFirst().onEnter();
         }
-    }
-
-    public void setFrames(List<Frame> frames) {
-        this.frames = frames;
     }
 
     public static class SequenceFrameFactory extends WithBuilderFrameFactory<SequenceFrame> {
@@ -97,23 +90,17 @@ public class SequenceFrame extends PassThroughFrame {
         }
 
         @Override
-        public @NotNull SequenceFrame create(@NotNull FrameContext context) {
-            return new SequenceFrame(context);
-        }
-
-        @Override
-        public void restore(@NotNull FrameContext context, @NotNull SequenceFrame instance,
-                @NotNull FrameSnapshot snapshot) {
-            super.restore(context, instance, snapshot);
-
+        public @NotNull SequenceFrame create(@NotNull FrameContext context, @NotNull FrameSnapshot snapshot) {
             @SuppressWarnings("unchecked")
             List<String> pooledFrames = (List<String>) snapshot.deepData().get("pooledFrames");
 
-            instance.frames = pooledFrames.stream()
+            var frames = pooledFrames.stream()
                     .map(UUID::fromString)
                     .map(PoolId::new)
                     .map(poolId -> context.getObjectPool().getData(context, poolId, Frame.class))
                     .collect(Collectors.toList());
+
+            return new SequenceFrame(frames);
         }
     }
 }

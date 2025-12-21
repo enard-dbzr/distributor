@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public class ObjectPool {
 
@@ -25,8 +26,10 @@ public class ObjectPool {
         return Optional.ofNullable(objectToUuid.get(reference)).map(PoolId::new);
     }
 
-    public <T> @NotNull PoolId put(@NotNull FrameContext context, T reference) {
-
+    public <T> @Nullable PoolId put(@NotNull FrameContext context, @Nullable T reference) {
+        if (reference == null) {
+            return null;
+        }
 
         if (objectToUuid.containsKey(reference)) {
             return new PoolId(objectToUuid.get(reference));
@@ -49,7 +52,7 @@ public class ObjectPool {
         return new PoolId(objectUuid);
     }
 
-    public <T> T getData(FrameContext context, PoolId poolId, Class<T> type) {
+    public <T> T getData(@NotNull FrameContext context, @Nullable PoolId poolId, @NotNull Class<T> type) {
         if (poolId == null) {
             return null;
         }
@@ -64,8 +67,6 @@ public class ObjectPool {
         T instance = serializer.create(context, node);
 
         uuidToObject.put(poolId.uuid(), instance);
-
-        serializer.restore(context, instance, node);
 
         return instance;
     }

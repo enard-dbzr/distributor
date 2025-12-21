@@ -3,6 +3,7 @@ package com.plux.distribution.core.workflow.domain;
 import java.util.HashMap;
 import java.util.Map;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public class FrameSnapshotBuilder {
 
@@ -15,8 +16,10 @@ public class FrameSnapshotBuilder {
         return this;
     }
 
-    public FrameSnapshotBuilder addData(@NotNull String key, @NotNull PoolId poolId) {
-        this.data.put(key, poolId);
+    public FrameSnapshotBuilder addData(@NotNull String key, @Nullable PoolId poolId) {
+        if (poolId != null) {
+            this.data.put(key, poolId);
+        }
         return this;
     }
 

@@ -6,6 +6,7 @@ import com.plux.distribution.core.workflow.domain.FrameContext;
 import com.plux.distribution.core.workflow.domain.FrameFactory;
 import com.plux.distribution.core.workflow.domain.FrameFeedback;
 import com.plux.distribution.core.workflow.domain.FrameSnapshot;
+import com.plux.distribution.core.workflow.domain.FrameSnapshotBuilder;
 import com.plux.distribution.core.workflow.domain.PoolId;
 import java.util.Map;
 import org.jetbrains.annotations.NotNull;
@@ -15,56 +16,54 @@ public class RootFrame extends AbstractFrame {
 
     private @Nullable Frame currentState;
 
-    public RootFrame(@NotNull FrameContext context) {
-        super(context);
+    public RootFrame(@Nullable Frame currentState) {
+        this.currentState = currentState;
     }
 
-    @Override
-    public void changeState(@Nullable Frame nextFrame) {
+    public void changeState(@NotNull FrameContext context, @Nullable Frame nextFrame) {
         if (currentState != null) {
-            currentState.onExit();
+            currentState.onExit(context);
         }
+
         currentState = nextFrame;
+
         if (currentState != null) {
-            currentState.onEnter();
+            currentState.onEnter(context);
+
+            if (currentState.isFinished()) {
+                currentState = null;
+            }
         }
     }
 
     @Override
-    public void handle(@NotNull FrameFeedback feedback) {
+    public void handle(@NotNull FrameContext context, @NotNull FrameFeedback feedback) {
         if (currentState != null) {
-            currentState.handle(feedback);
+            currentState.handle(context, feedback);
+
+            if (currentState.isFinished()) {
+                currentState = null;
+            }
         }
     }
 
-    public static class RootFrameFactory implements FrameFactory<RootFrame> {
-
+    public static class RootFrameFactory extends WithBuilderFrameFactory<RootFrame> {
 
         @Override
-        public @NotNull FrameSnapshot save(@NotNull FrameContext context, @NotNull RootFrame frame) {
-            Map<String, PoolId> data = frame.currentState == null
-                    ? Map.of()
-                    : Map.of("currentFrame", context.getObjectPool().put(context, frame.currentState));
-
-            return new FrameSnapshot(
-                    context.getObjectPool().put(context, frame),
-                    data,
-                    Map.of()
-            );
+        protected @NotNull FrameSnapshotBuilder buildSnapshot(@NotNull FrameContext context, @NotNull RootFrame frame,
+                @NotNull FrameSnapshotBuilder builder) {
+            return super.buildSnapshot(context, frame, builder)
+                    .addData("currentFrame", context.getObjectPool().put(context, frame.currentState));
         }
 
         @Override
-        public @NotNull RootFrame create(@NotNull FrameContext context) {
-            return new RootFrame(context);
-        }
-
-        @Override
-        public void restore(@NotNull FrameContext context, @NotNull RootFrame instance,
-                @NotNull FrameSnapshot snapshot) {
-            instance.currentState = context.getObjectPool().getData(
-                    context,
-                    snapshot.data().get("currentFrame"),
-                    Frame.class
+        public @NotNull RootFrame create(@NotNull FrameContext context, @NotNull FrameSnapshot snapshot) {
+            return new RootFrame(
+                    context.getObjectPool().getData(
+                            context,
+                            snapshot.data().get("currentFrame"),
+                            Frame.class
+                    )
             );
         }
     }

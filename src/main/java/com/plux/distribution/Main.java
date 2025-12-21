@@ -26,8 +26,9 @@ import com.plux.distribution.core.workflow.application.frame.registration.pin.Ch
 import com.plux.distribution.core.workflow.application.frame.registration.pin.CheckPasswordFrame.CheckPasswordFrameFactory;
 import com.plux.distribution.core.workflow.application.frame.settings.user.AskNameFrame;
 import com.plux.distribution.core.workflow.application.frame.settings.user.AskNameFrame.AskNameFrameFactory;
+import com.plux.distribution.core.workflow.application.frame.settings.user.UpdateUserWorkflow;
+import com.plux.distribution.core.workflow.application.frame.settings.user.UpdateUserWorkflow.UpdateUserWorkflowFactory;
 import com.plux.distribution.core.workflow.application.frame.settings.user.UserBuilder;
-import com.plux.distribution.core.workflow.application.frame.settings.user.UserBuilder.Serializer;
 import com.plux.distribution.core.workflow.application.frame.utils.InfoMessageFrame;
 import com.plux.distribution.core.workflow.application.frame.utils.InfoMessageFrame.InfoMessageFrameFactory;
 import com.plux.distribution.core.workflow.application.frame.utils.RootFrame;
@@ -39,7 +40,6 @@ import com.plux.distribution.core.workflow.application.frame.utils.data.FrameMet
 import com.plux.distribution.core.workflow.application.serializer.DefaultSerializerRegistry;
 import com.plux.distribution.core.workflow.application.serializer.FrameSerializer;
 import com.plux.distribution.core.workflow.application.serializer.InteractionIdDataSerializer;
-import com.plux.distribution.core.workflow.application.serializer.JsonDataSerializer;
 import com.plux.distribution.core.workflow.application.service.FlowFeedbackProcessor;
 import com.plux.distribution.core.workflow.application.service.WorkflowService;
 import com.plux.distribution.core.workflow.application.utils.DefaultContextManager;
@@ -170,13 +170,11 @@ public class Main {
                 context -> {
                     var pin = System.getenv("BOT_PIN");
 
-                    var workflow = new SequenceFrame(context, context.getRoot());
-                    workflow.setFrames(List.of(
-                            new HelloFrame(context, workflow),
-                            new CheckPasswordFrame(context, workflow, pin)
+                    return new SequenceFrame(List.of(
+                            new HelloFrame(),
+                            new CheckPasswordFrame(pin),
+                            new UpdateUserWorkflow()
                     ));
-
-                    return workflow;
                 },
                 null,
                 null,
@@ -259,7 +257,7 @@ public class Main {
 
         registry.register("registration.check_pin", CheckPasswordFrame.class, new CheckPasswordFrameFactory(pin));
 
-        registry.register("registration.user.ask_name", AskNameFrame.class, new AskNameFrameFactory());
+        registry.register("user.update_info.ask_name", AskNameFrame.class, new AskNameFrameFactory());
 //        factory.register("registration.user.ask_email", new AskEmailFrame());
 //        factory.register("registration.user.ask_age", new AskAgeFrame());
 //        factory.register("registration.user.ask_city", new AskCityFrame());
@@ -267,9 +265,7 @@ public class Main {
 //        factory.register("registration.user.finalize", new FinalizeFrame(
 //                userService, userService, chatService, chatService
 //        ));
-//        factory.register("registration.user.start_building", new StartUserBuildingFrame(
-//                factory.getInstance("registration.user.finalize")
-//        ));
+        registry.register("user.update_info", UpdateUserWorkflow.class, new UpdateUserWorkflowFactory());
 //
 //        factory.register("registration.change_settings", new ChangeSettingsMessage());
 //        factory.register("registration.finish.success", new RegistrationSuccessMessage());

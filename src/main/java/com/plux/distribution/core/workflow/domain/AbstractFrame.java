@@ -1,18 +1,15 @@
 package com.plux.distribution.core.workflow.domain;
 
-
-import org.jetbrains.annotations.NotNull;
-
 public abstract class AbstractFrame implements Frame {
 
-    protected final @NotNull FrameContext context;
-
-    public AbstractFrame(@NotNull FrameContext context) {
-        this.context = context;
-    }
+    private boolean finished = false;
 
     @Override
-    public final void changeState() {
-        changeState(null);
+    public final boolean isFinished() {
+        return finished;
+    }
+
+    protected final void markFinished() {
+        finished = true;
     }
 }

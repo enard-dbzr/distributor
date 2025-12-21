@@ -92,10 +92,9 @@ public class WorkflowService implements WorkflowUseCase {
         var context = new FrameContext(frameContextManager, textProvider, frameRegistry, chatId, objectPool);
         RootFrame root;
         if (rootSnapshot == null) {
-            root = new RootFrame(context);
+            root = new RootFrame(null);
         } else {
-            root = rootFrameFactory.create(context);
-            rootFrameFactory.restore(context, root, rootSnapshot);
+            root = rootFrameFactory.create(context, rootSnapshot);
         }
 
         context.setRoot(root);

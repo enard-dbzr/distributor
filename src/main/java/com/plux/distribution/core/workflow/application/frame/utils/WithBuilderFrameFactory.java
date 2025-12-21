@@ -19,24 +19,9 @@ public abstract class WithBuilderFrameFactory<T extends Frame> implements FrameF
 
     protected @NotNull FrameSnapshotBuilder buildSnapshot(@NotNull FrameContext context, @NotNull T frame,
             @NotNull FrameSnapshotBuilder builder) {
-        if (frame instanceof PassThroughFrame passThroughFrame) {
-            builder.addData("parent", context.getObjectPool().put(context, passThroughFrame.parent));
-        }
-
         return builder;
     }
 
     @Override
-    public abstract @NotNull T create(@NotNull FrameContext context);
-
-    @Override
-    public void restore(@NotNull FrameContext context, @NotNull T instance, @NotNull FrameSnapshot snapshot) {
-        if (instance instanceof PassThroughFrame passThroughFrame) {
-            passThroughFrame.parent = context.getObjectPool().getData(
-                    context,
-                    snapshot.data().get("parent"),
-                    Frame.class
-            );
-        }
-    }
+    public abstract @NotNull T create(@NotNull FrameContext context, @NotNull FrameSnapshot snapshot);
 }

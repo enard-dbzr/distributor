@@ -38,19 +38,7 @@ public class FrameSerializer implements DataSerializer<Frame> {
         try {
             var value = mapper.treeToValue(data, SnapshotWithDescriptor.class);
             var factory = frameRegistry.getFactory(value.frameId());
-            return factory.create(context);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    @Override
-    public void restore(FrameContext context, Frame instance, JsonNode data) {
-        try {
-            var value = mapper.treeToValue(data, SnapshotWithDescriptor.class);
-            @SuppressWarnings("unchecked")
-            var factory = (FrameFactory<Frame>) frameRegistry.getFactory(value.frameId());
-            factory.restore(context, instance, value.snapshot());
+            return factory.create(context, value.snapshot());
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
         }

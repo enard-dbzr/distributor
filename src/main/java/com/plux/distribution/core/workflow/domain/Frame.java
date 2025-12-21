@@ -5,14 +5,12 @@ import org.jetbrains.annotations.Nullable;
 
 public interface Frame {
 
-    default void onEnter() {}
+    default void onEnter(@NotNull FrameContext context) {}
 
-    default void handle(@NotNull FrameFeedback feedback) {}
+    default void handle(@NotNull FrameContext context, @NotNull FrameFeedback feedback) {}
 
-    default void onExit() {}
+    default void onExit(@NotNull FrameContext context) {}
 
-    void changeState(@Nullable Frame nextFrame);
-
-    void changeState();
+    boolean isFinished();
 
 }

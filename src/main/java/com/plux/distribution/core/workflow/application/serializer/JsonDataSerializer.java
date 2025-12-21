@@ -30,9 +30,4 @@ public abstract class JsonDataSerializer<T> implements DataSerializer<T> {
             throw new RuntimeException(e);
         }
     }
-
-    @Override
-    public void restore(FrameContext context, T instance, JsonNode data) {
-
-    }
 }
