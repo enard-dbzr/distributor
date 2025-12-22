@@ -4,10 +4,13 @@ import com.plux.distribution.core.workflow.domain.FrameContext;
 import com.plux.distribution.core.workflow.domain.objectpool.SerializerRegistry.SerializerWithId;
 import com.plux.distribution.core.workflow.domain.frame.DataSerializer;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -80,7 +83,12 @@ public class ObjectPool {
     }
 
     public Map<UUID, DataSnapshot> dump() {
-        Map<UUID, DataSnapshot> dataDump = new HashMap<>(data);
+        // TODO: Сделать более прозрачную логику
+        Set<UUID> usedIds = new HashSet<>(objectToUuid.values());
+
+        Map<UUID, DataSnapshot> dataDump = data.entrySet().stream()
+                .filter(e -> usedIds.contains(e.getKey()))
+                .collect(Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
 
         data.clear();
         objectToUuid.clear();
