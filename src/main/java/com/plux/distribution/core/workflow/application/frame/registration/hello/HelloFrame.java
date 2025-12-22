@@ -5,12 +5,12 @@ import com.plux.distribution.core.interaction.domain.InteractionId;
 import com.plux.distribution.core.interaction.domain.content.MessageAttachment.ButtonAttachment;
 import com.plux.distribution.core.interaction.domain.content.SimpleMessageContent;
 import com.plux.distribution.core.workflow.application.frame.utils.InfoMessageFrame;
-import com.plux.distribution.core.workflow.application.frame.utils.WithBuilderFrameFactory;
+import com.plux.distribution.core.workflow.application.serializer.PoolAwareSerializer;
+import com.plux.distribution.core.workflow.application.serializer.PoolNodeSnapshot;
+import com.plux.distribution.core.workflow.application.serializer.PoolNodeSnapshot.PoolNodeSnapshotBuilder;
 import com.plux.distribution.core.workflow.domain.AbstractFrame;
 import com.plux.distribution.core.workflow.domain.FrameContext;
 import com.plux.distribution.core.workflow.domain.FrameFeedback;
-import com.plux.distribution.core.workflow.domain.FrameSnapshot;
-import com.plux.distribution.core.workflow.domain.FrameSnapshotBuilder;
 import java.util.List;
 import org.jetbrains.annotations.NotNull;
 
@@ -44,21 +44,21 @@ public class HelloFrame extends AbstractFrame {
         markFinished();
     }
 
-    public static class HelloFrameFactory extends WithBuilderFrameFactory<HelloFrame> {
+    public static class HelloFrameFactory extends PoolAwareSerializer<HelloFrame> {
 
         @Override
-        protected @NotNull FrameSnapshotBuilder buildSnapshot(@NotNull FrameContext context, @NotNull HelloFrame frame,
-                @NotNull FrameSnapshotBuilder builder) {
-            return super.buildSnapshot(context, frame, builder)
-                    .addData("lastMessageId", context.getObjectPool().put(context, frame.lastMessageId));
+        public PoolNodeSnapshotBuilder buildFrameSnapshot(@NotNull FrameContext context, HelloFrame instance,
+                PoolNodeSnapshotBuilder builder) {
+            return super.buildFrameSnapshot(context, instance, builder)
+                    .value("lastMessageId", context.getObjectPool().put(context, instance.lastMessageId));
         }
 
         @Override
-        public @NotNull HelloFrame create(@NotNull FrameContext context, @NotNull FrameSnapshot snapshot) {
+        public HelloFrame create(@NotNull FrameContext context, PoolNodeSnapshot snapshot) {
             var frame = new HelloFrame();
             frame.lastMessageId = context.getObjectPool().getData(
                     context,
-                    snapshot.data().get("lastMessageId"),
+                    snapshot.values().get("lastMessageId"),
                     InteractionId.class
             );
             return frame;

@@ -1,21 +1,22 @@
 package com.plux.distribution.core.workflow.application.frame.utils;
 
+import com.plux.distribution.core.workflow.application.serializer.PoolAwareSerializer;
+import com.plux.distribution.core.workflow.application.serializer.PoolNodeSnapshot;
+import com.plux.distribution.core.workflow.application.serializer.PoolNodeSnapshot.PoolNodeSnapshotBuilder;
 import com.plux.distribution.core.workflow.domain.AbstractFrame;
 import com.plux.distribution.core.workflow.domain.Frame;
 import com.plux.distribution.core.workflow.domain.FrameContext;
 import com.plux.distribution.core.workflow.domain.FrameFeedback;
-import com.plux.distribution.core.workflow.domain.FrameSnapshot;
-import com.plux.distribution.core.workflow.domain.FrameSnapshotBuilder;
-import com.plux.distribution.core.workflow.domain.PoolId;
+import java.util.Comparator;
 import java.util.List;
-import java.util.UUID;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.stream.Collectors;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 public class SequenceFrame extends AbstractFrame {
 
-    private List<Frame> frames;
+    private final List<Frame> frames;
 
     public SequenceFrame(List<Frame> frames) {
         this.frames = frames;
@@ -78,25 +79,33 @@ public class SequenceFrame extends AbstractFrame {
         }
     }
 
-    public static class SequenceFrameFactory extends WithBuilderFrameFactory<SequenceFrame> {
+    public static class SequenceFrameFactory extends PoolAwareSerializer<SequenceFrame> {
 
         @Override
-        protected @NotNull FrameSnapshotBuilder buildSnapshot(@NotNull FrameContext context,
-                @NotNull SequenceFrame frame, @NotNull FrameSnapshotBuilder builder) {
-            var pooledFrames = frame.frames.stream()
-                    .map(f -> context.getObjectPool().put(context, f).uuid().toString())
+        public PoolNodeSnapshotBuilder buildFrameSnapshot(@NotNull FrameContext context, SequenceFrame instance,
+                PoolNodeSnapshotBuilder builder) {
+            var framePoolIds = instance.frames.stream()
+                    .map(f -> context.getObjectPool().put(context, f))
                     .toList();
-            return super.buildSnapshot(context, frame, builder).addDeepData("pooledFrames", pooledFrames);
+
+            var subNodeBuilder = PoolNodeSnapshot.builder();
+            for (int i = 0; i < framePoolIds.size(); i++) {
+                subNodeBuilder.value(String.valueOf(i), framePoolIds.get(i));
+            }
+
+            return super.buildFrameSnapshot(context, instance, builder)
+                    .child("pooledFrames", subNodeBuilder.build());
         }
 
         @Override
-        public @NotNull SequenceFrame create(@NotNull FrameContext context, @NotNull FrameSnapshot snapshot) {
-            @SuppressWarnings("unchecked")
-            List<String> pooledFrames = (List<String>) snapshot.deepData().get("pooledFrames");
+        public SequenceFrame create(@NotNull FrameContext context, PoolNodeSnapshot snapshot) {
+            var framePoolIds = snapshot.children().get("pooledFrames").values().entrySet().stream()
+                    .map(e -> Map.entry(Integer.parseInt(e.getKey()), e.getValue()))
+                    .sorted(Comparator.comparingInt(Map.Entry::getKey))
+                    .map(Entry::getValue)
+                    .toList();
 
-            var frames = pooledFrames.stream()
-                    .map(UUID::fromString)
-                    .map(PoolId::new)
+            var frames = framePoolIds.stream()
                     .map(poolId -> context.getObjectPool().getData(context, poolId, Frame.class))
                     .collect(Collectors.toList());
 

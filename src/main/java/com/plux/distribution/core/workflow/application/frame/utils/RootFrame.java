@@ -1,14 +1,12 @@
 package com.plux.distribution.core.workflow.application.frame.utils;
 
+import com.plux.distribution.core.workflow.application.serializer.PoolAwareSerializer;
+import com.plux.distribution.core.workflow.application.serializer.PoolNodeSnapshot;
+import com.plux.distribution.core.workflow.application.serializer.PoolNodeSnapshot.PoolNodeSnapshotBuilder;
 import com.plux.distribution.core.workflow.domain.AbstractFrame;
 import com.plux.distribution.core.workflow.domain.Frame;
 import com.plux.distribution.core.workflow.domain.FrameContext;
-import com.plux.distribution.core.workflow.domain.FrameFactory;
 import com.plux.distribution.core.workflow.domain.FrameFeedback;
-import com.plux.distribution.core.workflow.domain.FrameSnapshot;
-import com.plux.distribution.core.workflow.domain.FrameSnapshotBuilder;
-import com.plux.distribution.core.workflow.domain.PoolId;
-import java.util.Map;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -47,21 +45,21 @@ public class RootFrame extends AbstractFrame {
         }
     }
 
-    public static class RootFrameFactory extends WithBuilderFrameFactory<RootFrame> {
+    public static class RootFrameFactory extends PoolAwareSerializer<RootFrame> {
 
         @Override
-        protected @NotNull FrameSnapshotBuilder buildSnapshot(@NotNull FrameContext context, @NotNull RootFrame frame,
-                @NotNull FrameSnapshotBuilder builder) {
-            return super.buildSnapshot(context, frame, builder)
-                    .addData("currentFrame", context.getObjectPool().put(context, frame.currentState));
+        public PoolNodeSnapshotBuilder buildFrameSnapshot(@NotNull FrameContext context, RootFrame instance,
+                PoolNodeSnapshotBuilder builder) {
+            return super.buildFrameSnapshot(context, instance, builder)
+                    .value("currentFrame", context.getObjectPool().put(context, instance.currentState));
         }
 
         @Override
-        public @NotNull RootFrame create(@NotNull FrameContext context, @NotNull FrameSnapshot snapshot) {
+        public RootFrame create(@NotNull FrameContext context, PoolNodeSnapshot snapshot) {
             return new RootFrame(
                     context.getObjectPool().getData(
                             context,
-                            snapshot.data().get("currentFrame"),
+                            snapshot.values().get("currentFrame"),
                             Frame.class
                     )
             );

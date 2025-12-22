@@ -2,13 +2,11 @@ package com.plux.distribution.core.workflow.application.frame.registration.pin;
 
 import com.plux.distribution.core.interaction.domain.content.SimpleMessageContent;
 import com.plux.distribution.core.workflow.application.frame.utils.InfoMessageFrame;
-import com.plux.distribution.core.workflow.application.frame.utils.WithBuilderFrameFactory;
-import com.plux.distribution.core.workflow.application.frame.utils.data.FrameMetadata;
+import com.plux.distribution.core.workflow.application.serializer.PoolAwareSerializer;
+import com.plux.distribution.core.workflow.application.serializer.PoolNodeSnapshot;
 import com.plux.distribution.core.workflow.domain.AbstractFrame;
 import com.plux.distribution.core.workflow.domain.FrameContext;
 import com.plux.distribution.core.workflow.domain.FrameFeedback;
-import com.plux.distribution.core.workflow.domain.FrameSnapshot;
-import com.plux.distribution.core.workflow.domain.FrameSnapshotBuilder;
 import java.util.List;
 import org.jetbrains.annotations.NotNull;
 
@@ -47,7 +45,7 @@ public class CheckPasswordFrame extends AbstractFrame {
         });
     }
 
-    public static class CheckPasswordFrameFactory extends WithBuilderFrameFactory<CheckPasswordFrame>{
+    public static class CheckPasswordFrameFactory extends PoolAwareSerializer<CheckPasswordFrame> {
 
         private final String password;
 
@@ -56,9 +54,8 @@ public class CheckPasswordFrame extends AbstractFrame {
         }
 
         @Override
-        public @NotNull CheckPasswordFrame create(@NotNull FrameContext context, @NotNull FrameSnapshot snapshot) {
+        public CheckPasswordFrame create(@NotNull FrameContext context, PoolNodeSnapshot snapshot) {
             return new CheckPasswordFrame(password);
         }
-
     }
 }

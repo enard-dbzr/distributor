@@ -1,6 +1,6 @@
 package com.plux.distribution.core.workflow.domain;
 
-import com.fasterxml.jackson.databind.JsonNode;
+import com.plux.distribution.core.workflow.domain.SerializerRegistry.SerializerWithId;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Map;
@@ -16,7 +16,7 @@ public class ObjectPool {
     private final IdentityHashMap<Object, UUID> objectToUuid = new IdentityHashMap<>();
 
     private final Map<UUID, Object> uuidToObject = new HashMap<>();
-    private final Map<UUID, JsonNode> data = new HashMap<>();
+    private final Map<UUID, DataSnapshot> data = new HashMap<>();
 
     public ObjectPool(SerializerRegistry serializerRegistry) {
         this.serializerRegistry = serializerRegistry;
@@ -38,7 +38,7 @@ public class ObjectPool {
         @SuppressWarnings("unchecked")
         Class<T> type = (Class<T>) reference.getClass();
 
-        DataSerializer<T> serializer = serializerRegistry.get(type);
+        SerializerWithId<T> serializerWithId = serializerRegistry.get(type);
 
         UUID objectUuid;
         do {
@@ -47,7 +47,10 @@ public class ObjectPool {
 
         objectToUuid.put(reference, objectUuid);
 
-        data.put(objectUuid, serializer.serialize(context, reference));
+        data.put(objectUuid, new DataSnapshot(
+                serializerWithId.id(),
+                serializerWithId.serializer().serialize(context, reference)
+        ));
 
         return new PoolId(objectUuid);
     }
@@ -61,18 +64,19 @@ public class ObjectPool {
             return type.cast(uuidToObject.get(poolId.uuid()));
         }
 
-        DataSerializer<T> serializer = serializerRegistry.get(type);
-        JsonNode node = data.get(poolId.uuid());
+        DataSnapshot dataSnapshot = data.get(poolId.uuid());
 
-        T instance = serializer.create(context, node);
+        DataSerializer<T> serializer = serializerRegistry.findById(dataSnapshot.serializerId(), type);
+
+        T instance = serializer.create(context, dataSnapshot.node());
 
         uuidToObject.put(poolId.uuid(), instance);
 
         return instance;
     }
 
-    public Map<UUID, JsonNode> dump() {
-        Map<UUID, JsonNode> dataDump = new HashMap<>(data);
+    public Map<UUID, DataSnapshot> dump() {
+        Map<UUID, DataSnapshot> dataDump = new HashMap<>(data);
 
         data.clear();
         objectToUuid.clear();
@@ -81,7 +85,7 @@ public class ObjectPool {
         return dataDump;
     }
 
-    public void load(Map<UUID, JsonNode> dataDump) {
+    public void load(Map<UUID, DataSnapshot> dataDump) {
         data.clear();
         objectToUuid.clear();
         uuidToObject.clear();

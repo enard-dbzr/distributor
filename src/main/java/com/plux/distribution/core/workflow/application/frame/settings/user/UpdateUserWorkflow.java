@@ -1,13 +1,12 @@
 package com.plux.distribution.core.workflow.application.frame.settings.user;
 
 import com.plux.distribution.core.workflow.application.frame.utils.SequenceFrame;
-import com.plux.distribution.core.workflow.application.frame.utils.WithBuilderFrameFactory;
-import com.plux.distribution.core.workflow.domain.AbstractFrame;
+import com.plux.distribution.core.workflow.application.serializer.PoolAwareSerializer;
+import com.plux.distribution.core.workflow.application.serializer.PoolNodeSnapshot;
+import com.plux.distribution.core.workflow.application.serializer.PoolNodeSnapshot.PoolNodeSnapshotBuilder;
 import com.plux.distribution.core.workflow.domain.Frame;
 import com.plux.distribution.core.workflow.domain.FrameContext;
 import com.plux.distribution.core.workflow.domain.FrameFeedback;
-import com.plux.distribution.core.workflow.domain.FrameSnapshot;
-import com.plux.distribution.core.workflow.domain.FrameSnapshotBuilder;
 import java.util.List;
 import org.jetbrains.annotations.NotNull;
 
@@ -49,21 +48,21 @@ public class UpdateUserWorkflow implements Frame {
         return workflow.isFinished();
     }
 
-    public static class UpdateUserWorkflowFactory extends WithBuilderFrameFactory<UpdateUserWorkflow> {
+    public static class UpdateUserWorkflowFactory extends PoolAwareSerializer<UpdateUserWorkflow> {
 
         @Override
-        protected @NotNull FrameSnapshotBuilder buildSnapshot(@NotNull FrameContext context,
-                @NotNull UpdateUserWorkflow frame, @NotNull FrameSnapshotBuilder builder) {
-            return super.buildSnapshot(context, frame, builder)
-                    .addData("user_builder", context.getObjectPool().put(context, frame.userBuilder))
-                    .addData("workflow", context.getObjectPool().put(context, frame.workflow));
+        public PoolNodeSnapshotBuilder buildFrameSnapshot(@NotNull FrameContext context, UpdateUserWorkflow instance,
+                PoolNodeSnapshotBuilder builder) {
+            return super.buildFrameSnapshot(context, instance, builder)
+                    .value("user_builder", context.getObjectPool().put(context, instance.userBuilder))
+                    .value("workflow", context.getObjectPool().put(context, instance.workflow));
         }
 
         @Override
-        public @NotNull UpdateUserWorkflow create(@NotNull FrameContext context, @NotNull FrameSnapshot snapshot) {
+        public UpdateUserWorkflow create(@NotNull FrameContext context, PoolNodeSnapshot snapshot) {
             return new UpdateUserWorkflow(
-                    context.getObjectPool().getData(context, snapshot.data().get("user_builder"), UserBuilder.class),
-                    context.getObjectPool().getData(context, snapshot.data().get("workflow"), SequenceFrame.class)
+                    context.getObjectPool().getData(context, snapshot.values().get("user_builder"), UserBuilder.class),
+                    context.getObjectPool().getData(context, snapshot.values().get("workflow"), SequenceFrame.class)
             );
         }
     }

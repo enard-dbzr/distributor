@@ -1,17 +1,17 @@
 package com.plux.distribution.core.workflow.application.frame.utils;
 
 import com.plux.distribution.core.interaction.domain.content.SimpleMessageContent;
+import com.plux.distribution.core.workflow.application.serializer.PoolAwareSerializer;
+import com.plux.distribution.core.workflow.application.serializer.PoolNodeSnapshot;
+import com.plux.distribution.core.workflow.application.serializer.PoolNodeSnapshot.PoolNodeSnapshotBuilder;
 import com.plux.distribution.core.workflow.domain.AbstractFrame;
-import com.plux.distribution.core.workflow.domain.Frame;
 import com.plux.distribution.core.workflow.domain.FrameContext;
-import com.plux.distribution.core.workflow.domain.FrameSnapshot;
-import com.plux.distribution.core.workflow.domain.FrameSnapshotBuilder;
 import java.util.List;
 import org.jetbrains.annotations.NotNull;
 
 public final class InfoMessageFrame extends AbstractFrame {
 
-    private String text;
+    private final String text;
 
     public InfoMessageFrame(String text) {
         this.text = text;
@@ -23,21 +23,21 @@ public final class InfoMessageFrame extends AbstractFrame {
         markFinished();
     }
 
-    public static class InfoMessageFrameFactory extends WithBuilderFrameFactory<InfoMessageFrame> {
+    public static class InfoMessageFrameFactory extends PoolAwareSerializer<InfoMessageFrame> {
 
         @Override
-        protected @NotNull FrameSnapshotBuilder buildSnapshot(@NotNull FrameContext context,
-                @NotNull InfoMessageFrame frame, @NotNull FrameSnapshotBuilder builder) {
-            return super.buildSnapshot(context, frame, builder)
-                    .addData("text", context.getObjectPool().put(context, frame.text));
+        public PoolNodeSnapshotBuilder buildFrameSnapshot(@NotNull FrameContext context, InfoMessageFrame instance,
+                PoolNodeSnapshotBuilder builder) {
+            return super.buildFrameSnapshot(context, instance, builder)
+                    .value("text", context.getObjectPool().put(context, instance.text));
         }
 
         @Override
-        public @NotNull InfoMessageFrame create(@NotNull FrameContext context, @NotNull FrameSnapshot snapshot) {
+        public InfoMessageFrame create(@NotNull FrameContext context, PoolNodeSnapshot snapshot) {
             return new InfoMessageFrame(
                     context.getObjectPool().getData(
                             context,
-                            snapshot.data().get("text"),
+                            snapshot.values().get("text"),
                             String.class
                     )
             );
