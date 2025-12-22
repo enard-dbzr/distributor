@@ -24,24 +24,24 @@ public class FlowFeedbackProcessor implements FeedbackProcessor, CheckChatBusyUs
     private final WorkflowUseCase workflowUseCase;
 
     private final Function<FrameContext, Frame> registrationWorkflowFactory;
-    private final Frame scheduleSettingsWorkflow;
-    private final Frame updateUserWorkflow;
-    private final Frame helpWorkflow;
+    private final Function<FrameContext, Frame> scheduleSettingsWorkflowFactory;
+    private final Function<FrameContext, Frame> updateUserWorkflowFactory;
+    private final Function<FrameContext, Frame> helpWorkflowFactory;
 
     public FlowFeedbackProcessor(
             FeedbackProcessor next,
             WorkflowUseCase workflowUseCase,
             Function<FrameContext, Frame> registrationWorkflowFactory,
-            Frame scheduleSettingsWorkflow,
-            Frame updateUserWorkflow,
-            Frame helpWorkflow
+            Function<FrameContext, Frame> scheduleSettingsWorkflowFactory,
+            Function<FrameContext, Frame> updateUserWorkflowFactory,
+            Function<FrameContext, Frame> helpWorkflowFactory
     ) {
         this.next = next;
         this.workflowUseCase = workflowUseCase;
         this.registrationWorkflowFactory = registrationWorkflowFactory;
-        this.scheduleSettingsWorkflow = scheduleSettingsWorkflow;
-        this.updateUserWorkflow = updateUserWorkflow;
-        this.helpWorkflow = helpWorkflow;
+        this.scheduleSettingsWorkflowFactory = scheduleSettingsWorkflowFactory;
+        this.updateUserWorkflowFactory = updateUserWorkflowFactory;
+        this.helpWorkflowFactory = helpWorkflowFactory;
     }
 
     private static String extractMessageText(@NotNull InteractionContent content) {
@@ -70,10 +70,10 @@ public class FlowFeedbackProcessor implements FeedbackProcessor, CheckChatBusyUs
 //                    startScheduleSettings(frameContext);
 //                    newTriggered.set(true);
 //                }
-//                case "/update_user" -> {
-//                    stratUpdateUser(frameContext);
-//                    newTriggered.set(true);
-//                }
+                case "/update_user" -> {
+                    context.getRoot().changeState(context, updateUserWorkflowFactory.apply(context));
+                    newTriggered.set(true);
+                }
                 case "/help" -> {
                     context.getRoot().changeState(context, new HelloFrame());
                     newTriggered.set(true);

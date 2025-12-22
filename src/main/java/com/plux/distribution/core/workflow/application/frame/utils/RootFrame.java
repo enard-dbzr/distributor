@@ -29,6 +29,7 @@ public class RootFrame extends AbstractFrame {
             currentState.onEnter(context);
 
             if (currentState.isFinished()) {
+                currentState.onExit(context);
                 currentState = null;
             }
         }
@@ -40,6 +41,7 @@ public class RootFrame extends AbstractFrame {
             currentState.handle(context, feedback);
 
             if (currentState.isFinished()) {
+                currentState.onExit(context);
                 currentState = null;
             }
         }

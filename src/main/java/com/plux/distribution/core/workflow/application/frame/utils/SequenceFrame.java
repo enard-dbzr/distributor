@@ -7,6 +7,7 @@ import com.plux.distribution.core.workflow.domain.frame.AbstractFrame;
 import com.plux.distribution.core.workflow.domain.frame.Frame;
 import com.plux.distribution.core.workflow.domain.FrameContext;
 import com.plux.distribution.core.workflow.domain.frame.FrameFeedback;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -19,15 +20,11 @@ public class SequenceFrame extends AbstractFrame {
     private final List<Frame> frames;
 
     public SequenceFrame(List<Frame> frames) {
-        this.frames = frames;
+        this.frames = new ArrayList<>(frames);
     }
 
     @Override
     public void onEnter(@NotNull FrameContext context) {
-        if (frames == null) {
-            throw new IllegalStateException("frames is null");
-        }
-
         frames.getFirst().onEnter(context);
 
         changeStateAttempt(context);
@@ -35,10 +32,6 @@ public class SequenceFrame extends AbstractFrame {
 
     @Override
     public void handle(@NotNull FrameContext context, @NotNull FrameFeedback feedback) {
-        if (frames == null) {
-            throw new IllegalStateException("frames is null");
-        }
-
         frames.getFirst().handle(context, feedback);
 
         changeStateAttempt(context);
@@ -46,10 +39,6 @@ public class SequenceFrame extends AbstractFrame {
 
     @Override
     public void onExit(@NotNull FrameContext context) {
-        if (frames == null) {
-            throw new IllegalStateException("frames is null");
-        }
-
         if (frames.isEmpty()) {
             return;
         }
@@ -58,10 +47,6 @@ public class SequenceFrame extends AbstractFrame {
     }
 
     public void changeStateAttempt(@NotNull FrameContext context) {
-        if (frames == null) {
-            throw new IllegalStateException("frames is null");
-        }
-
         if (frames.isEmpty()) {
             markFinished();
             return;

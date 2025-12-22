@@ -19,12 +19,21 @@ import com.plux.distribution.core.session.application.service.SessionFeedbackPro
 import com.plux.distribution.core.session.application.service.SessionSchedulerRunner;
 import com.plux.distribution.core.session.application.service.SessionService;
 import com.plux.distribution.core.user.application.service.UserService;
-import com.plux.distribution.core.workflow.application.frame.registration.HelloFrame;
 import com.plux.distribution.core.workflow.application.frame.registration.CheckPasswordFrame;
 import com.plux.distribution.core.workflow.application.frame.registration.CheckPasswordFrame.CheckPasswordFrameFactory;
+import com.plux.distribution.core.workflow.application.frame.registration.HelloFrame;
+import com.plux.distribution.core.workflow.application.frame.settings.user.AskAgeFrame;
+import com.plux.distribution.core.workflow.application.frame.settings.user.AskAgeFrame.AskAgeFrameFactory;
+import com.plux.distribution.core.workflow.application.frame.settings.user.AskCityFrame;
+import com.plux.distribution.core.workflow.application.frame.settings.user.AskCityFrame.AskCityFrameFactory;
+import com.plux.distribution.core.workflow.application.frame.settings.user.AskEmailFrame;
+import com.plux.distribution.core.workflow.application.frame.settings.user.AskEmailFrame.AskEmailFrameFactory;
+import com.plux.distribution.core.workflow.application.frame.settings.user.AskHobbyFrame;
+import com.plux.distribution.core.workflow.application.frame.settings.user.AskHobbyFrame.AskHobbyFrameFactory;
 import com.plux.distribution.core.workflow.application.frame.settings.user.AskNameFrame;
 import com.plux.distribution.core.workflow.application.frame.settings.user.AskNameFrame.AskNameFrameFactory;
 import com.plux.distribution.core.workflow.application.frame.settings.user.UpdateUserWorkflow;
+import com.plux.distribution.core.workflow.application.frame.settings.user.UpdateUserWorkflow.UpdateUserWorkflowFactory;
 import com.plux.distribution.core.workflow.application.frame.settings.user.data.UserBuilder;
 import com.plux.distribution.core.workflow.application.frame.utils.InfoMessageFrame;
 import com.plux.distribution.core.workflow.application.frame.utils.InfoMessageFrame.InfoMessageFrameFactory;
@@ -32,9 +41,9 @@ import com.plux.distribution.core.workflow.application.frame.utils.RootFrame;
 import com.plux.distribution.core.workflow.application.frame.utils.RootFrame.RootFrameFactory;
 import com.plux.distribution.core.workflow.application.frame.utils.SequenceFrame;
 import com.plux.distribution.core.workflow.application.frame.utils.SequenceFrame.SequenceFrameFactory;
+import com.plux.distribution.core.workflow.application.frame.utils.data.InteractionIdDataSerializer;
 import com.plux.distribution.core.workflow.application.frame.utils.data.SequenceCreator;
 import com.plux.distribution.core.workflow.application.serializer.DefaultSerializerRegistry;
-import com.plux.distribution.core.workflow.application.frame.utils.data.InteractionIdDataSerializer;
 import com.plux.distribution.core.workflow.application.service.FlowFeedbackProcessor;
 import com.plux.distribution.core.workflow.application.service.WorkflowService;
 import com.plux.distribution.core.workflow.application.utils.DefaultContextManager;
@@ -147,7 +156,7 @@ public class Main {
 
         var textProvider = new BundleTextProvider(Locale.of("ru"));
         var frameContextManager = new DefaultContextManager(interactionDeliveryService, executeActionService);
-        var serializerRegistry = makeSerializerRegistry(pin);
+        var serializerRegistry = makeSerializerRegistry(pin, userService, chatService, scheduleSettingsService);
 
         var workflowService = new WorkflowService(frameRepo, frameContextManager,
                 textProvider, serializerRegistry);
@@ -164,7 +173,7 @@ public class Main {
                 workflowService,
                 serializerRegistry.findById("workflow.registration", Frame.class)::create,
                 null,
-                null,
+                serializerRegistry.findById("frame.user.update_info", Frame.class)::create,
                 null
         );
 
@@ -229,7 +238,12 @@ public class Main {
         }
     }
 
-    private static @NotNull DefaultSerializerRegistry makeSerializerRegistry(String pin) {
+    private static @NotNull DefaultSerializerRegistry makeSerializerRegistry(
+            String pin,
+            UserService userService,
+            ChatService chatService,
+            ScheduleSettingsService scheduleSettingsService
+    ) {
         var registry = new DefaultSerializerRegistry();
 
         registry.register("type.interaction.id", InteractionId.class, new InteractionIdDataSerializer());
@@ -242,9 +256,15 @@ public class Main {
 
         registry.register("frame.registration.check_pin", CheckPasswordFrame.class, new CheckPasswordFrameFactory(pin));
 
-        registry.register("frame.user.update_info", UpdateUserWorkflow.class, new UpdateUserWorkflow.UpdateUserWorkflowFactory());
+        registry.register("frame.user.update_info", UpdateUserWorkflow.class, new UpdateUserWorkflowFactory(
+                chatService, userService, userService, chatService
+        ));
         registry.register("frame.user.update_info.type.user_builder", UserBuilder.class, new UserBuilder.Serializer());
         registry.register("frame.user.update_info.ask_name", AskNameFrame.class, new AskNameFrameFactory());
+        registry.register("frame.user.update_info.ask_email", AskEmailFrame.class, new AskEmailFrameFactory());
+        registry.register("frame.user.update_info.ask_age", AskAgeFrame.class, new AskAgeFrameFactory());
+        registry.register("frame.user.update_info.ask_city", AskCityFrame.class, new AskCityFrameFactory());
+        registry.register("frame.user.update_info.ask_hobby", AskHobbyFrame.class, new AskHobbyFrameFactory());
 
         registry.register("workflow.registration", null, new SequenceCreator(List.of(
                 registry.findById("frame.registration.hello_frame", Frame.class),
