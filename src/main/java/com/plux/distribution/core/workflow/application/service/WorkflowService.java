@@ -1,5 +1,6 @@
 package com.plux.distribution.core.workflow.application.service;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.plux.distribution.core.chat.domain.ChatId;
@@ -7,12 +8,12 @@ import com.plux.distribution.core.workflow.application.frame.utils.RootFrame;
 import com.plux.distribution.core.workflow.application.frame.utils.RootFrame.RootFrameFactory;
 import com.plux.distribution.core.workflow.application.port.in.WorkflowUseCase;
 import com.plux.distribution.core.workflow.application.port.out.ContextRepositoryPort;
-import com.plux.distribution.core.workflow.domain.objectpool.DataSnapshot;
 import com.plux.distribution.core.workflow.domain.FrameContext;
 import com.plux.distribution.core.workflow.domain.FrameContextManager;
+import com.plux.distribution.core.workflow.domain.frame.TextProvider;
+import com.plux.distribution.core.workflow.domain.objectpool.DataSnapshot;
 import com.plux.distribution.core.workflow.domain.objectpool.ObjectPool;
 import com.plux.distribution.core.workflow.domain.objectpool.SerializerRegistry;
-import com.plux.distribution.core.workflow.domain.frame.TextProvider;
 import java.util.Map;
 import java.util.UUID;
 import org.apache.logging.log4j.LogManager;
@@ -29,9 +30,7 @@ public class WorkflowService implements WorkflowUseCase {
 
     private final ObjectMapper mapper = new ObjectMapper();
 
-    private Map<UUID, DataSnapshot> dumpHolder = null;
-    private JsonNode rootSnapshot = null;
-    private RootFrameFactory rootFrameFactory = new RootFrameFactory();
+    private final RootFrameFactory rootFrameFactory = new RootFrameFactory();
 
     public WorkflowService(ContextRepositoryPort repository,
             FrameContextManager frameContextManager, TextProvider textProvider, SerializerRegistry serializerRegistry) {
@@ -44,105 +43,53 @@ public class WorkflowService implements WorkflowUseCase {
     }
 
     public void save(@NotNull FrameContext frameContext) {
-        rootSnapshot = rootFrameFactory.serialize(frameContext, frameContext.getRoot());
+        var rootSnapshot = rootFrameFactory.serialize(frameContext, frameContext.getRoot());
         var objectPool = frameContext.getObjectPool();
-        dumpHolder = objectPool.dump();
-//        var snapshot = frameContext.save();
-//
-//        // node saving
-//        var node = snapshot.node();
-//        Map<String, DataEntryHolder> serializedData = new ConcurrentHashMap<>();
-//        for (var dataEntry : node.entrySet()) {
-//            var key = dataRegistry.keyByType(dataEntry.getKey());
-//            var value = dataEntry.getValue();
-//
-//            serializedData.put(key.id(), new DataEntryHolder(serializeDataEntry(key, value)));
-//        }
-//
-//        // context saving
-//        List<FrameEntryHolder> stack = new ArrayList<>();
-//        for (var frameEntry : snapshot.stack()) {
-//            stack.addLast(new FrameEntryHolder(
-//                    frameRegistry.idByType(frameEntry.frame().getClass()),
-//                    frameEntry.execute()
-//            ));
-//        }
-//
-//        var mainHolder = new ContextSnapshotHolder(stack, serializedData);
-//
-//        try {
-//            var serializedValue = mapper.writeValueAsString(mainHolder);
-//
-//            repository.save(frameContext.getChatId(), serializedValue);
-//        } catch (JsonProcessingException e) {
-//            throw new RuntimeException(e);
-//        }
+        var objectPoolDump = objectPool.dump();
+
+        MachineSnapshot machineSnapshot = new MachineSnapshot(rootSnapshot, objectPoolDump);
+
+        try {
+            var serializedValue = mapper.writeValueAsString(machineSnapshot);
+
+            repository.save(frameContext.getChatId(), serializedValue);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public @NotNull FrameContext load(@NotNull ChatId chatId) {
 
-        var objectPool = new ObjectPool(serializerRegistry);
-        if (dumpHolder != null) {
-            objectPool.load(dumpHolder);
+        ObjectPool objectPool = new ObjectPool(serializerRegistry);
+
+        FrameContext context = new FrameContext(frameContextManager, textProvider, chatId, objectPool);
+
+        var serializedSnapshot = repository.getSnapshot(chatId);
+
+        if (serializedSnapshot == null || serializedSnapshot.isEmpty()) {
+            context.setRoot(rootFrameFactory.create(context));
+
+            return context;
         }
 
-        var context = new FrameContext(frameContextManager, textProvider, chatId, objectPool);
-        RootFrame root;
-        if (rootSnapshot == null) {
-            root = new RootFrame(null);
-        } else {
-            root = rootFrameFactory.create(context, rootSnapshot);
+        MachineSnapshot machineSnapshot;
+        try {
+            machineSnapshot = mapper.readValue(serializedSnapshot, MachineSnapshot.class);
+        } catch (JsonProcessingException e) {
+            log.error("Failed to deserialize frame context, returning empty", e);
+            context.setRoot(rootFrameFactory.create(context));
+            return context;
         }
+
+        objectPool.load(machineSnapshot.poolDump());
+
+        RootFrame root = rootFrameFactory.create(context, machineSnapshot.rootSnapshot());
 
         context.setRoot(root);
 
         return context;
-
-//        var serializedSnapshot = repository.getSnapshot(chatId);
-
-//        if (serializedSnapshot == null || serializedSnapshot.isEmpty()) {
-//            return new FrameContext(frameContextManager, textProvider, chatId);
-//        }
-
-//        ContextSnapshotHolder snapshotHolder;
-//        try {
-//            snapshotHolder = mapper.readValue(serializedSnapshot, ContextSnapshotHolder.class);
-//        } catch (JsonProcessingException e) {
-//            log.error("Failed to deserialize frame context, returning empty", e);
-//            return new FrameContext(frameContextManager, textProvider, chatId);
-//        }
-//
-//        Map<Class<?>, Object> node = new HashMap<>();
-//        for (var dataHolder : snapshotHolder.node().entrySet()) {
-//            var key = dataRegistry.keyById(dataHolder.getKey());
-//
-//            if (key == null) {
-//                log.error("Not found serializer with id={}", dataHolder.getKey());
-//                continue;
-//            }
-//
-//            try {
-//                var value = key.serializer().deserialize(dataHolder.getValue().value());
-//                node.put(key.type(), value);
-//            } catch (DataProcessingException e) {
-//                log.error("Failed to deserialize node entry: {}", key);
-//            }
-//
-//
-//        }
-//
-//        List<FrameEntry> stack = new ArrayList<>();
-//        for (var frameHolder : snapshotHolder.stack()) {
-//            stack.addLast(new FrameEntry(
-//                    frameRegistry.get(frameHolder.frameId()),
-//                    frameHolder.execute()
-//            ));
-//        }
-//
-//        var context = new FrameContext(frameContextManager, textProvider, chatId);
-//        context.restore(new ContextSnapshot(node, stack));
-//
-//        return context;
     }
+
+    private record MachineSnapshot(JsonNode rootSnapshot, Map<UUID, DataSnapshot> poolDump) {}
 
 }

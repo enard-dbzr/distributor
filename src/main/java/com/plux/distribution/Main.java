@@ -67,6 +67,7 @@ import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.servlet.FilterHolder;
 import org.eclipse.jetty.servlet.ServletContextHandler;
 import org.eclipse.jetty.servlet.ServletHolder;
+import org.jetbrains.annotations.NotNull;
 import org.slf4j.bridge.SLF4JBridgeHandler;
 import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
 import org.springframework.web.filter.UrlHandlerFilter;
@@ -82,6 +83,8 @@ public class Main {
     public static void main(String[] args) {
         SLF4JBridgeHandler.removeHandlersForRootLogger();
         SLF4JBridgeHandler.install();
+
+        var pin = System.getenv("BOT_PIN");
 
         var botToken = System.getenv("TG_TOKEN");
         var scheduleServiceId = Optional.ofNullable(System.getenv("SERVICE_ID"))
@@ -140,33 +143,11 @@ public class Main {
                 integrationFeedbackProcessor
         ), interactionService);
 
-        var pin = System.getenv("BOT_PIN");
+
 
         var textProvider = new BundleTextProvider(Locale.of("ru"));
         var frameContextManager = new DefaultContextManager(interactionDeliveryService, executeActionService);
-        var serializerRegistry = new DefaultSerializerRegistry();
-
-        serializerRegistry.register("types.interaction.id", InteractionId.class, new InteractionIdDataSerializer());
-        serializerRegistry.register("types.user_builder", UserBuilder.class, new UserBuilder.Serializer());
-
-        serializerRegistry.register("utils.info", InfoMessageFrame.class, new InfoMessageFrameFactory());
-        serializerRegistry.register("utils.root", RootFrame.class, new RootFrameFactory());
-        serializerRegistry.register("utils.sequence", SequenceFrame.class, new SequenceFrameFactory());
-
-        serializerRegistry.register("registration.hello_frame", HelloFrame.class, new HelloFrame.HelloFrameFactory());
-
-        serializerRegistry.register("registration.check_pin", CheckPasswordFrame.class,
-                new CheckPasswordFrameFactory(pin));
-
-        serializerRegistry.register("registration.user.ask_name", AskNameFrame.class, new AskNameFrameFactory());
-        serializerRegistry.register("registration.user.start_building", UpdateUserWorkflow.class,
-                new UpdateUserWorkflow.UpdateUserWorkflowFactory());
-
-        serializerRegistry.register("workflow.registration", null, new SequenceCreator(List.of(
-                serializerRegistry.findById("registration.hello_frame", Frame.class),
-                serializerRegistry.findById("registration.check_pin", Frame.class),
-                serializerRegistry.findById("registration.user.start_building", Frame.class)
-        )));
+        var serializerRegistry = makeSerializerRegistry(pin);
 
         var workflowService = new WorkflowService(frameRepo, frameContextManager,
                 textProvider, serializerRegistry);
@@ -246,6 +227,32 @@ public class Main {
         } catch (Exception e) {
             log.error("e: ", e);
         }
+    }
+
+    private static @NotNull DefaultSerializerRegistry makeSerializerRegistry(String pin) {
+        var registry = new DefaultSerializerRegistry();
+
+        registry.register("type.interaction.id", InteractionId.class, new InteractionIdDataSerializer());
+
+        registry.register("frame.utils.info_message", InfoMessageFrame.class, new InfoMessageFrameFactory());
+        registry.register("frame.utils.sequence", SequenceFrame.class, new SequenceFrameFactory());
+        registry.register("frame.utils.root", RootFrame.class, new RootFrameFactory());
+
+        registry.register("frame.registration.hello_frame", HelloFrame.class, new HelloFrame.HelloFrameFactory());
+
+        registry.register("frame.registration.check_pin", CheckPasswordFrame.class, new CheckPasswordFrameFactory(pin));
+
+        registry.register("frame.user.update_info", UpdateUserWorkflow.class, new UpdateUserWorkflow.UpdateUserWorkflowFactory());
+        registry.register("frame.user.update_info.type.user_builder", UserBuilder.class, new UserBuilder.Serializer());
+        registry.register("frame.user.update_info.ask_name", AskNameFrame.class, new AskNameFrameFactory());
+
+        registry.register("workflow.registration", null, new SequenceCreator(List.of(
+                registry.findById("frame.registration.hello_frame", Frame.class),
+                registry.findById("frame.registration.check_pin", Frame.class),
+                registry.findById("frame.user.update_info", Frame.class)
+        )));
+
+        return registry;
     }
 
 }

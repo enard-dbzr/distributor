@@ -64,5 +64,10 @@ public class RootFrame extends AbstractFrame {
                     )
             );
         }
+
+        @Override
+        public @NotNull RootFrame create(@NotNull FrameContext context) {
+            return new RootFrame(null);
+        }
     }
 }
