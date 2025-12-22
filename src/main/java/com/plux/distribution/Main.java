@@ -19,13 +19,13 @@ import com.plux.distribution.core.session.application.service.SessionFeedbackPro
 import com.plux.distribution.core.session.application.service.SessionSchedulerRunner;
 import com.plux.distribution.core.session.application.service.SessionService;
 import com.plux.distribution.core.user.application.service.UserService;
-import com.plux.distribution.core.workflow.application.frame.registration.hello.HelloFrame;
-import com.plux.distribution.core.workflow.application.frame.registration.pin.CheckPasswordFrame;
-import com.plux.distribution.core.workflow.application.frame.registration.pin.CheckPasswordFrame.CheckPasswordFrameFactory;
+import com.plux.distribution.core.workflow.application.frame.registration.HelloFrame;
+import com.plux.distribution.core.workflow.application.frame.registration.CheckPasswordFrame;
+import com.plux.distribution.core.workflow.application.frame.registration.CheckPasswordFrame.CheckPasswordFrameFactory;
 import com.plux.distribution.core.workflow.application.frame.settings.user.AskNameFrame;
 import com.plux.distribution.core.workflow.application.frame.settings.user.AskNameFrame.AskNameFrameFactory;
 import com.plux.distribution.core.workflow.application.frame.settings.user.UpdateUserWorkflow;
-import com.plux.distribution.core.workflow.application.frame.settings.user.UserBuilder;
+import com.plux.distribution.core.workflow.application.frame.settings.user.data.UserBuilder;
 import com.plux.distribution.core.workflow.application.frame.utils.InfoMessageFrame;
 import com.plux.distribution.core.workflow.application.frame.utils.InfoMessageFrame.InfoMessageFrameFactory;
 import com.plux.distribution.core.workflow.application.frame.utils.RootFrame;
@@ -173,7 +173,7 @@ public class Main {
         var flowFeedbackProcessor = new FlowFeedbackProcessor(
                 feedbackResolverProcessor,
                 workflowService,
-                context -> new SequenceFrame(List.of(
+                _ -> new SequenceFrame(List.of(
                         new HelloFrame(),
                         new CheckPasswordFrame(pin),
                         new UpdateUserWorkflow()

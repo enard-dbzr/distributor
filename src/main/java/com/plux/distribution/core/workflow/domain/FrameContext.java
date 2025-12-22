@@ -2,6 +2,8 @@ package com.plux.distribution.core.workflow.domain;
 
 import com.plux.distribution.core.chat.domain.ChatId;
 import com.plux.distribution.core.workflow.application.frame.utils.RootFrame;
+import com.plux.distribution.core.workflow.domain.frame.TextProvider;
+import com.plux.distribution.core.workflow.domain.objectpool.ObjectPool;
 import org.jetbrains.annotations.NotNull;
 
 public class FrameContext {

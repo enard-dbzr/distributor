@@ -1,6 +1,6 @@
 package com.plux.distribution.infrastructure;
 
-import com.plux.distribution.core.workflow.domain.TextProvider;
+import com.plux.distribution.core.workflow.domain.frame.TextProvider;
 import java.util.Locale;
 import java.util.ResourceBundle;
 import org.jetbrains.annotations.NotNull;

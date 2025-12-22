@@ -1,24 +1,27 @@
-package com.plux.distribution.core.workflow.domain;
+package com.plux.distribution.core.workflow.domain.objectpool;
 
-import com.plux.distribution.core.workflow.domain.SerializerRegistry.SerializerWithId;
+import com.plux.distribution.core.workflow.domain.FrameContext;
+import com.plux.distribution.core.workflow.domain.objectpool.SerializerRegistry.SerializerWithId;
+import com.plux.distribution.core.workflow.domain.frame.DataSerializer;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
+import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class ObjectPool {
 
-    private final SerializerRegistry serializerRegistry;
+    private final @NotNull SerializerRegistry serializerRegistry;
 
     private final IdentityHashMap<Object, UUID> objectToUuid = new IdentityHashMap<>();
 
     private final Map<UUID, Object> uuidToObject = new HashMap<>();
     private final Map<UUID, DataSnapshot> data = new HashMap<>();
 
-    public ObjectPool(SerializerRegistry serializerRegistry) {
+    public ObjectPool(@NotNull SerializerRegistry serializerRegistry) {
         this.serializerRegistry = serializerRegistry;
     }
 
@@ -26,6 +29,7 @@ public class ObjectPool {
         return Optional.ofNullable(objectToUuid.get(reference)).map(PoolId::new);
     }
 
+    @Contract("_, null -> null; _, !null -> !null")
     public <T> @Nullable PoolId put(@NotNull FrameContext context, @Nullable T reference) {
         if (reference == null) {
             return null;

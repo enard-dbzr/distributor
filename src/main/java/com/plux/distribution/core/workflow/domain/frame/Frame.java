@@ -1,7 +1,7 @@
-package com.plux.distribution.core.workflow.domain;
+package com.plux.distribution.core.workflow.domain.frame;
 
+import com.plux.distribution.core.workflow.domain.FrameContext;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 public interface Frame {
 

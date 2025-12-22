@@ -1,12 +1,12 @@
-package com.plux.distribution.core.workflow.application.frame.registration.pin;
+package com.plux.distribution.core.workflow.application.frame.registration;
 
 import com.plux.distribution.core.interaction.domain.content.SimpleMessageContent;
 import com.plux.distribution.core.workflow.application.frame.utils.InfoMessageFrame;
 import com.plux.distribution.core.workflow.application.serializer.PoolAwareSerializer;
 import com.plux.distribution.core.workflow.application.serializer.PoolNodeSnapshot;
-import com.plux.distribution.core.workflow.domain.AbstractFrame;
+import com.plux.distribution.core.workflow.domain.frame.AbstractFrame;
 import com.plux.distribution.core.workflow.domain.FrameContext;
-import com.plux.distribution.core.workflow.domain.FrameFeedback;
+import com.plux.distribution.core.workflow.domain.frame.FrameFeedback;
 import java.util.List;
 import org.jetbrains.annotations.NotNull;
 

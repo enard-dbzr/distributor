@@ -1,4 +1,4 @@
-package com.plux.distribution.core.workflow.domain;
+package com.plux.distribution.core.workflow.domain.frame;
 
 public abstract class AbstractFrame implements Frame {
 

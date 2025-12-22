@@ -1,4 +1,4 @@
-package com.plux.distribution.core.workflow.domain;
+package com.plux.distribution.core.workflow.domain.frame;
 
 import com.plux.distribution.core.feedback.domain.Feedback;
 import com.plux.distribution.core.interaction.domain.content.InteractionContent;

@@ -4,7 +4,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.plux.distribution.core.workflow.application.serializer.PoolNodeSnapshot.PoolNodeSnapshotBuilder;
-import com.plux.distribution.core.workflow.domain.DataSerializer;
+import com.plux.distribution.core.workflow.domain.frame.DataSerializer;
 import com.plux.distribution.core.workflow.domain.FrameContext;
 import org.jetbrains.annotations.NotNull;
 
@@ -13,14 +13,14 @@ public abstract class PoolAwareSerializer<T> implements DataSerializer<T> {
     protected final ObjectMapper mapper = new ObjectMapper();
 
     @Override
-    public final JsonNode serialize(@NotNull FrameContext context, T data) {
+    public final @NotNull JsonNode serialize(@NotNull FrameContext context, @NotNull T data) {
         PoolNodeSnapshotBuilder snapshotBuilder = PoolNodeSnapshot.builder();
 
-        return mapper.valueToTree(buildFrameSnapshot(context, data, snapshotBuilder).build());
+        return mapper.valueToTree(buildSnapshot(context, data, snapshotBuilder).build());
     }
 
     @Override
-    public final T create(FrameContext context, JsonNode data) {
+    public final @NotNull T create(@NotNull FrameContext context, @NotNull JsonNode data) {
         try {
             var snapshotNode = mapper.treeToValue(data, PoolNodeSnapshot.class);
 
@@ -30,7 +30,7 @@ public abstract class PoolAwareSerializer<T> implements DataSerializer<T> {
         }
     }
 
-    public PoolNodeSnapshotBuilder buildFrameSnapshot(@NotNull FrameContext context, T instance,
+    public PoolNodeSnapshotBuilder buildSnapshot(@NotNull FrameContext context, T instance,
             PoolNodeSnapshotBuilder builder) {
         return builder;
     }

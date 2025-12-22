@@ -1,9 +1,10 @@
 package com.plux.distribution.core.workflow.application.serializer;
 
-import com.plux.distribution.core.workflow.domain.DataSerializer;
-import com.plux.distribution.core.workflow.domain.SerializerRegistry;
+import com.plux.distribution.core.workflow.domain.frame.DataSerializer;
+import com.plux.distribution.core.workflow.domain.objectpool.SerializerRegistry;
 import java.util.HashMap;
 import java.util.Map;
+import org.jetbrains.annotations.NotNull;
 
 public class DefaultSerializerRegistry implements SerializerRegistry {
 
@@ -19,7 +20,7 @@ public class DefaultSerializerRegistry implements SerializerRegistry {
     }
 
     @Override
-    public <T> SerializerWithId<T> get(Class<T> type) {
+    public <T> SerializerWithId<T> get(@NotNull Class<T> type) {
         var id = typeToId.get(type);
         //noinspection unchecked
         return new SerializerWithId<>(
@@ -29,7 +30,7 @@ public class DefaultSerializerRegistry implements SerializerRegistry {
     }
 
     @Override
-    public <T> DataSerializer<T> findById(String id, Class<T> type) {
+    public <T> DataSerializer<T> findById(@NotNull String id, @NotNull Class<T> type) {
         var registeredType = idToType.get(id);
 
         if (!type.isAssignableFrom(registeredType)) {

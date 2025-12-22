@@ -1,4 +1,4 @@
-package com.plux.distribution.core.workflow.application.frame.settings.user;
+package com.plux.distribution.core.workflow.application.frame.settings.user.data;
 
 import com.plux.distribution.core.user.domain.UserInfo;
 import com.plux.distribution.core.workflow.application.serializer.JsonDataSerializer;

@@ -24,7 +24,7 @@ public class DefaultContextManager implements FrameContextManager {
     }
 
     @Override
-    public InteractionId send(FrameContext context, InteractionContent message) {
+    public @NotNull InteractionId send(@NotNull FrameContext context, @NotNull InteractionContent message) {
         return deliveryUseCase.deliver(new DeliverInteractionCommand(
                 new BotParticipant(),
                 new ChatParticipant(context.getChatId()),
@@ -33,7 +33,7 @@ public class DefaultContextManager implements FrameContextManager {
     }
 
     @Override
-    public void dispatch(FrameContext context, ChatAction action) {
+    public void dispatch(@NotNull FrameContext context, @NotNull ChatAction action) {
         executeActionUseCase.execute(action);
     }
 }

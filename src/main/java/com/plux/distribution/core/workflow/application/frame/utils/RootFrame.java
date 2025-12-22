@@ -3,10 +3,10 @@ package com.plux.distribution.core.workflow.application.frame.utils;
 import com.plux.distribution.core.workflow.application.serializer.PoolAwareSerializer;
 import com.plux.distribution.core.workflow.application.serializer.PoolNodeSnapshot;
 import com.plux.distribution.core.workflow.application.serializer.PoolNodeSnapshot.PoolNodeSnapshotBuilder;
-import com.plux.distribution.core.workflow.domain.AbstractFrame;
-import com.plux.distribution.core.workflow.domain.Frame;
+import com.plux.distribution.core.workflow.domain.frame.AbstractFrame;
+import com.plux.distribution.core.workflow.domain.frame.Frame;
 import com.plux.distribution.core.workflow.domain.FrameContext;
-import com.plux.distribution.core.workflow.domain.FrameFeedback;
+import com.plux.distribution.core.workflow.domain.frame.FrameFeedback;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -48,9 +48,9 @@ public class RootFrame extends AbstractFrame {
     public static class RootFrameFactory extends PoolAwareSerializer<RootFrame> {
 
         @Override
-        public PoolNodeSnapshotBuilder buildFrameSnapshot(@NotNull FrameContext context, RootFrame instance,
+        public PoolNodeSnapshotBuilder buildSnapshot(@NotNull FrameContext context, RootFrame instance,
                 PoolNodeSnapshotBuilder builder) {
-            return super.buildFrameSnapshot(context, instance, builder)
+            return super.buildSnapshot(context, instance, builder)
                     .value("currentFrame", context.getObjectPool().put(context, instance.currentState));
         }
 

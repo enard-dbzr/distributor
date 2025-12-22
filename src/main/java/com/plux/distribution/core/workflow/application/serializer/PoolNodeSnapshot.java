@@ -1,6 +1,6 @@
 package com.plux.distribution.core.workflow.application.serializer;
 
-import com.plux.distribution.core.workflow.domain.PoolId;
+import com.plux.distribution.core.workflow.domain.objectpool.PoolId;
 import java.util.HashMap;
 import java.util.Map;
 

@@ -1,4 +1,4 @@
-package com.plux.distribution.core.workflow.domain;
+package com.plux.distribution.core.workflow.domain.objectpool;
 
 import com.fasterxml.jackson.databind.JsonNode;
 

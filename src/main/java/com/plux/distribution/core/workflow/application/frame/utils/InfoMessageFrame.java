@@ -4,7 +4,7 @@ import com.plux.distribution.core.interaction.domain.content.SimpleMessageConten
 import com.plux.distribution.core.workflow.application.serializer.PoolAwareSerializer;
 import com.plux.distribution.core.workflow.application.serializer.PoolNodeSnapshot;
 import com.plux.distribution.core.workflow.application.serializer.PoolNodeSnapshot.PoolNodeSnapshotBuilder;
-import com.plux.distribution.core.workflow.domain.AbstractFrame;
+import com.plux.distribution.core.workflow.domain.frame.AbstractFrame;
 import com.plux.distribution.core.workflow.domain.FrameContext;
 import java.util.List;
 import org.jetbrains.annotations.NotNull;
@@ -26,9 +26,9 @@ public final class InfoMessageFrame extends AbstractFrame {
     public static class InfoMessageFrameFactory extends PoolAwareSerializer<InfoMessageFrame> {
 
         @Override
-        public PoolNodeSnapshotBuilder buildFrameSnapshot(@NotNull FrameContext context, InfoMessageFrame instance,
+        public PoolNodeSnapshotBuilder buildSnapshot(@NotNull FrameContext context, InfoMessageFrame instance,
                 PoolNodeSnapshotBuilder builder) {
-            return super.buildFrameSnapshot(context, instance, builder)
+            return super.buildSnapshot(context, instance, builder)
                     .value("text", context.getObjectPool().put(context, instance.text));
         }
 

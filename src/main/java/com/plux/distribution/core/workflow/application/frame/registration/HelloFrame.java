@@ -1,4 +1,4 @@
-package com.plux.distribution.core.workflow.application.frame.registration.hello;
+package com.plux.distribution.core.workflow.application.frame.registration;
 
 import com.plux.distribution.core.interaction.application.dto.action.ClearButtonsAction;
 import com.plux.distribution.core.interaction.domain.InteractionId;
@@ -8,9 +8,9 @@ import com.plux.distribution.core.workflow.application.frame.utils.InfoMessageFr
 import com.plux.distribution.core.workflow.application.serializer.PoolAwareSerializer;
 import com.plux.distribution.core.workflow.application.serializer.PoolNodeSnapshot;
 import com.plux.distribution.core.workflow.application.serializer.PoolNodeSnapshot.PoolNodeSnapshotBuilder;
-import com.plux.distribution.core.workflow.domain.AbstractFrame;
+import com.plux.distribution.core.workflow.domain.frame.AbstractFrame;
 import com.plux.distribution.core.workflow.domain.FrameContext;
-import com.plux.distribution.core.workflow.domain.FrameFeedback;
+import com.plux.distribution.core.workflow.domain.frame.FrameFeedback;
 import java.util.List;
 import org.jetbrains.annotations.NotNull;
 
@@ -47,9 +47,9 @@ public class HelloFrame extends AbstractFrame {
     public static class HelloFrameFactory extends PoolAwareSerializer<HelloFrame> {
 
         @Override
-        public PoolNodeSnapshotBuilder buildFrameSnapshot(@NotNull FrameContext context, HelloFrame instance,
+        public PoolNodeSnapshotBuilder buildSnapshot(@NotNull FrameContext context, HelloFrame instance,
                 PoolNodeSnapshotBuilder builder) {
-            return super.buildFrameSnapshot(context, instance, builder)
+            return super.buildSnapshot(context, instance, builder)
                     .value("lastMessageId", context.getObjectPool().put(context, instance.lastMessageId));
         }
 

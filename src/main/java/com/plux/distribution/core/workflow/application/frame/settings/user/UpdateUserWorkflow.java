@@ -1,12 +1,13 @@
 package com.plux.distribution.core.workflow.application.frame.settings.user;
 
+import com.plux.distribution.core.workflow.application.frame.settings.user.data.UserBuilder;
 import com.plux.distribution.core.workflow.application.frame.utils.SequenceFrame;
 import com.plux.distribution.core.workflow.application.serializer.PoolAwareSerializer;
 import com.plux.distribution.core.workflow.application.serializer.PoolNodeSnapshot;
 import com.plux.distribution.core.workflow.application.serializer.PoolNodeSnapshot.PoolNodeSnapshotBuilder;
-import com.plux.distribution.core.workflow.domain.Frame;
+import com.plux.distribution.core.workflow.domain.frame.Frame;
 import com.plux.distribution.core.workflow.domain.FrameContext;
-import com.plux.distribution.core.workflow.domain.FrameFeedback;
+import com.plux.distribution.core.workflow.domain.frame.FrameFeedback;
 import java.util.List;
 import org.jetbrains.annotations.NotNull;
 
@@ -51,9 +52,9 @@ public class UpdateUserWorkflow implements Frame {
     public static class UpdateUserWorkflowFactory extends PoolAwareSerializer<UpdateUserWorkflow> {
 
         @Override
-        public PoolNodeSnapshotBuilder buildFrameSnapshot(@NotNull FrameContext context, UpdateUserWorkflow instance,
+        public PoolNodeSnapshotBuilder buildSnapshot(@NotNull FrameContext context, UpdateUserWorkflow instance,
                 PoolNodeSnapshotBuilder builder) {
-            return super.buildFrameSnapshot(context, instance, builder)
+            return super.buildSnapshot(context, instance, builder)
                     .value("user_builder", context.getObjectPool().put(context, instance.userBuilder))
                     .value("workflow", context.getObjectPool().put(context, instance.workflow));
         }

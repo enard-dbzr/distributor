@@ -3,10 +3,10 @@ package com.plux.distribution.core.workflow.application.frame.utils;
 import com.plux.distribution.core.workflow.application.serializer.PoolAwareSerializer;
 import com.plux.distribution.core.workflow.application.serializer.PoolNodeSnapshot;
 import com.plux.distribution.core.workflow.application.serializer.PoolNodeSnapshot.PoolNodeSnapshotBuilder;
-import com.plux.distribution.core.workflow.domain.AbstractFrame;
-import com.plux.distribution.core.workflow.domain.Frame;
+import com.plux.distribution.core.workflow.domain.frame.AbstractFrame;
+import com.plux.distribution.core.workflow.domain.frame.Frame;
 import com.plux.distribution.core.workflow.domain.FrameContext;
-import com.plux.distribution.core.workflow.domain.FrameFeedback;
+import com.plux.distribution.core.workflow.domain.frame.FrameFeedback;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
@@ -82,7 +82,7 @@ public class SequenceFrame extends AbstractFrame {
     public static class SequenceFrameFactory extends PoolAwareSerializer<SequenceFrame> {
 
         @Override
-        public PoolNodeSnapshotBuilder buildFrameSnapshot(@NotNull FrameContext context, SequenceFrame instance,
+        public PoolNodeSnapshotBuilder buildSnapshot(@NotNull FrameContext context, SequenceFrame instance,
                 PoolNodeSnapshotBuilder builder) {
             var framePoolIds = instance.frames.stream()
                     .map(f -> context.getObjectPool().put(context, f))
@@ -93,7 +93,7 @@ public class SequenceFrame extends AbstractFrame {
                 subNodeBuilder.value(String.valueOf(i), framePoolIds.get(i));
             }
 
-            return super.buildFrameSnapshot(context, instance, builder)
+            return super.buildSnapshot(context, instance, builder)
                     .child("pooledFrames", subNodeBuilder.build());
         }
 
