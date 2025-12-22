@@ -92,27 +92,27 @@ public class FlowFeedbackProcessor implements FeedbackProcessor, CheckChatBusyUs
     private void startRegistration(FrameContext frameContext) {
         frameContext.clear();
         frameContext.push(registrationWorkflow, true);
-        frameContext.exec();
+        frameContext.enter();
     }
 
     private void startScheduleSettings(FrameContext frameContext) {
         if (frameContext.isEmpty()) {
             frameContext.push(scheduleSettingsWorkflow, true);
-            frameContext.exec();
+            frameContext.enter();
         }
     }
 
     private void stratUpdateUser(FrameContext frameContext) {
         if (frameContext.isEmpty()) {
             frameContext.push(updateUserWorkflow, true);
-            frameContext.exec();
+            frameContext.enter();
         }
     }
 
     private void startHelp(FrameContext frameContext) {
         if (frameContext.isEmpty()) {
             frameContext.push(helpWorkflow, true);
-            frameContext.exec();
+            frameContext.enter();
         }
     }
 

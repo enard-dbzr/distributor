@@ -4,8 +4,10 @@ import org.jetbrains.annotations.NotNull;
 
 public interface Frame {
 
-    void exec(@NotNull FrameContext context);
+    default void onEnter() {}
 
-    void handle(@NotNull FrameContext context, @NotNull FrameFeedback feedback);
+    default void handle(@NotNull FrameFeedback feedback) {}
+
+    default void onExit() {}
 
 }

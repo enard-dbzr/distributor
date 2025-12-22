@@ -5,9 +5,9 @@ import com.plux.distribution.core.interaction.application.dto.action.ChatAction;
 import com.plux.distribution.core.interaction.domain.InteractionId;
 import com.plux.distribution.core.interaction.domain.content.InteractionContent;
 import java.util.List;
-import java.util.Map;
 import java.util.Stack;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public class FrameContext {
 
@@ -15,21 +15,24 @@ public class FrameContext {
 
     private final @NotNull TextProvider textProvider;
 
+    private final @NotNull ObjectPool objectPool;
+
     private final @NotNull ChatId chatId;
 
-    private final @NotNull FlowData data = new FlowData();
-    private final @NotNull Stack<FrameEntry> frames = new Stack<>();
+    private final @NotNull Stack<Frame> frames = new Stack<>();
 
     public FrameContext(@NotNull FrameContextManager manager, @NotNull TextProvider textProvider,
+            @NotNull ObjectPool objectPool,
             @NotNull ChatId chatId) {
         this.manager = manager;
         this.textProvider = textProvider;
+        this.objectPool = objectPool;
         this.chatId = chatId;
     }
 
-    public void exec() {
-        if (!frames.isEmpty() && frames.peek().execute()) {
-            frames.peek().frame().exec(this);
+    public void enter() {
+        if (!frames.isEmpty()) {
+            frames.peek().onEnter();
         }
     }
 
@@ -38,7 +41,7 @@ public class FrameContext {
             return;
         }
 
-        frames.peek().frame().handle(this, feedback);
+        frames.peek().handle(feedback);
     }
 
     public @NotNull InteractionId send(@NotNull InteractionContent message, @NotNull Frame frame) {
@@ -46,32 +49,27 @@ public class FrameContext {
     }
 
     public @NotNull InteractionId send(@NotNull InteractionContent message) {
-        return send(message, frames.peek().frame());
+        return send(message, frames.peek());
     }
 
     public void dispatch(@NotNull ChatAction action) {
         manager.dispatch(this, action);
     }
 
-    public void changeState(@NotNull Frame frame, boolean execute) {
-        frames.pop();
-        frames.push(new FrameEntry(frame, execute));
-        exec();
-    }
+    public void changeState(@Nullable Frame frame) {
+        if (!frames.isEmpty()) {
+            frames.pop().onExit();
+        }
 
-    public void changeState(@NotNull Frame frame) {
-        frames.pop();
-        frames.push(new FrameEntry(frame, true));
-        exec();
+        if (frame != null) {
+            frames.push(frame);
+        }
+
+        enter();
     }
 
     public void changeState() {
-        frames.pop();
-        exec();
-    }
-
-    public void pop() {
-        frames.pop();
+        changeState(null);
     }
 
     public void clear() {
@@ -82,43 +80,34 @@ public class FrameContext {
         return frames.isEmpty();
     }
 
-    public void push(@NotNull Frame frame, boolean execute) {
-        frames.push(new FrameEntry(frame, execute));
+    public void push(@NotNull Frame frame) {
+        frames.push(frame);
     }
 
     public @NotNull ContextSnapshot save() {
-        return new ContextSnapshot(
-                data.save(),
-                frames.stream().toList()
-        );
+        return new ContextSnapshot(frames.stream().map(f -> objectPool.put(this, f)).toList());
     }
 
     public void restore(@NotNull ContextSnapshot snapshot) {
-        data.clear();
-        data.restore(snapshot.data);
-
         frames.clear();
-        snapshot.stack.forEach(frames::addLast);
+        frames.addAll(
+                snapshot.stack().stream()
+                        .map(poolId -> objectPool.getData(
+                                this,
+                                poolId,
+                                Frame.class
+                        ))
+                        .toList()
+        );
     }
 
     public @NotNull ChatId getChatId() {
         return chatId;
     }
 
-    public @NotNull FlowData getData() {
-        return data;
-    }
-
     public @NotNull TextProvider getTextProvider() {
         return textProvider;
     }
 
-    public record FrameEntry(Frame frame, boolean execute) {
-
-    }
-
-    public record ContextSnapshot(Map<Class<?>, Object> data,
-                                  List<FrameEntry> stack) {
-
-    }
+    public record ContextSnapshot(List<PoolId> stack) {}
 }

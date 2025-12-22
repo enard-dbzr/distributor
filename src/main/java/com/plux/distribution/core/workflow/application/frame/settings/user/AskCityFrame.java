@@ -13,7 +13,7 @@ import org.jetbrains.annotations.NotNull;
 public class AskCityFrame implements Frame {
 
     @Override
-    public void exec(@NotNull FrameContext context) {
+    public void onEnter() {
         var messageId = context.send(new SimpleMessageContent(
                 context.getTextProvider().getString("registration.user.city.ask"),
                 List.of(new ButtonAttachment(context.getTextProvider().getString("utils.skip_button"), "skip"))
@@ -23,7 +23,7 @@ public class AskCityFrame implements Frame {
     }
 
     @Override
-    public void handle(@NotNull FrameContext context, @NotNull FrameFeedback feedback) {
+    public void handle(@NotNull FrameFeedback feedback) {
         var userBuilder = context.getData().get(UserBuilder.class);
 
         feedback.buttonTag().ifPresent(value -> {

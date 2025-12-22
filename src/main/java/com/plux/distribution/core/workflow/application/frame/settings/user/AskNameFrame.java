@@ -2,7 +2,6 @@ package com.plux.distribution.core.workflow.application.frame.settings.user;
 
 import com.plux.distribution.core.interaction.domain.content.SimpleMessageContent;
 import com.plux.distribution.core.workflow.domain.Frame;
-import com.plux.distribution.core.workflow.domain.FrameContext;
 import com.plux.distribution.core.workflow.domain.FrameFeedback;
 import java.util.List;
 import org.jetbrains.annotations.NotNull;
@@ -10,7 +9,7 @@ import org.jetbrains.annotations.NotNull;
 public class AskNameFrame implements Frame {
 
     @Override
-    public void exec(@NotNull FrameContext context) {
+    public void onEnter() {
         context.send(
                 new SimpleMessageContent(
                         context.getTextProvider().getString("registration.user.name.ask"),
@@ -20,7 +19,7 @@ public class AskNameFrame implements Frame {
     }
 
     @Override
-    public void handle(@NotNull FrameContext context, @NotNull FrameFeedback feedback) {
+    public void handle(@NotNull FrameFeedback feedback) {
         var userBuilder = context.getData().get(UserBuilder.class);
 
         feedback.text().ifPresent(text -> {

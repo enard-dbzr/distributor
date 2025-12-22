@@ -6,7 +6,6 @@ import com.plux.distribution.core.user.application.command.UserCommand;
 import com.plux.distribution.core.user.application.port.in.CreateUserUseCase;
 import com.plux.distribution.core.user.application.port.in.UpdateUserInfoUseCase;
 import com.plux.distribution.core.workflow.domain.Frame;
-import com.plux.distribution.core.workflow.domain.FrameContext;
 import com.plux.distribution.core.workflow.domain.FrameFeedback;
 import org.jetbrains.annotations.NotNull;
 
@@ -28,7 +27,7 @@ public class FinalizeFrame implements Frame {
     }
 
     @Override
-    public void exec(@NotNull FrameContext context) {
+    public void onEnter() {
         var userBuilder = context.getData().get(UserBuilder.class);
 
         var userInfo = userBuilder.buildUserInfo();
@@ -47,7 +46,7 @@ public class FinalizeFrame implements Frame {
     }
 
     @Override
-    public void handle(@NotNull FrameContext context, @NotNull FrameFeedback feedback) {
+    public void handle(@NotNull FrameFeedback feedback) {
 
     }
 }

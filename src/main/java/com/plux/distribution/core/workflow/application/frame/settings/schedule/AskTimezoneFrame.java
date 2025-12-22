@@ -14,7 +14,7 @@ import org.jetbrains.annotations.NotNull;
 public class AskTimezoneFrame implements Frame {
 
     @Override
-    public void exec(@NotNull FrameContext context) {
+    public void onEnter() {
         var messageId = context.send(new SimpleMessageContent(
                 context.getTextProvider().getString("settings.schedule.timezone.ask"),
                 List.of(
@@ -37,7 +37,7 @@ public class AskTimezoneFrame implements Frame {
     }
 
     @Override
-    public void handle(@NotNull FrameContext context, @NotNull FrameFeedback feedback) {
+    public void handle(@NotNull FrameFeedback feedback) {
         var settingsBuilder = context.getData().get(ScheduleSettingsBuilder.class);
 
         feedback.buttonTag().ifPresent(value -> {
