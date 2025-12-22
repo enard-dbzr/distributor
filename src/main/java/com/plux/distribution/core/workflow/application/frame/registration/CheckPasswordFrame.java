@@ -4,8 +4,8 @@ import com.plux.distribution.core.interaction.domain.content.SimpleMessageConten
 import com.plux.distribution.core.workflow.application.frame.utils.InfoMessageFrame;
 import com.plux.distribution.core.workflow.application.serializer.PoolAwareSerializer;
 import com.plux.distribution.core.workflow.application.serializer.PoolNodeSnapshot;
-import com.plux.distribution.core.workflow.domain.frame.AbstractFrame;
 import com.plux.distribution.core.workflow.domain.FrameContext;
+import com.plux.distribution.core.workflow.domain.frame.AbstractFrame;
 import com.plux.distribution.core.workflow.domain.frame.FrameFeedback;
 import java.util.List;
 import org.jetbrains.annotations.NotNull;
@@ -55,6 +55,11 @@ public class CheckPasswordFrame extends AbstractFrame {
 
         @Override
         public CheckPasswordFrame create(@NotNull FrameContext context, PoolNodeSnapshot snapshot) {
+            return new CheckPasswordFrame(password);
+        }
+
+        @Override
+        public @NotNull CheckPasswordFrame create(@NotNull FrameContext context) {
             return new CheckPasswordFrame(password);
         }
     }

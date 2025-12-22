@@ -32,11 +32,13 @@ import com.plux.distribution.core.workflow.application.frame.utils.RootFrame;
 import com.plux.distribution.core.workflow.application.frame.utils.RootFrame.RootFrameFactory;
 import com.plux.distribution.core.workflow.application.frame.utils.SequenceFrame;
 import com.plux.distribution.core.workflow.application.frame.utils.SequenceFrame.SequenceFrameFactory;
+import com.plux.distribution.core.workflow.application.frame.utils.data.SequenceCreator;
 import com.plux.distribution.core.workflow.application.serializer.DefaultSerializerRegistry;
 import com.plux.distribution.core.workflow.application.frame.utils.data.InteractionIdDataSerializer;
 import com.plux.distribution.core.workflow.application.service.FlowFeedbackProcessor;
 import com.plux.distribution.core.workflow.application.service.WorkflowService;
 import com.plux.distribution.core.workflow.application.utils.DefaultContextManager;
+import com.plux.distribution.core.workflow.domain.frame.Frame;
 import com.plux.distribution.infrastructure.BundleTextProvider;
 import com.plux.distribution.infrastructure.notifier.WebhookNotifier;
 import com.plux.distribution.infrastructure.persistence.DbChatRepository;
@@ -160,6 +162,12 @@ public class Main {
         serializerRegistry.register("registration.user.start_building", UpdateUserWorkflow.class,
                 new UpdateUserWorkflow.UpdateUserWorkflowFactory());
 
+        serializerRegistry.register("workflow.registration", null, new SequenceCreator(List.of(
+                serializerRegistry.findById("registration.hello_frame", Frame.class),
+                serializerRegistry.findById("registration.check_pin", Frame.class),
+                serializerRegistry.findById("registration.user.start_building", Frame.class)
+        )));
+
         var workflowService = new WorkflowService(frameRepo, frameContextManager,
                 textProvider, serializerRegistry);
 //        var flowFeedbackProcessor = new FlowFeedbackProcessor(
@@ -173,11 +181,7 @@ public class Main {
         var flowFeedbackProcessor = new FlowFeedbackProcessor(
                 feedbackResolverProcessor,
                 workflowService,
-                _ -> new SequenceFrame(List.of(
-                        new HelloFrame(),
-                        new CheckPasswordFrame(pin),
-                        new UpdateUserWorkflow()
-                )),
+                serializerRegistry.findById("workflow.registration", Frame.class)::create,
                 null,
                 null,
                 null

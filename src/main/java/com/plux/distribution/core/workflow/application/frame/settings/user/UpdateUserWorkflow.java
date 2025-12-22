@@ -66,5 +66,10 @@ public class UpdateUserWorkflow implements Frame {
                     context.getObjectPool().getData(context, snapshot.values().get("workflow"), SequenceFrame.class)
             );
         }
+
+        @Override
+        public @NotNull UpdateUserWorkflow create(@NotNull FrameContext context) {
+            return new UpdateUserWorkflow();
+        }
     }
 }

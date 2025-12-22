@@ -63,6 +63,11 @@ public class HelloFrame extends AbstractFrame {
             );
             return frame;
         }
+
+        @Override
+        public @NotNull HelloFrame create(@NotNull FrameContext context) {
+            return new HelloFrame();
+        }
     }
 
 

@@ -23,7 +23,7 @@ public class FlowFeedbackProcessor implements FeedbackProcessor, CheckChatBusyUs
     private final FeedbackProcessor next;
     private final WorkflowUseCase workflowUseCase;
 
-    private final Function<FrameContext, Frame> registrationWorkflowMaker;
+    private final Function<FrameContext, Frame> registrationWorkflowFactory;
     private final Frame scheduleSettingsWorkflow;
     private final Frame updateUserWorkflow;
     private final Frame helpWorkflow;
@@ -31,14 +31,14 @@ public class FlowFeedbackProcessor implements FeedbackProcessor, CheckChatBusyUs
     public FlowFeedbackProcessor(
             FeedbackProcessor next,
             WorkflowUseCase workflowUseCase,
-            Function<FrameContext, Frame> registrationWorkflowMaker,
+            Function<FrameContext, Frame> registrationWorkflowFactory,
             Frame scheduleSettingsWorkflow,
             Frame updateUserWorkflow,
             Frame helpWorkflow
     ) {
         this.next = next;
         this.workflowUseCase = workflowUseCase;
-        this.registrationWorkflowMaker = registrationWorkflowMaker;
+        this.registrationWorkflowFactory = registrationWorkflowFactory;
         this.scheduleSettingsWorkflow = scheduleSettingsWorkflow;
         this.updateUserWorkflow = updateUserWorkflow;
         this.helpWorkflow = helpWorkflow;
@@ -62,7 +62,7 @@ public class FlowFeedbackProcessor implements FeedbackProcessor, CheckChatBusyUs
         createFrameFeedback(feedback).text().ifPresent(text -> {
             switch (text) {
                 case "/start" -> {
-                    var frame = registrationWorkflowMaker.apply(context);
+                    var frame = registrationWorkflowFactory.apply(context);
                     context.getRoot().changeState(context, frame);
                     newTriggered.set(true);
                 }

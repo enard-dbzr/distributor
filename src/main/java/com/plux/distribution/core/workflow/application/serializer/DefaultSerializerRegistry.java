@@ -33,7 +33,7 @@ public class DefaultSerializerRegistry implements SerializerRegistry {
     public <T> DataSerializer<T> findById(@NotNull String id, @NotNull Class<T> type) {
         var registeredType = idToType.get(id);
 
-        if (!type.isAssignableFrom(registeredType)) {
+        if (registeredType != null && !type.isAssignableFrom(registeredType)) {
             throw new IllegalArgumentException(
                     "Type mismatch: expected " + type.getName() + " but got " + registeredType.getName());
         }

@@ -9,4 +9,8 @@ public interface DataSerializer<T> {
     @NotNull JsonNode serialize(@NotNull FrameContext context, @NotNull T data);
 
     @NotNull T create(@NotNull FrameContext context, @NotNull JsonNode data);
+
+    default @NotNull T create(@NotNull FrameContext context) {
+        throw new UnsupportedOperationException();
+    }
 }
