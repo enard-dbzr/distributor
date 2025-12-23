@@ -56,11 +56,11 @@ public class SequenceFrame extends AbstractFrame {
             var current = frames.removeFirst();
             current.onExit(context);
 
-            if (frames.isEmpty()) {
-                markFinished();
-            } else {
+            if (!frames.isEmpty()) {
                 frames.getFirst().onEnter(context);
             }
+            changeStateAttempt(context);
+
         }
     }
 
