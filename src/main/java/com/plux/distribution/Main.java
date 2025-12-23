@@ -22,6 +22,18 @@ import com.plux.distribution.core.user.application.service.UserService;
 import com.plux.distribution.core.workflow.application.frame.registration.CheckPasswordFrame;
 import com.plux.distribution.core.workflow.application.frame.registration.CheckPasswordFrame.CheckPasswordFrameFactory;
 import com.plux.distribution.core.workflow.application.frame.registration.HelloFrame;
+import com.plux.distribution.core.workflow.application.frame.settings.SettingsAppliedMessage;
+import com.plux.distribution.core.workflow.application.frame.settings.SettingsAppliedMessage.SettingsAppliedMessageFactory;
+import com.plux.distribution.core.workflow.application.frame.settings.schedule.AskHoursFrame;
+import com.plux.distribution.core.workflow.application.frame.settings.schedule.AskHoursFrame.AskHoursFrameFactory;
+import com.plux.distribution.core.workflow.application.frame.settings.schedule.AskSpdFrame;
+import com.plux.distribution.core.workflow.application.frame.settings.schedule.AskSpdFrame.AskSpdFrameFactory;
+import com.plux.distribution.core.workflow.application.frame.settings.schedule.AskTimezoneFrame;
+import com.plux.distribution.core.workflow.application.frame.settings.schedule.AskTimezoneFrame.AskTimezoneFrameFactory;
+import com.plux.distribution.core.workflow.application.frame.settings.schedule.ScheduleSettingsWorkflow;
+import com.plux.distribution.core.workflow.application.frame.settings.schedule.ScheduleSettingsWorkflow.ScheduleSettingsWorkflowFactory;
+import com.plux.distribution.core.workflow.application.frame.settings.schedule.data.ScheduleSettingsBuilder;
+import com.plux.distribution.core.workflow.application.frame.settings.schedule.data.ScheduleSettingsBuilder.ScheduleSettingsBuilderSerializer;
 import com.plux.distribution.core.workflow.application.frame.settings.user.AskAgeFrame;
 import com.plux.distribution.core.workflow.application.frame.settings.user.AskAgeFrame.AskAgeFrameFactory;
 import com.plux.distribution.core.workflow.application.frame.settings.user.AskCityFrame;
@@ -172,8 +184,8 @@ public class Main {
                 feedbackResolverProcessor,
                 workflowService,
                 serializerRegistry.findById("workflow.registration", Frame.class)::create,
-                null,
-                serializerRegistry.findById("frame.user.update_info", Frame.class)::create,
+                serializerRegistry.findById("workflow.schedule_settings", Frame.class)::create,
+                serializerRegistry.findById("workflow.user.update_info", Frame.class)::create,
                 null
         );
 
@@ -266,10 +278,32 @@ public class Main {
         registry.register("frame.user.update_info.ask_city", AskCityFrame.class, new AskCityFrameFactory());
         registry.register("frame.user.update_info.ask_hobby", AskHobbyFrame.class, new AskHobbyFrameFactory());
 
+        registry.register("frame.schedule_settings.type.settings_builder", ScheduleSettingsBuilder.class,
+                new ScheduleSettingsBuilderSerializer());
+        registry.register("frame.schedule_settings", ScheduleSettingsWorkflow.class,
+                new ScheduleSettingsWorkflowFactory(scheduleSettingsService));
+        registry.register("frame.schedule_settings.ask_timezone", AskTimezoneFrame.class,
+                new AskTimezoneFrameFactory());
+        registry.register("frame.schedule_settings.ask_hours", AskHoursFrame.class, new AskHoursFrameFactory());
+        registry.register("frame.schedule_settings.ask_spd", AskSpdFrame.class, new AskSpdFrameFactory());
+
+        registry.register("frame.settings.success", SettingsAppliedMessage.class, new SettingsAppliedMessageFactory());
+
         registry.register("workflow.registration", null, new SequenceCreator(List.of(
                 registry.findById("frame.registration.hello_frame", Frame.class),
                 registry.findById("frame.registration.check_pin", Frame.class),
-                registry.findById("frame.user.update_info", Frame.class)
+                registry.findById("frame.user.update_info", Frame.class),
+                registry.findById("frame.schedule_settings", Frame.class)
+        )));
+
+        registry.register("workflow.user.update_info", null, new SequenceCreator(List.of(
+                registry.findById("frame.user.update_info", Frame.class),
+                registry.findById("frame.settings.success", Frame.class)
+        )));
+
+        registry.register("workflow.schedule_settings", null, new SequenceCreator(List.of(
+                registry.findById("frame.schedule_settings", Frame.class),
+                registry.findById("frame.settings.success", Frame.class)
         )));
 
         return registry;

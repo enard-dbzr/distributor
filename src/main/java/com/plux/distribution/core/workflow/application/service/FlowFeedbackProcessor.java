@@ -62,14 +62,13 @@ public class FlowFeedbackProcessor implements FeedbackProcessor, CheckChatBusyUs
         createFrameFeedback(feedback).text().ifPresent(text -> {
             switch (text) {
                 case "/start" -> {
-                    var frame = registrationWorkflowFactory.apply(context);
-                    context.getRoot().changeState(context, frame);
+                    context.getRoot().changeState(context, registrationWorkflowFactory.apply(context));
                     newTriggered.set(true);
                 }
-//                case "/schedule_settings" -> {
-//                    startScheduleSettings(frameContext);
-//                    newTriggered.set(true);
-//                }
+                case "/schedule_settings" -> {
+                    context.getRoot().changeState(context, scheduleSettingsWorkflowFactory.apply(context));
+                    newTriggered.set(true);
+                }
                 case "/update_user" -> {
                     context.getRoot().changeState(context, updateUserWorkflowFactory.apply(context));
                     newTriggered.set(true);
