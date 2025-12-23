@@ -7,7 +7,6 @@ import com.plux.distribution.core.interaction.domain.content.ButtonClickContent;
 import com.plux.distribution.core.interaction.domain.content.InteractionContent;
 import com.plux.distribution.core.interaction.domain.content.ReplyMessageContent;
 import com.plux.distribution.core.interaction.domain.content.SimpleMessageContent;
-import com.plux.distribution.core.workflow.application.frame.registration.HelloFrame;
 import com.plux.distribution.core.workflow.application.port.in.CheckChatBusyUseCase;
 import com.plux.distribution.core.workflow.application.port.in.WorkflowUseCase;
 import com.plux.distribution.core.workflow.domain.frame.Frame;
@@ -60,6 +59,7 @@ public class FlowFeedbackProcessor implements FeedbackProcessor, CheckChatBusyUs
         AtomicBoolean newTriggered = new AtomicBoolean(false);
 
         createFrameFeedback(feedback).text().ifPresent(text -> {
+            // TODO: Проверку на пустоту контекста
             switch (text) {
                 case "/start" -> {
                     context.getRoot().changeState(context, registrationWorkflowFactory.apply(context));
@@ -74,7 +74,7 @@ public class FlowFeedbackProcessor implements FeedbackProcessor, CheckChatBusyUs
                     newTriggered.set(true);
                 }
                 case "/help" -> {
-                    context.getRoot().changeState(context, new HelloFrame());
+                    context.getRoot().changeState(context, helpWorkflowFactory.apply(context));
                     newTriggered.set(true);
                 }
             }

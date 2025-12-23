@@ -19,9 +19,15 @@ import com.plux.distribution.core.session.application.service.SessionFeedbackPro
 import com.plux.distribution.core.session.application.service.SessionSchedulerRunner;
 import com.plux.distribution.core.session.application.service.SessionService;
 import com.plux.distribution.core.user.application.service.UserService;
+import com.plux.distribution.core.workflow.application.frame.message.HelpFrame;
+import com.plux.distribution.core.workflow.application.frame.message.HelpFrame.HelpFrameFactory;
+import com.plux.distribution.core.workflow.application.frame.registration.ChangeSettingsMessage;
+import com.plux.distribution.core.workflow.application.frame.registration.ChangeSettingsMessage.ChangeSettingsMessageFactory;
 import com.plux.distribution.core.workflow.application.frame.registration.CheckPasswordFrame;
 import com.plux.distribution.core.workflow.application.frame.registration.CheckPasswordFrame.CheckPasswordFrameFactory;
 import com.plux.distribution.core.workflow.application.frame.registration.HelloFrame;
+import com.plux.distribution.core.workflow.application.frame.registration.RegistrationSuccessMessage;
+import com.plux.distribution.core.workflow.application.frame.registration.RegistrationSuccessMessage.RegistrationSuccessMessageFactory;
 import com.plux.distribution.core.workflow.application.frame.settings.SettingsAppliedMessage;
 import com.plux.distribution.core.workflow.application.frame.settings.SettingsAppliedMessage.SettingsAppliedMessageFactory;
 import com.plux.distribution.core.workflow.application.frame.settings.schedule.AskHoursFrame;
@@ -172,21 +178,13 @@ public class Main {
 
         var workflowService = new WorkflowService(frameRepo, frameContextManager,
                 textProvider, serializerRegistry);
-//        var flowFeedbackProcessor = new FlowFeedbackProcessor(
-//                feedbackResolverProcessor,
-//                workflowService,
-//                frameRegistry.getInstance("flow.registration"),
-//                frameRegistry.getInstance("flow.schedule_settings"),
-//                frameRegistry.getInstance("flow.update_user_info"),
-//                frameRegistry.getInstance("flow.help")
-//        );
         var flowFeedbackProcessor = new FlowFeedbackProcessor(
                 feedbackResolverProcessor,
                 workflowService,
                 serializerRegistry.findById("workflow.registration", Frame.class)::create,
                 serializerRegistry.findById("workflow.schedule_settings", Frame.class)::create,
                 serializerRegistry.findById("workflow.user.update_info", Frame.class)::create,
-                null
+                serializerRegistry.findById("workflow.help", Frame.class)::create
         );
 
         var botHandler = new FeedbackBotHandler(List.of(flowFeedbackProcessor));
@@ -265,8 +263,11 @@ public class Main {
         registry.register("frame.utils.root", RootFrame.class, new RootFrameFactory());
 
         registry.register("frame.registration.hello_frame", HelloFrame.class, new HelloFrame.HelloFrameFactory());
-
         registry.register("frame.registration.check_pin", CheckPasswordFrame.class, new CheckPasswordFrameFactory(pin));
+        registry.register("frame.registration.change_settings", ChangeSettingsMessage.class,
+                new ChangeSettingsMessageFactory());
+        registry.register("frame.registration.finish.success", RegistrationSuccessMessage.class,
+                new RegistrationSuccessMessageFactory());
 
         registry.register("frame.user.update_info", UpdateUserWorkflow.class, new UpdateUserWorkflowFactory(
                 chatService, userService, userService, chatService
@@ -293,7 +294,9 @@ public class Main {
                 registry.findById("frame.registration.hello_frame", Frame.class),
                 registry.findById("frame.registration.check_pin", Frame.class),
                 registry.findById("frame.user.update_info", Frame.class),
-                registry.findById("frame.schedule_settings", Frame.class)
+                registry.findById("frame.registration.change_settings", Frame.class),
+                registry.findById("frame.schedule_settings", Frame.class),
+                registry.findById("frame.registration.finish.success", Frame.class)
         )));
 
         registry.register("workflow.user.update_info", null, new SequenceCreator(List.of(
@@ -305,6 +308,8 @@ public class Main {
                 registry.findById("frame.schedule_settings", Frame.class),
                 registry.findById("frame.settings.success", Frame.class)
         )));
+
+        registry.register("workflow.help", HelpFrame.class, new HelpFrameFactory());
 
         return registry;
     }
