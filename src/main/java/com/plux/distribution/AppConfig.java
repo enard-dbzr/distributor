@@ -3,7 +3,7 @@ package com.plux.distribution;
 import com.plux.distribution.core.integration.application.port.in.CrudIntegrationUseCase;
 import com.plux.distribution.core.integration.application.port.in.SendServiceInteractionUseCase;
 import com.plux.distribution.infrastructure.api.integration.IntegrationController;
-import com.plux.distribution.infrastructure.api.message.MessageController;
+import com.plux.distribution.infrastructure.api.message.InteractionController;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
@@ -19,8 +19,8 @@ public class AppConfig implements WebMvcConfigurer {
 
     @Bean
     @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
-    public MessageController messageController(SendServiceInteractionUseCase useCase) {
-        return new MessageController(useCase);
+    public InteractionController interactionController(SendServiceInteractionUseCase useCase) {
+        return new InteractionController(useCase);
     }
 
     @Bean

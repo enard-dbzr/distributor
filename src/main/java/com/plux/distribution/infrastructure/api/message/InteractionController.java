@@ -19,22 +19,22 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping({"/messages"})
+@RequestMapping({"/interactions"})
 @Tag(name = "Interaction")
-public class MessageController {
+public class InteractionController {
 
     private final SendServiceInteractionUseCase sendServiceMessageUseCase;
 
     @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
-    public MessageController(SendServiceInteractionUseCase sendServiceMessageUseCase) {
+    public InteractionController(SendServiceInteractionUseCase sendServiceMessageUseCase) {
         this.sendServiceMessageUseCase = sendServiceMessageUseCase;
     }
 
     @PostMapping
 
     @Operation(
-            summary = "Send message",
-            description = "Send message to specified chat",
+            summary = "Send interaction",
+            description = "Send interaction to specified chat",
             security = {@SecurityRequirement(name = "serviceToken")},
             responses = {
                     @ApiResponse(responseCode = "401"),
