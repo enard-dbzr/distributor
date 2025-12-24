@@ -50,6 +50,66 @@
         <dropColumn columnName="service_id" tableName="participants"/>
     </changeSet>
 
+    <changeSet id="1764659092897-migrate-button-feedbacks" author="enard">
+        <sql splitStatements="false">
+            DO $$
+                DECLARE
+                    rec RECORD;
+                    v_sender_id BIGINT;
+                    v_recipient_id BIGINT;
+                    v_content_id BIGINT;
+                    v_state_id BIGINT;
+                BEGIN
+                FOR rec IN
+                    SELECT f.id as feedback_id, f.chat_id, f.action_time, fp.reply_to_id, fp.tag
+                    FROM feedbacks f
+                             INNER JOIN feedback_payloads fp ON f.payload_id = fp.id
+                    WHERE fp.type = 'BUTTON'
+                LOOP
+                    INSERT
+                    INTO participants (type, chat_id)
+                    VALUES ('CHAT', rec.chat_id)
+                        RETURNING id
+                    INTO v_sender_id;
+
+                    INSERT INTO participants (type)
+                    VALUES ('BOT') RETURNING id
+                    INTO v_recipient_id;
+
+                    INSERT INTO interaction_contents (type, source_interaction_id, tag)
+                    VALUES ('BUTTON_CLICK', rec.reply_to_id, rec.tag) RETURNING id
+                    INTO v_content_id;
+
+                    INSERT INTO interaction_states (type, transfer_time)
+                    VALUES ('TRANSFERRED', rec.action_time) RETURNING id
+                    INTO v_state_id;
+
+                    INSERT INTO interactions (sender_id, recipient_id, content_id, state_id)
+                    VALUES (v_sender_id, v_recipient_id, v_content_id, v_state_id);
+                END LOOP;
+            END $$;
+        </sql>
+    </changeSet>
+
+    <changeSet id="1764659092897-migrate-reply-feedbacks" author="enard">
+        <sql>
+            INSERT INTO interaction_contents (type, original_id, reply_to)
+            SELECT 'REPLY', fp.content_id, fp.reply_to_id
+            FROM feedbacks f
+                     INNER JOIN feedback_payloads fp ON f.payload_id = fp.id
+            WHERE fp.type = 'REPLY';
+
+            UPDATE interactions i
+            SET content_id = ic_new.id FROM interaction_contents ic_new
+                INNER JOIN feedback_payloads fp ON ic_new.original_id = fp.content_id
+                INNER JOIN feedbacks f ON f.payload_id = fp.id
+            WHERE fp.type = 'REPLY'
+              AND ic_new.type = 'REPLY'
+              AND i.content_id = fp.content_id;
+        </sql>
+
+    </changeSet>
+
     <changeSet id="1764659092897-drop-feedbacks" author="enard">
         <dropForeignKeyConstraint baseTableName="feedbacks" constraintName="fk_feedbacks_on_payload"/>
 
