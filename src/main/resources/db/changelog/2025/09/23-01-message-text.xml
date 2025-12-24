@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
-        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+<databaseChangeLog xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
                    https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-latest.xsd">
 
-    <changeSet id="1758568574945-1" author="enard">
-        <modifyDataType tableName="message_contents" columnName="text" newDataType="text"/>
+    <changeSet author="enard" id="1758568574945-1">
+        <modifyDataType columnName="text" newDataType="text" tableName="message_contents"/>
     </changeSet>
 </databaseChangeLog>

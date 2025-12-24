@@ -1,11 +1,12 @@
 package com.plux.distribution.core.workflow.application.frame;
 
-import com.plux.distribution.core.workflow.application.port.out.DataRegistry;
 import com.plux.distribution.core.workflow.application.port.out.DataKey;
+import com.plux.distribution.core.workflow.application.port.out.DataRegistry;
 import com.plux.distribution.core.workflow.application.port.out.DataSerializer;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public class DefaultDataRegistry implements DataRegistry {
 
@@ -25,7 +26,7 @@ public class DefaultDataRegistry implements DataRegistry {
     }
 
     @Override
-    public @NotNull DataKey<?> keyById(String id) {
+    public @Nullable DataKey<?> keyById(String id) {
         return idToKey.get(id);
     }
 }
