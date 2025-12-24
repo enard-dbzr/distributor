@@ -1,14 +1,13 @@
 package com.plux.distribution.core.workflow.application.frame.settings.user;
 
-import com.plux.distribution.core.workflow.application.frame.utils.SequenceFrame;
 import com.plux.distribution.core.workflow.domain.Frame;
 import com.plux.distribution.core.workflow.domain.FrameContext;
 import com.plux.distribution.core.workflow.domain.FrameFeedback;
+import com.plux.distribution.core.workflow.application.frame.utils.SequenceFrame;
 import java.util.List;
 import org.jetbrains.annotations.NotNull;
 
 public class StartUserBuildingFrame implements Frame {
-
     private final Frame finalizeFrame;
 
     public StartUserBuildingFrame(Frame finalizeFrame) {

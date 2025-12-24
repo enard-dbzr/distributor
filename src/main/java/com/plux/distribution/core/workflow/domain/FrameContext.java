@@ -1,9 +1,9 @@
 package com.plux.distribution.core.workflow.domain;
 
+import com.plux.distribution.core.message.application.dto.action.ChatAction;
 import com.plux.distribution.core.chat.domain.ChatId;
-import com.plux.distribution.core.interaction.application.dto.action.ChatAction;
-import com.plux.distribution.core.interaction.domain.InteractionId;
-import com.plux.distribution.core.interaction.domain.content.InteractionContent;
+import com.plux.distribution.core.message.domain.MessageId;
+import com.plux.distribution.core.message.domain.content.MessageContent;
 import java.util.List;
 import java.util.Map;
 import java.util.Stack;
@@ -41,11 +41,11 @@ public class FrameContext {
         frames.peek().frame().handle(this, feedback);
     }
 
-    public @NotNull InteractionId send(@NotNull InteractionContent message, @NotNull Frame frame) {
+    public @NotNull MessageId send(@NotNull MessageContent message, @NotNull Frame frame) {
         return manager.send(this, frame, message);
     }
 
-    public @NotNull InteractionId send(@NotNull InteractionContent message) {
+    public @NotNull MessageId send(@NotNull MessageContent message) {
         return send(message, frames.peek().frame());
     }
 

@@ -1,8 +1,8 @@
 package com.plux.distribution.core.workflow.application.frame.settings.user;
 
-import com.plux.distribution.core.chat.application.port.in.AssignUserToChatUseCase;
 import com.plux.distribution.core.chat.application.port.in.GetChatUseCase;
 import com.plux.distribution.core.user.application.command.UserCommand;
+import com.plux.distribution.core.chat.application.port.in.AssignUserToChatUseCase;
 import com.plux.distribution.core.user.application.port.in.CreateUserUseCase;
 import com.plux.distribution.core.user.application.port.in.UpdateUserInfoUseCase;
 import com.plux.distribution.core.workflow.domain.Frame;

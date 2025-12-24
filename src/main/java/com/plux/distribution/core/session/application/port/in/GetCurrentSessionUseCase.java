@@ -7,6 +7,5 @@ import java.util.Optional;
 import org.jetbrains.annotations.NotNull;
 
 public interface GetCurrentSessionUseCase {
-
     Optional<SessionDto> get(@NotNull ChatId chatId, @NotNull ServiceId serviceId);
 }

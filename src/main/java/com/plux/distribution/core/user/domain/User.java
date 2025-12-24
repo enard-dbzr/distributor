@@ -1,7 +1,6 @@
 package com.plux.distribution.core.user.domain;
 
 public class User {
-
     private final UserId id;
     private UserInfo userInfo;
 

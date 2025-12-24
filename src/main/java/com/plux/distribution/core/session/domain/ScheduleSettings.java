@@ -19,7 +19,6 @@ public record ScheduleSettings(
     }
 
     public record HoursRange(int from, int to) {
-
         public HoursRange {
             if (from > to) {
                 throw new IllegalArgumentException("from > to");

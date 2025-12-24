@@ -1,9 +1,9 @@
 package com.plux.distribution.core.workflow.application.frame.registration.pin;
 
-import com.plux.distribution.core.interaction.domain.content.SimpleMessageContent;
+import com.plux.distribution.core.workflow.domain.FrameFeedback;
+import com.plux.distribution.core.message.domain.content.SimpleMessageContent;
 import com.plux.distribution.core.workflow.domain.Frame;
 import com.plux.distribution.core.workflow.domain.FrameContext;
-import com.plux.distribution.core.workflow.domain.FrameFeedback;
 import java.util.List;
 import org.jetbrains.annotations.NotNull;
 

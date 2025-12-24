@@ -8,7 +8,6 @@ import org.jetbrains.annotations.NotNull;
 @Entity
 @Table(name = "session_interactions")
 public class SessionInteractionsCountEntity {
-
     @Id
     @SuppressWarnings("unused")
     private Long sessionId;

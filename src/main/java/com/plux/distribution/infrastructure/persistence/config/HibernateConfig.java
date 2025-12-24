@@ -43,6 +43,10 @@ public class HibernateConfig {
         }
     }
 
+    public SessionFactory getSessionFactory() {
+        return sessionFactory;
+    }
+
     private static @NotNull Configuration getConfiguration(String dbUrl, String dbUser,
             String dbPassword) {
         Properties settings = new Properties();
@@ -57,13 +61,10 @@ public class HibernateConfig {
         settings.put("hibernate.physical_naming_strategy",
                 "org.hibernate.boot.model.naming.PhysicalNamingStrategySnakeCaseImpl");
 
+
         Configuration configuration = new Configuration();
         configuration.setProperties(settings);
         return configuration;
-    }
-
-    public SessionFactory getSessionFactory() {
-        return sessionFactory;
     }
 
     private void runMigrations(String url, String user, String password) {

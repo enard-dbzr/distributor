@@ -1,8 +1,8 @@
 package com.plux.distribution.infrastructure.api.message.request.content;
 
-import com.plux.distribution.core.interaction.domain.InteractionId;
-import com.plux.distribution.core.interaction.domain.content.InteractionContent;
-import com.plux.distribution.core.interaction.domain.content.ReplyMessageContent;
+import com.plux.distribution.core.message.domain.MessageId;
+import com.plux.distribution.core.message.domain.content.MessageContent;
+import com.plux.distribution.core.message.domain.content.ReplyMessageContent;
 import jakarta.validation.constraints.NotNull;
 
 public record ReplyContentRequest(
@@ -11,10 +11,10 @@ public record ReplyContentRequest(
 ) implements MessageContentRequest {
 
     @Override
-    public InteractionContent toModel() {
+    public MessageContent toModel() {
         return new ReplyMessageContent(
                 original.toModel(),
-                new InteractionId(replyTo)
+                new MessageId(replyTo)
         );
     }
 }

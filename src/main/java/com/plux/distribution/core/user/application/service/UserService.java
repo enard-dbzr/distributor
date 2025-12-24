@@ -10,7 +10,6 @@ import com.plux.distribution.core.user.domain.UserInfo;
 import org.jetbrains.annotations.NotNull;
 
 public class UserService implements CreateUserUseCase, UpdateUserInfoUseCase {
-
     private final @NotNull UserRepositoryPort userRepositoryPort;
 
     public UserService(@NotNull UserRepositoryPort userRepositoryPort) {

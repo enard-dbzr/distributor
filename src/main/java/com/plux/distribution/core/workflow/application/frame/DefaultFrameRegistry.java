@@ -1,13 +1,12 @@
 package com.plux.distribution.core.workflow.application.frame;
 
-import com.plux.distribution.core.workflow.application.port.out.FrameRegistry;
 import com.plux.distribution.core.workflow.domain.Frame;
+import com.plux.distribution.core.workflow.application.port.out.FrameRegistry;
 import java.util.HashMap;
 import java.util.Map;
 import org.jetbrains.annotations.NotNull;
 
 public class DefaultFrameRegistry implements FrameRegistry {
-
     private final Map<String, Frame> idToFrame = new HashMap<>();
     private final Map<Class<? extends Frame>, String> typeToId = new HashMap<>();
 
