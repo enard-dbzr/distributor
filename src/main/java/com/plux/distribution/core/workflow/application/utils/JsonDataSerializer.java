@@ -8,9 +8,8 @@ import com.plux.distribution.core.workflow.application.port.out.DataSerializer;
 
 public abstract class JsonDataSerializer<T> implements DataSerializer<T> {
 
-    private final Class<T> type;
-
     protected final ObjectMapper mapper = new ObjectMapper();
+    private final Class<T> type;
 
     protected JsonDataSerializer(Class<T> type) {
         this.type = type;

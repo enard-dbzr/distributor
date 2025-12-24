@@ -4,7 +4,7 @@ import com.fasterxml.jackson.annotation.JsonSubTypes;
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.JsonTypeInfo.As;
 import com.fasterxml.jackson.annotation.JsonTypeInfo.Id;
-import com.plux.distribution.core.message.domain.content.MessageContent;
+import com.plux.distribution.core.interaction.domain.content.InteractionContent;
 import io.swagger.v3.oas.annotations.media.DiscriminatorMapping;
 import io.swagger.v3.oas.annotations.media.Schema;
 
@@ -25,5 +25,5 @@ import io.swagger.v3.oas.annotations.media.Schema;
 )
 public sealed interface MessageContentRequest permits ReplyContentRequest, SimpleMessageContentRequest {
 
-    MessageContent toModel();
+    InteractionContent toModel();
 }

@@ -1,17 +1,18 @@
 package com.plux.distribution.infrastructure.telegram;
 
-import com.plux.distribution.core.feedback.application.port.in.register.RegisterFeedbackUseCase;
-import com.plux.distribution.core.feedback.application.port.in.register.ButtonContext;
-import com.plux.distribution.core.feedback.application.port.in.register.MessageContext;
-import com.plux.distribution.core.feedback.application.exception.ChatIdNotFound;
-import com.plux.distribution.infrastructure.telegram.port.message.GetMessageIdByTgPort;
-import com.plux.distribution.infrastructure.telegram.port.chat.GetChatIdByTgPort;
-import com.plux.distribution.infrastructure.telegram.port.message.TgMessageGlobalId;
-import com.plux.distribution.infrastructure.telegram.port.message.TgMessageLinker;
-import com.plux.distribution.infrastructure.telegram.port.chat.TgChatLinker;
-import com.plux.distribution.core.message.domain.MessageId;
-import com.plux.distribution.core.chat.domain.ChatId;
-import java.util.Date;
+import com.plux.distribution.core.chat.application.port.in.CreateChatUseCase;
+import com.plux.distribution.core.interaction.application.command.DeliverInteractionCommand;
+import com.plux.distribution.core.interaction.application.port.in.InteractionDeliveryUseCase;
+import com.plux.distribution.core.interaction.domain.Participant.BotParticipant;
+import com.plux.distribution.core.interaction.domain.Participant.ChatParticipant;
+import com.plux.distribution.core.interaction.domain.content.ButtonClickContent;
+import com.plux.distribution.core.interaction.domain.content.InteractionContent;
+import com.plux.distribution.core.interaction.domain.content.ReplyMessageContent;
+import com.plux.distribution.core.interaction.domain.content.SimpleMessageContent;
+import com.plux.distribution.infrastructure.telegram.port.TgChatLinker;
+import com.plux.distribution.infrastructure.telegram.port.TgMessageGlobalId;
+import com.plux.distribution.infrastructure.telegram.port.TgMessageLinker;
+import java.util.List;
 import java.util.Optional;
 import org.jetbrains.annotations.NotNull;
 import org.telegram.telegrambots.longpolling.util.LongPollingSingleThreadUpdateConsumer;
@@ -21,20 +22,18 @@ import org.telegram.telegrambots.meta.api.objects.message.Message;
 
 public class TelegramHandler implements LongPollingSingleThreadUpdateConsumer {
 
-    private final @NotNull RegisterFeedbackUseCase registerFeedbackUseCase;
-    private final @NotNull GetMessageIdByTgPort getMessageIdByTgPort;
-    private final @NotNull TgMessageLinker messageLinker;
-    private final @NotNull GetChatIdByTgPort getChatIdByTgPort;
+    private final @NotNull InteractionDeliveryUseCase interactionDeliveryUseCase;
+    private final @NotNull CreateChatUseCase createChatUseCase;
+    private final @NotNull TgMessageLinker tgMessageLinker;
     private final @NotNull TgChatLinker tgChatLinker;
 
-    public TelegramHandler(@NotNull RegisterFeedbackUseCase registerFeedbackUseCase,
-            @NotNull GetMessageIdByTgPort getMessageIdByTgPort,
-            @NotNull TgMessageLinker messageLinker,
-            @NotNull GetChatIdByTgPort getChatIdByTgPort, @NotNull TgChatLinker tgChatLinker) {
-        this.registerFeedbackUseCase = registerFeedbackUseCase;
-        this.getMessageIdByTgPort = getMessageIdByTgPort;
-        this.messageLinker = messageLinker;
-        this.getChatIdByTgPort = getChatIdByTgPort;
+    public TelegramHandler(@NotNull InteractionDeliveryUseCase interactionDeliveryUseCase,
+            @NotNull CreateChatUseCase createChatUseCase,
+            @NotNull TgMessageLinker tgMessageLinker, @NotNull TgChatLinker tgChatLinker) {
+
+        this.interactionDeliveryUseCase = interactionDeliveryUseCase;
+        this.createChatUseCase = createChatUseCase;
+        this.tgMessageLinker = tgMessageLinker;
         this.tgChatLinker = tgChatLinker;
     }
 
@@ -54,72 +53,54 @@ public class TelegramHandler implements LongPollingSingleThreadUpdateConsumer {
     }
 
     private void processMessage(Message message) {
-        var data_context = new MessageContext() {
-            @Override
-            public @NotNull ChatId getChatId() throws ChatIdNotFound {
-                return getChatIdByTgPort.getChatId(message.getChatId());
-            }
+        var chatId = tgChatLinker.getChatId(message.getChatId());
 
-            @Override
-            public MessageId getReplyTo() {
-                if (message.isReply()) {
-                    return getMessageIdByTgPort.getMessageId(
-                            new TgMessageGlobalId(
-                                    message.getReplyToMessage().getMessageId(),
-                                    message.getChatId()
-                            )
-                    );
-                }
+        if (chatId == null) {
+            chatId = createChatUseCase.create().id();
 
-                return null;
-            }
+            tgChatLinker.link(chatId, message.getChatId());
+        }
 
-            @Override
-            public @NotNull String getText() {
-                return Optional.ofNullable(message.getText()).orElse("");
-            }
+        InteractionContent content = new SimpleMessageContent(
+                Optional.ofNullable(message.getText()).orElse(""),
+                List.of()
+        );
 
-            @Override
-            public @NotNull Date getTimestamp() {
-                return new Date(message.getDate() * 1000L);
-            }
+        if (message.isReply()) {
+            var replyTo = tgMessageLinker.getInteractionId(
+                    new TgMessageGlobalId(
+                            message.getReplyToMessage().getMessageId(),
+                            message.getChatId()
+                    )
+            );
 
-            @Override
-            public void onMessageCreated(@NotNull MessageId messageId) {
-                messageLinker.link(messageId, new TgMessageGlobalId(message.getMessageId(), message.getChatId()));
-            }
+            content = new ReplyMessageContent(content, replyTo);
+        }
 
-            @Override
-            public void onChatCreated(@NotNull ChatId chatId) {
-                tgChatLinker.link(chatId, message.getChatId());
-            }
-        };
+        var command = new DeliverInteractionCommand(
+                new ChatParticipant(chatId),
+                new BotParticipant(),
+                content
+        );
 
-        registerFeedbackUseCase.handle_message(data_context);
+        var messageId = interactionDeliveryUseCase.deliver(command);
+
+        tgMessageLinker.link(messageId, new TgMessageGlobalId(message.getMessageId(), message.getChatId()));
     }
 
     private void processCallback(CallbackQuery callbackQuery) {
         var tag = callbackQuery.getData();
+
         var tgChatId = callbackQuery.getMessage().getChatId();
         var tgMessageId = callbackQuery.getMessage().getMessageId();
 
-        var data_context = new ButtonContext() {
-            @Override
-            public @NotNull ChatId getChatId() throws ChatIdNotFound {
-                return getChatIdByTgPort.getChatId(tgChatId);
-            }
+        var chatId = Optional.ofNullable(tgChatLinker.getChatId(tgChatId)).orElseThrow();
+        var interactionId = tgMessageLinker.getInteractionId(new TgMessageGlobalId(tgMessageId, tgChatId));
 
-            @Override
-            public @NotNull MessageId getReplyTo() {
-                return getMessageIdByTgPort.getMessageId(new TgMessageGlobalId(tgMessageId, tgChatId));
-            }
-
-            @Override
-            public @NotNull String getTag() {
-                return tag;
-            }
-        };
-
-        registerFeedbackUseCase.handle_button(data_context);
+        interactionDeliveryUseCase.deliver(new DeliverInteractionCommand(
+                new ChatParticipant(chatId),
+                new BotParticipant(),
+                new ButtonClickContent(interactionId, tag)
+        ));
     }
 }

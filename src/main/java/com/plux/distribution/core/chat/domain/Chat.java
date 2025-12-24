@@ -5,6 +5,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 public class Chat {
+
     private final @NotNull ChatId id;
     private @Nullable UserId userId;
 
