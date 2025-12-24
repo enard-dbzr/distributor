@@ -5,7 +5,6 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 
 public record IntegrationRequest(@NotNull @NotBlank String webhook) {
-
     public IntegrationCommand toCommand() {
         return new IntegrationCommand(webhook);
     }

@@ -1,7 +1,7 @@
 package com.plux.distribution.infrastructure.api.message.request.attachment;
 
-import com.plux.distribution.core.interaction.domain.content.MessageAttachment;
-import com.plux.distribution.core.interaction.domain.content.MessageAttachment.ButtonAttachment;
+import com.plux.distribution.core.message.domain.attachment.ButtonAttachment;
+import com.plux.distribution.core.message.domain.attachment.MessageAttachment;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 

@@ -40,6 +40,10 @@ public class ScheduleSettingsEntity {
 
     }
 
+    public ScheduleSettings toModel() {
+        return new ScheduleSettings(new HoursRange(fromHour, toHour), timezone, spd);
+    }
+
     public static ScheduleSettingsEntity of(ChatId chatId, ScheduleSettings settings) {
         return new ScheduleSettingsEntity(
                 chatId.value(),
@@ -48,9 +52,5 @@ public class ScheduleSettingsEntity {
                 settings.timezone(),
                 settings.sessionsPerDay()
         );
-    }
-
-    public ScheduleSettings toModel() {
-        return new ScheduleSettings(new HoursRange(fromHour, toHour), timezone, spd);
     }
 }

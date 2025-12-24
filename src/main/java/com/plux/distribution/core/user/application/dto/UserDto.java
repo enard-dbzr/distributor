@@ -8,8 +8,7 @@ public record UserDto(
         UserId id,
         UserInfo userInfo
 ) {
-
-    public UserDto(User model) {
+    public UserDto (User model) {
         this(model.getId(), model.getUserInfo());
     }
 }

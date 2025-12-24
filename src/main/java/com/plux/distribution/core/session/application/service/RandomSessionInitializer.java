@@ -1,14 +1,14 @@
 package com.plux.distribution.core.session.application.service;
 
 import com.plux.distribution.core.chat.application.port.in.GetAllChatsUseCase;
+import com.plux.distribution.core.workflow.application.port.in.CheckChatBusyUseCase;
+import com.plux.distribution.core.session.application.port.in.GetScheduleSettingsUseCase;
+import com.plux.distribution.core.session.application.port.in.OpenSessionUseCase;
+import com.plux.distribution.core.session.application.port.in.InitSessionsStrategy;
 import com.plux.distribution.core.chat.domain.ChatId;
 import com.plux.distribution.core.integration.domain.ServiceId;
-import com.plux.distribution.core.session.application.port.in.GetScheduleSettingsUseCase;
-import com.plux.distribution.core.session.application.port.in.InitSessionsStrategy;
-import com.plux.distribution.core.session.application.port.in.OpenSessionUseCase;
 import com.plux.distribution.core.session.application.port.in.ScheduleSettingsChangedHandler;
 import com.plux.distribution.core.session.domain.ScheduleSettings;
-import com.plux.distribution.core.workflow.application.port.in.CheckChatBusyUseCase;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.ZoneId;

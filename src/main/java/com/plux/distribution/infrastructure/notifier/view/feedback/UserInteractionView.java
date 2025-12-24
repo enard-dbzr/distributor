@@ -1,6 +1,6 @@
 package com.plux.distribution.infrastructure.notifier.view.feedback;
 
-import com.plux.distribution.core.feedback.domain.ResolvedFeedback;
+import com.plux.distribution.core.feedback.application.dto.ResolvedFeedback;
 import com.plux.distribution.core.session.application.dto.SessionDto;
 import com.plux.distribution.infrastructure.notifier.view.session.SessionView;
 import java.util.Optional;

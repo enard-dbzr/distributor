@@ -6,7 +6,6 @@ import java.util.ResourceBundle;
 import org.jetbrains.annotations.NotNull;
 
 public class BundleTextProvider implements TextProvider {
-
     private final ResourceBundle bundle;
 
     public BundleTextProvider(Locale locale) {

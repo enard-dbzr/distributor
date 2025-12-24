@@ -9,16 +9,10 @@ import java.util.List;
 import org.jetbrains.annotations.NotNull;
 
 public interface IntegrationRepositoryPort {
-
     @NotNull ServiceId create(@NotNull ServiceToken serviceToken, @NotNull IntegrationCommand command);
-
     @NotNull ServiceId findId(@NotNull ServiceToken token) throws InvalidToken;
-
     @NotNull String getWebhook(@NotNull ServiceId id);
-
     @NotNull List<Integration> getAll();
-
     void delete(ServiceId id);
-
     void put(@NotNull ServiceId id, @NotNull IntegrationCommand command);
 }

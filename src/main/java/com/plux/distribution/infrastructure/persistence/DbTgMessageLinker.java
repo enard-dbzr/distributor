@@ -1,15 +1,16 @@
 package com.plux.distribution.infrastructure.persistence;
 
-import com.plux.distribution.core.interaction.domain.InteractionId;
+import com.plux.distribution.infrastructure.telegram.port.message.GetMessageIdByTgPort;
+import com.plux.distribution.infrastructure.telegram.port.message.GetTgMessageIdPort;
+import com.plux.distribution.infrastructure.telegram.port.message.TgMessageGlobalId;
+import com.plux.distribution.infrastructure.telegram.port.message.TgMessageLinker;
+import com.plux.distribution.core.message.domain.MessageId;
 import com.plux.distribution.infrastructure.persistence.entity.specific.telegram.TgMessageLinkEntity;
-import com.plux.distribution.infrastructure.telegram.port.TgMessageGlobalId;
-import com.plux.distribution.infrastructure.telegram.port.TgMessageLinker;
 import org.hibernate.SessionFactory;
 import org.hibernate.Transaction;
 import org.jetbrains.annotations.NotNull;
 
-public class DbTgMessageLinker implements TgMessageLinker {
-
+public class DbTgMessageLinker implements TgMessageLinker, GetMessageIdByTgPort, GetTgMessageIdPort {
     private final @NotNull SessionFactory sessionFactory;
 
     public DbTgMessageLinker(@NotNull SessionFactory sessionFactory) {
@@ -18,7 +19,7 @@ public class DbTgMessageLinker implements TgMessageLinker {
 
 
     @Override
-    public @NotNull InteractionId getInteractionId(@NotNull TgMessageGlobalId tgGlobalId) {
+    public @NotNull MessageId getMessageId(@NotNull TgMessageGlobalId tgGlobalId) {
         try (var session = sessionFactory.openSession()) {
             var query = session.createQuery(
                     "from TgMessageLinkEntity where tgMessageId = :mid and tgChatId = :cid",
@@ -29,14 +30,14 @@ public class DbTgMessageLinker implements TgMessageLinker {
 
             var entity = query.uniqueResult();
 
-            return new InteractionId(entity.getInteractionId());
+            return new MessageId(entity.getMessageId());
         }
     }
 
     @Override
-    public TgMessageGlobalId getTgMessageId(@NotNull InteractionId interactionId) {
+    public TgMessageGlobalId getTgMessageId(@NotNull MessageId messageId) {
         try (var session = sessionFactory.openSession()) {
-            var entity = session.find(TgMessageLinkEntity.class, interactionId.value());
+            var entity = session.find(TgMessageLinkEntity.class, messageId.value());
             if (entity == null) {
                 return null;
             }
@@ -45,7 +46,7 @@ public class DbTgMessageLinker implements TgMessageLinker {
     }
 
     @Override
-    public void link(@NotNull InteractionId internal, @NotNull TgMessageGlobalId external) {
+    public void link(@NotNull MessageId internal, @NotNull TgMessageGlobalId external) {
         try (var session = sessionFactory.openSession()) {
             Transaction transaction = session.beginTransaction();
 

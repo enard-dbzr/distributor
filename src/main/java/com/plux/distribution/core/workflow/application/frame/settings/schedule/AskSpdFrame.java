@@ -1,6 +1,6 @@
 package com.plux.distribution.core.workflow.application.frame.settings.schedule;
 
-import com.plux.distribution.core.interaction.domain.content.SimpleMessageContent;
+import com.plux.distribution.core.message.domain.content.SimpleMessageContent;
 import com.plux.distribution.core.workflow.application.frame.utils.InfoMessageFrame;
 import com.plux.distribution.core.workflow.application.frame.utils.LastMessageData;
 import com.plux.distribution.core.workflow.domain.Frame;

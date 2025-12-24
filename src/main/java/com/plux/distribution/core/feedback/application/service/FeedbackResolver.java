@@ -1,54 +1,63 @@
 package com.plux.distribution.core.feedback.application.service;
 
-import com.plux.distribution.core.feedback.application.port.out.FeedbackProcessor;
-import com.plux.distribution.core.feedback.application.port.out.ResolvedFeedbackProcessor;
-import com.plux.distribution.core.feedback.domain.Feedback;
-import com.plux.distribution.core.feedback.domain.ResolvedFeedback;
-import com.plux.distribution.core.interaction.application.dto.InteractionDto;
-import com.plux.distribution.core.interaction.application.port.in.GetInteractionUseCase;
-import com.plux.distribution.core.interaction.domain.Participant.ChatParticipant;
-import com.plux.distribution.core.interaction.domain.content.ButtonClickContent;
-import com.plux.distribution.core.interaction.domain.content.ReplyMessageContent;
-import com.plux.distribution.core.interaction.domain.content.SimpleMessageContent;
+import com.plux.distribution.core.feedback.application.dto.Feedback;
+import com.plux.distribution.core.feedback.application.dto.ResolvedFeedback;
+import com.plux.distribution.core.feedback.domain.payload.ButtonPayload;
+import com.plux.distribution.core.feedback.domain.payload.FeedbackPayloadVisitor;
+import com.plux.distribution.core.feedback.domain.payload.MessagePayload;
+import com.plux.distribution.core.feedback.domain.payload.ReplyPayload;
+import com.plux.distribution.core.message.application.dto.MessageDto;
+import com.plux.distribution.core.feedback.application.port.in.FeedbackProcessor;
+import com.plux.distribution.core.feedback.application.port.in.ResolvedFeedbackProcessor;
+import com.plux.distribution.core.message.application.port.in.GetMessageUseCase;
+import com.plux.distribution.core.message.domain.MessageId;
+import com.plux.distribution.core.message.domain.participant.ChatParticipant;
 import java.util.List;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import java.util.concurrent.atomic.AtomicReference;
 import org.jetbrains.annotations.NotNull;
 
 public class FeedbackResolver implements FeedbackProcessor {
-
-    private static final Logger log = LogManager.getLogger(FeedbackResolver.class);
     private final List<ResolvedFeedbackProcessor> processors;
-    private final GetInteractionUseCase getInteractionUseCase;
+    private final GetMessageUseCase getMessageUseCase;
 
-    public FeedbackResolver(List<ResolvedFeedbackProcessor> processors, GetInteractionUseCase getInteractionUseCase) {
+    public FeedbackResolver(List<ResolvedFeedbackProcessor> processors, GetMessageUseCase getMessageUseCase) {
         this.processors = processors;
-        this.getInteractionUseCase = getInteractionUseCase;
+        this.getMessageUseCase = getMessageUseCase;
     }
 
 
     @Override
     public void process(@NotNull Feedback feedback) {
-        var replyTo = switch (feedback.payload().content()) {
-            case ButtonClickContent c -> c.source();
-            case ReplyMessageContent c -> c.replyTo();
-            case SimpleMessageContent _ -> null;
-        };
+        var replyTo = feedback.payload().accept(new FeedbackPayloadVisitor<MessageId>() {
+            @Override
+            public MessageId visit(@NotNull ButtonPayload entity) {
+                return entity.replyTo();
+            }
 
-        InteractionDto replyMessage;
+            @Override
+            public MessageId visit(@NotNull MessagePayload entity) {
+                return null;
+            }
+
+            @Override
+            public MessageId visit(@NotNull ReplyPayload entity) {
+                return entity.replyTo();
+            }
+        });
+
+        AtomicReference<MessageDto> replyMessage = new AtomicReference<>();
         if (replyTo != null) {
-            replyMessage = getInteractionUseCase.get(replyTo);
+            replyMessage.set(getMessageUseCase.getMessage(replyTo));
         } else {
-            replyMessage = getInteractionUseCase.getLastOfRecipient(new ChatParticipant(feedback.chatId()))
-                    .orElse(null);
+            getMessageUseCase.getLastOfRecipient(new ChatParticipant(feedback.chatId()))
+                    .ifPresent(replyMessage::set);
         }
 
-        if (replyMessage == null) {
-            log.warn("Failed to resolve feedback");
+        if (replyMessage.get() == null) {
             return;
         }
 
-        var resolvedFeedback = new ResolvedFeedback(feedback, replyMessage);
+        var resolvedFeedback = new ResolvedFeedback(feedback, replyMessage.get());
 
         for (var processor : processors) {
             processor.process(resolvedFeedback);
