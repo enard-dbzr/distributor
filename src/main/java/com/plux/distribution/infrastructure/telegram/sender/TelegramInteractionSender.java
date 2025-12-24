@@ -90,7 +90,7 @@ public class TelegramInteractionSender implements InteractionSenderPort {
                 var tgReplyMessageId = tgMessageLinker.getTgMessageId(c.replyTo());
                 context.sendMessageBuilder.replyToMessageId(tgReplyMessageId.messageId());
 
-                constructContent(context, c);
+                constructContent(context, c.original());
             }
             case ButtonClickContent _ -> throw new UnsupportedOperationException();
         }
