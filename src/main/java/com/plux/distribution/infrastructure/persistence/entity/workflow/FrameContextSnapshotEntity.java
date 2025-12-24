@@ -8,6 +8,7 @@ import jakarta.persistence.Table;
 @Entity
 @Table(name = "frame_contexts")
 public class FrameContextSnapshotEntity {
+
     @Id
     @Column(name = "chat_id", nullable = false, unique = true)
     private Long chatId;

@@ -1,5 +1,7 @@
 package com.plux.distribution.core.session.application.service;
 
+import com.plux.distribution.core.chat.domain.ChatId;
+import com.plux.distribution.core.integration.domain.ServiceId;
 import com.plux.distribution.core.session.application.command.CreateSessionCommand;
 import com.plux.distribution.core.session.application.dto.SessionDto;
 import com.plux.distribution.core.session.application.port.in.CloseSessionUseCase;
@@ -8,8 +10,6 @@ import com.plux.distribution.core.session.application.port.in.OpenSessionUseCase
 import com.plux.distribution.core.session.application.port.in.StartSessionUseCase;
 import com.plux.distribution.core.session.application.port.out.NotifySessionEventPort;
 import com.plux.distribution.core.session.application.port.out.SessionRepositoryPort;
-import com.plux.distribution.core.chat.domain.ChatId;
-import com.plux.distribution.core.integration.domain.ServiceId;
 import com.plux.distribution.core.session.domain.Session;
 import com.plux.distribution.core.session.domain.SessionId;
 import com.plux.distribution.core.session.domain.SessionState;

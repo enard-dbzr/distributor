@@ -1,10 +1,10 @@
 package com.plux.distribution.infrastructure.notifier.view.feedback.payload;
 
-import com.plux.distribution.infrastructure.notifier.view.message.MessageView;
+import com.plux.distribution.infrastructure.notifier.view.interaction.InteractionView;
 import org.jetbrains.annotations.NotNull;
 
 public record MessageFeedbackPayloadView(
-        @NotNull MessageView content
+        @NotNull InteractionView content
 ) implements FeedbackPayloadView {
 
 }

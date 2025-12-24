@@ -1,9 +1,25 @@
 package com.plux.distribution;
 
 import com.plux.distribution.core.chat.application.service.ChatService;
-import com.plux.distribution.core.message.application.service.ExecuteActionService;
+import com.plux.distribution.core.feedback.application.service.FeedbackBotHandler;
+import com.plux.distribution.core.feedback.application.service.FeedbackResolver;
+import com.plux.distribution.core.integration.application.service.FindInteractionSourceService;
+import com.plux.distribution.core.integration.application.service.IntegrationFeedbackProcessor;
+import com.plux.distribution.core.integration.application.service.IntegrationService;
+import com.plux.distribution.core.integration.application.service.SendServiceInteractionService;
+import com.plux.distribution.core.integration.domain.ServiceId;
+import com.plux.distribution.core.interaction.application.service.ExecuteActionService;
+import com.plux.distribution.core.interaction.application.service.InteractionDeliveryService;
+import com.plux.distribution.core.interaction.application.service.InteractionService;
 import com.plux.distribution.core.session.application.service.RandomSessionCloser;
+import com.plux.distribution.core.session.application.service.RandomSessionInitializer;
 import com.plux.distribution.core.session.application.service.ScheduleSettingsService;
+import com.plux.distribution.core.session.application.service.SessionFeedbackProcessor;
+import com.plux.distribution.core.session.application.service.SessionSchedulerRunner;
+import com.plux.distribution.core.session.application.service.SessionService;
+import com.plux.distribution.core.user.application.service.UserService;
+import com.plux.distribution.core.workflow.application.frame.DefaultDataRegistry;
+import com.plux.distribution.core.workflow.application.frame.DefaultFrameRegistry;
 import com.plux.distribution.core.workflow.application.frame.message.HelpFrame;
 import com.plux.distribution.core.workflow.application.frame.registration.ChangeSettingsMessage;
 import com.plux.distribution.core.workflow.application.frame.registration.RegistrationSuccessMessage;
@@ -12,50 +28,36 @@ import com.plux.distribution.core.workflow.application.frame.registration.hello.
 import com.plux.distribution.core.workflow.application.frame.registration.pin.CheckPasswordFrame;
 import com.plux.distribution.core.workflow.application.frame.registration.pin.CorrectPasswordFrame;
 import com.plux.distribution.core.workflow.application.frame.registration.pin.InorrectPasswordFrame;
+import com.plux.distribution.core.workflow.application.frame.settings.SettingsAppliedMessage;
+import com.plux.distribution.core.workflow.application.frame.settings.schedule.AskHoursFrame;
+import com.plux.distribution.core.workflow.application.frame.settings.schedule.AskSpdFrame;
+import com.plux.distribution.core.workflow.application.frame.settings.schedule.AskTimezoneFrame;
+import com.plux.distribution.core.workflow.application.frame.settings.schedule.FinalizeScheduleSettingsFrame;
+import com.plux.distribution.core.workflow.application.frame.settings.schedule.ScheduleSettingsBuilder;
+import com.plux.distribution.core.workflow.application.frame.settings.schedule.StartScheduleSettingsFrame;
 import com.plux.distribution.core.workflow.application.frame.settings.user.AskAgeFrame;
 import com.plux.distribution.core.workflow.application.frame.settings.user.AskCityFrame;
 import com.plux.distribution.core.workflow.application.frame.settings.user.AskEmailFrame;
 import com.plux.distribution.core.workflow.application.frame.settings.user.AskHobbyFrame;
 import com.plux.distribution.core.workflow.application.frame.settings.user.AskNameFrame;
-import com.plux.distribution.core.workflow.application.frame.settings.SettingsAppliedMessage;
-import com.plux.distribution.core.workflow.application.frame.settings.schedule.AskHoursFrame;
-import com.plux.distribution.core.workflow.application.frame.settings.schedule.AskSpdFrame;
-import com.plux.distribution.core.workflow.application.frame.settings.schedule.AskTimezoneFrame;
 import com.plux.distribution.core.workflow.application.frame.settings.user.FinalizeFrame;
 import com.plux.distribution.core.workflow.application.frame.settings.user.StartUserBuildingFrame;
-import com.plux.distribution.core.workflow.application.frame.settings.schedule.FinalizeScheduleSettingsFrame;
-import com.plux.distribution.core.workflow.application.frame.settings.schedule.ScheduleSettingsBuilder;
-import com.plux.distribution.core.workflow.application.frame.settings.schedule.StartScheduleSettingsFrame;
-import com.plux.distribution.core.workflow.application.service.FlowFeedbackProcessor;
-import com.plux.distribution.core.feedback.application.service.FeedbackResolver;
-import com.plux.distribution.core.integration.application.service.IntegrationFeedbackProcessor;
-import com.plux.distribution.core.integration.application.service.IntegrationService;
-import com.plux.distribution.core.message.application.service.MessageService;
-import com.plux.distribution.core.feedback.application.service.RegisterFeedbackService;
-import com.plux.distribution.core.integration.application.service.SendServiceMessageService;
-import com.plux.distribution.core.session.application.service.RandomSessionInitializer;
-import com.plux.distribution.core.session.application.service.SessionFeedbackProcessor;
-import com.plux.distribution.core.session.application.service.SessionSchedulerRunner;
-import com.plux.distribution.core.session.application.service.SessionService;
-import com.plux.distribution.core.user.application.service.UserService;
-import com.plux.distribution.core.workflow.application.utils.DefaultContextManager;
-import com.plux.distribution.core.workflow.application.port.out.DataRegistry;
-import com.plux.distribution.core.workflow.application.port.out.FrameRegistry;
-import com.plux.distribution.core.workflow.application.frame.DefaultDataRegistry;
-import com.plux.distribution.core.workflow.application.frame.DefaultFrameRegistry;
 import com.plux.distribution.core.workflow.application.frame.settings.user.UserBuilder;
 import com.plux.distribution.core.workflow.application.frame.utils.LastMessageData;
 import com.plux.distribution.core.workflow.application.frame.utils.SequenceFrame;
+import com.plux.distribution.core.workflow.application.port.out.DataRegistry;
+import com.plux.distribution.core.workflow.application.port.out.FrameRegistry;
+import com.plux.distribution.core.workflow.application.service.FlowFeedbackProcessor;
 import com.plux.distribution.core.workflow.application.service.WorkflowService;
-import com.plux.distribution.core.integration.domain.ServiceId;
+import com.plux.distribution.core.workflow.application.utils.DefaultContextManager;
 import com.plux.distribution.infrastructure.BundleTextProvider;
 import com.plux.distribution.infrastructure.notifier.WebhookNotifier;
 import com.plux.distribution.infrastructure.persistence.DbChatRepository;
-import com.plux.distribution.infrastructure.persistence.DbFeedbackRepository;
 import com.plux.distribution.infrastructure.persistence.DbFrameRepository;
 import com.plux.distribution.infrastructure.persistence.DbIntegrationRepository;
-import com.plux.distribution.infrastructure.persistence.DbMessageRepository;
+import com.plux.distribution.infrastructure.persistence.DbInteractionRepository;
 import com.plux.distribution.infrastructure.persistence.DbScheduleSettingsRepository;
+import com.plux.distribution.infrastructure.persistence.DbServiceSendingRepository;
 import com.plux.distribution.infrastructure.persistence.DbSessionInteractionsRepository;
 import com.plux.distribution.infrastructure.persistence.DbSessionRepository;
 import com.plux.distribution.infrastructure.persistence.DbTgChatLinker;
@@ -64,7 +66,7 @@ import com.plux.distribution.infrastructure.persistence.DbUserRepository;
 import com.plux.distribution.infrastructure.persistence.config.HibernateConfig;
 import com.plux.distribution.infrastructure.telegram.TelegramActionExecutor;
 import com.plux.distribution.infrastructure.telegram.TelegramHandler;
-import com.plux.distribution.infrastructure.telegram.sender.TelegramMessageSender;
+import com.plux.distribution.infrastructure.telegram.sender.TelegramInteractionSender;
 import jakarta.servlet.DispatcherType;
 import java.util.EnumSet;
 import java.util.List;
@@ -103,32 +105,35 @@ public class Main {
                 System.getenv("DB_PASSWORD")
         );
 
-        var messageRepo = new DbMessageRepository(hibernateConfig.getSessionFactory());
-        var feedbackRepo = new DbFeedbackRepository(hibernateConfig.getSessionFactory());
         var chatRepo = new DbChatRepository(hibernateConfig.getSessionFactory());
-        var frameRepo = new DbFrameRepository(hibernateConfig.getSessionFactory());
         var userRepo = new DbUserRepository(hibernateConfig.getSessionFactory());
+        var frameRepo = new DbFrameRepository(hibernateConfig.getSessionFactory());
         var sessionRepo = new DbSessionRepository(hibernateConfig.getSessionFactory());
-        var sessionInteractionsRepo = new DbSessionInteractionsRepository(hibernateConfig.getSessionFactory());
         var integrationRepo = new DbIntegrationRepository(hibernateConfig.getSessionFactory());
+        var interactionsRepo = new DbInteractionRepository(hibernateConfig.getSessionFactory());
+        var serviceSendingRepo = new DbServiceSendingRepository(hibernateConfig.getSessionFactory());
         var scheduleSettingsRepo = new DbScheduleSettingsRepository(hibernateConfig.getSessionFactory());
+        var sessionInteractionsRepo = new DbSessionInteractionsRepository(hibernateConfig.getSessionFactory());
 
         var tgChatLinker = new DbTgChatLinker(hibernateConfig.getSessionFactory());
         var tgMessageLinker = new DbTgMessageLinker(hibernateConfig.getSessionFactory());
         var tgClient = new OkHttpTelegramClient(botToken);
 
-        var sender = new TelegramMessageSender(tgClient, tgChatLinker, tgMessageLinker, tgMessageLinker);
+        var sender = new TelegramInteractionSender(tgClient, tgChatLinker, tgMessageLinker);
         var executor = new TelegramActionExecutor(tgClient, tgChatLinker, tgMessageLinker);
 
-        var messageService = new MessageService(sender, messageRepo, messageRepo, messageRepo);
+        var interactionService = new InteractionService(interactionsRepo);
+        var interactionDeliveryService = new InteractionDeliveryService(interactionsRepo, sender);
         var executeActionService = new ExecuteActionService(executor);
 
         var chatService = new ChatService(chatRepo, chatRepo, chatRepo);
         var userService = new UserService(userRepo);
 
         var integrationService = new IntegrationService(integrationRepo);
+        var findInteractionSourceService = new FindInteractionSourceService(serviceSendingRepo);
         var notifier = new WebhookNotifier(integrationService);
-        var sendIntegrationMessageService = new SendServiceMessageService(messageService, integrationRepo);
+        var sendIntegrationMessageService = new SendServiceInteractionService(interactionDeliveryService,
+                integrationRepo, serviceSendingRepo);
 
         var scheduleSettingsService = new ScheduleSettingsService(scheduleSettingsRepo);
         var sessionService = new SessionService(sessionRepo, notifier);
@@ -136,19 +141,20 @@ public class Main {
         var sessionCloser = new RandomSessionCloser(sessionInteractionsRepo);
 
         var sessionFeedbackProcessor = new SessionFeedbackProcessor(sessionService, sessionService, sessionCloser,
-                sessionRepo);
+                sessionRepo, findInteractionSourceService);
 
-        var integrationFeedbackProcessor = new IntegrationFeedbackProcessor(notifier, sessionService);
+        var integrationFeedbackProcessor = new IntegrationFeedbackProcessor(notifier, sessionService,
+                serviceSendingRepo);
 
         var feedbackResolverProcessor = new FeedbackResolver(List.of(
                 sessionFeedbackProcessor,
                 integrationFeedbackProcessor
-        ), messageService);
+        ), interactionService);
 
         var textProvider = new BundleTextProvider(Locale.of("ru"));
         var frameRegistry = makeFrameRegistry(userService, chatService, scheduleSettingsService);
         var dataRegistry = makeDataRegistry();
-        var frameContextManager = new DefaultContextManager(messageService, executeActionService);
+        var frameContextManager = new DefaultContextManager(interactionDeliveryService, executeActionService);
         var workflowService = new WorkflowService(frameRegistry, dataRegistry, frameRepo, frameContextManager,
                 textProvider);
         var flowFeedbackProcessor = new FlowFeedbackProcessor(
@@ -160,21 +166,20 @@ public class Main {
                 frameRegistry.get("flow.help")
         );
 
+        var botHandler = new FeedbackBotHandler(List.of(flowFeedbackProcessor));
+        interactionDeliveryService.setBotInteractionHandler(botHandler);
+
         var sessionInitializer = new RandomSessionInitializer(
                 sessionService, chatService, flowFeedbackProcessor, scheduleSettingsService,
                 scheduleServiceId
         );
         scheduleSettingsService.setHandler(sessionInitializer);
 
-        var registerFeedbackService = new RegisterFeedbackService(messageService, feedbackRepo,
-                chatService, flowFeedbackProcessor);
-
         var schedulerRunner = new SessionSchedulerRunner(sessionInitializer, 60);
         schedulerRunner.start();
         log.info("Session scheduler successfully started");
 
-        var tgHandler = new TelegramHandler(registerFeedbackService, tgMessageLinker,
-                tgMessageLinker, tgChatLinker, tgChatLinker);
+        var tgHandler = new TelegramHandler(interactionDeliveryService, chatService, tgMessageLinker, tgChatLinker);
 
         AnnotationConfigWebApplicationContext springContext = new AnnotationConfigWebApplicationContext();
 
@@ -215,7 +220,7 @@ public class Main {
         try (var botsApplication = new TelegramBotsLongPollingApplication()) {
             botsApplication.registerBot(botToken, tgHandler);
 
-            log.info("Bot successfully started");
+            log.info("BotParticipant successfully started");
             Thread.currentThread().join();
         } catch (Exception e) {
             log.error("e: ", e);
@@ -287,7 +292,7 @@ public class Main {
     private static DataRegistry makeDataRegistry() {
         var registry = new DefaultDataRegistry();
 
-        registry.register("utils.last_message", LastMessageData.class, new LastMessageData.Serializer());
+        registry.register("utils.last_interaction", LastMessageData.class, new LastMessageData.Serializer());
         registry.register("registration.user_builder", UserBuilder.class, new UserBuilder.Serializer());
         registry.register("settings.schedule_settings_builder", ScheduleSettingsBuilder.class,
                 new ScheduleSettingsBuilder.Serializer());

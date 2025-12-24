@@ -7,6 +7,7 @@ public record CreateIntegrationResponse(
         @NotNull String token,
         @NotNull Long id
 ) {
+
     public static CreateIntegrationResponse of(CreateIntegrationResult result) {
         return new CreateIntegrationResponse(result.token().token(), result.id().value());
     }

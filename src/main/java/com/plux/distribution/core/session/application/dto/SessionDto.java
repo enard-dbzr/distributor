@@ -17,6 +17,7 @@ public record SessionDto(
         @NotNull Date openTime,
         @Nullable Date closeTime
 ) {
+
     public SessionDto(@NotNull Session model) {
         this(
                 model.getId(),

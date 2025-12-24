@@ -1,19 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <databaseChangeLog
-        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        objectQuotingStrategy="QUOTE_ONLY_RESERVED_WORDS"
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
-                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.33.xsd"
-        objectQuotingStrategy="QUOTE_ONLY_RESERVED_WORDS">
-    <changeSet id="1758477671242-1" author="enard">
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.33.xsd">
+    <changeSet author="enard" id="1758477671242-1">
         <addColumn tableName="schedule_settings">
             <column name="timezone" type="VARCHAR(255)"/>
         </addColumn>
     </changeSet>
-    <changeSet id="1758477671242-2" author="enard">
-        <addNotNullConstraint columnName="timezone" tableName="schedule_settings" defaultNullValue="UTC+5"/>
+    <changeSet author="enard" id="1758477671242-2">
+        <addNotNullConstraint columnName="timezone" defaultNullValue="UTC+5" tableName="schedule_settings"/>
     </changeSet>
-    <changeSet id="1758477671242-3" author="enard">
+    <changeSet author="enard" id="1758477671242-3">
         <dropColumn columnName="timezone" tableName="users"/>
     </changeSet>
 

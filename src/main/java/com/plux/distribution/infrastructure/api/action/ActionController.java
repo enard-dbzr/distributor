@@ -1,6 +1,6 @@
 package com.plux.distribution.infrastructure.api.action;
 
-import com.plux.distribution.core.message.application.port.in.ExecuteActionUseCase;
+import com.plux.distribution.core.interaction.application.port.in.ExecuteActionUseCase;
 import com.plux.distribution.infrastructure.api.action.request.ExecuteChatActionRequest;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping("/actions")
 @Tag(name = "Action")
 public class ActionController {
+
     private final ExecuteActionUseCase executeActionUseCase;
 
     @SuppressWarnings("SpringJavaInjectionPointsAutowiringInspection")
