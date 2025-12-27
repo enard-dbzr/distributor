@@ -47,6 +47,14 @@ public class RootFrame extends AbstractFrame {
         }
     }
 
+    public boolean isEmpty() {
+        return currentState == null;
+    }
+
+    public void clear() {
+        currentState = null;
+    }
+
     public static class RootFrameFactory extends PoolAwareSerializer<RootFrame> {
 
         @Override

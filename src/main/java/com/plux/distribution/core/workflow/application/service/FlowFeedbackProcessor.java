@@ -9,8 +9,8 @@ import com.plux.distribution.core.interaction.domain.content.ReplyMessageContent
 import com.plux.distribution.core.interaction.domain.content.SimpleMessageContent;
 import com.plux.distribution.core.workflow.application.port.in.CheckChatBusyUseCase;
 import com.plux.distribution.core.workflow.application.port.in.WorkflowUseCase;
-import com.plux.distribution.core.workflow.domain.frame.Frame;
 import com.plux.distribution.core.workflow.domain.FrameContext;
+import com.plux.distribution.core.workflow.domain.frame.Frame;
 import com.plux.distribution.core.workflow.domain.frame.FrameFeedback;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -59,37 +59,44 @@ public class FlowFeedbackProcessor implements FeedbackProcessor, CheckChatBusyUs
         AtomicBoolean newTriggered = new AtomicBoolean(false);
 
         createFrameFeedback(feedback).text().ifPresent(text -> {
-            // TODO: Проверку на пустоту контекста
             switch (text) {
                 case "/start" -> {
+                    context.getRoot().clear();
                     context.getRoot().changeState(context, registrationWorkflowFactory.apply(context));
                     newTriggered.set(true);
                 }
                 case "/schedule_settings" -> {
-                    context.getRoot().changeState(context, scheduleSettingsWorkflowFactory.apply(context));
+                    changeStateIfEmpty(context, scheduleSettingsWorkflowFactory);
                     newTriggered.set(true);
                 }
                 case "/update_user" -> {
-                    context.getRoot().changeState(context, updateUserWorkflowFactory.apply(context));
+                    changeStateIfEmpty(context, updateUserWorkflowFactory);
                     newTriggered.set(true);
                 }
                 case "/help" -> {
-                    context.getRoot().changeState(context, helpWorkflowFactory.apply(context));
+                    changeStateIfEmpty(context, helpWorkflowFactory);
                     newTriggered.set(true);
                 }
             }
         });
 
-//        if (!newTriggered.get() && frameContext.isEmpty()) {
-//            next.process(feedback);
-//            return;
-//        }
-//
+        if (!newTriggered.get() && context.getRoot().isEmpty()) {
+            next.process(feedback);
+            return;
+        }
+
         if (!newTriggered.get()) {
             context.getRoot().handle(context, createFrameFeedback(feedback));
         }
 
         workflowUseCase.save(context);
+    }
+
+    private void changeStateIfEmpty(@NotNull FrameContext context,
+            @NotNull Function<FrameContext, Frame> workflowFactory) {
+        if (context.getRoot().isEmpty()) {
+            context.getRoot().changeState(context, workflowFactory.apply(context));
+        }
     }
 
     private FrameFeedback createFrameFeedback(Feedback feedback) {
