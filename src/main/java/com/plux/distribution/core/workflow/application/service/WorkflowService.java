@@ -6,6 +6,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.plux.distribution.core.chat.domain.ChatId;
 import com.plux.distribution.core.workflow.application.frame.utils.RootFrame;
 import com.plux.distribution.core.workflow.application.frame.utils.RootFrame.RootFrameFactory;
+import com.plux.distribution.core.workflow.application.port.in.CheckWorkflowIsEmptyUseCase;
 import com.plux.distribution.core.workflow.application.port.in.WorkflowUseCase;
 import com.plux.distribution.core.workflow.application.port.out.ContextRepositoryPort;
 import com.plux.distribution.core.workflow.domain.FrameContext;
@@ -20,7 +21,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
 
-public class WorkflowService implements WorkflowUseCase {
+public class WorkflowService implements WorkflowUseCase, CheckWorkflowIsEmptyUseCase {
 
     private static final Logger log = LogManager.getLogger(WorkflowService.class);
     private final ContextRepositoryPort repository;
@@ -88,6 +89,11 @@ public class WorkflowService implements WorkflowUseCase {
         context.setRoot(root);
 
         return context;
+    }
+
+    @Override
+    public boolean isEmpty(@NotNull ChatId chatId) {
+        return load(chatId).getRoot().isEmpty();
     }
 
     private record MachineSnapshot(JsonNode rootSnapshot, Map<UUID, DataSnapshot> poolDump) {}

@@ -1,13 +1,11 @@
 package com.plux.distribution.core.workflow.application.service;
 
-import com.plux.distribution.core.chat.domain.ChatId;
 import com.plux.distribution.core.feedback.application.port.out.FeedbackProcessor;
 import com.plux.distribution.core.feedback.domain.Feedback;
 import com.plux.distribution.core.interaction.domain.content.ButtonClickContent;
 import com.plux.distribution.core.interaction.domain.content.InteractionContent;
 import com.plux.distribution.core.interaction.domain.content.ReplyMessageContent;
 import com.plux.distribution.core.interaction.domain.content.SimpleMessageContent;
-import com.plux.distribution.core.workflow.application.port.in.CheckChatBusyUseCase;
 import com.plux.distribution.core.workflow.application.port.in.WorkflowUseCase;
 import com.plux.distribution.core.workflow.domain.FrameContext;
 import com.plux.distribution.core.workflow.domain.frame.Frame;
@@ -17,7 +15,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Function;
 import org.jetbrains.annotations.NotNull;
 
-public class FlowFeedbackProcessor implements FeedbackProcessor, CheckChatBusyUseCase {
+public class FlowFeedbackProcessor implements FeedbackProcessor {
 
     private final FeedbackProcessor next;
     private final WorkflowUseCase workflowUseCase;
@@ -113,10 +111,4 @@ public class FlowFeedbackProcessor implements FeedbackProcessor, CheckChatBusyUs
         );
     }
 
-    // FIXME: Исправить это недоразумение
-    @Override
-    public boolean isBusy(@NotNull ChatId chatId) {
-//        return !workflowUseCase.load(chatId).isEmpty();
-        return true;
-    }
 }

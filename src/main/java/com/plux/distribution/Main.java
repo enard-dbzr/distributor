@@ -12,6 +12,7 @@ import com.plux.distribution.core.interaction.application.service.ExecuteActionS
 import com.plux.distribution.core.interaction.application.service.InteractionDeliveryService;
 import com.plux.distribution.core.interaction.application.service.InteractionService;
 import com.plux.distribution.core.interaction.domain.InteractionId;
+import com.plux.distribution.core.session.application.service.CheckChatIsBusyService;
 import com.plux.distribution.core.session.application.service.RandomSessionCloser;
 import com.plux.distribution.core.session.application.service.RandomSessionInitializer;
 import com.plux.distribution.core.session.application.service.ScheduleSettingsService;
@@ -190,8 +191,9 @@ public class Main {
         var botHandler = new FeedbackBotHandler(List.of(flowFeedbackProcessor));
         interactionDeliveryService.setBotInteractionHandler(botHandler);
 
+        CheckChatIsBusyService checkChatIsBusyService = new CheckChatIsBusyService(chatService, workflowService);
         var sessionInitializer = new RandomSessionInitializer(
-                sessionService, chatService, flowFeedbackProcessor, scheduleSettingsService,
+                sessionService, chatService, checkChatIsBusyService, scheduleSettingsService,
                 scheduleServiceId
         );
         scheduleSettingsService.setHandler(sessionInitializer);
