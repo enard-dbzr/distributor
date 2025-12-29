@@ -8,7 +8,6 @@ import com.plux.distribution.core.interaction.domain.InteractionId;
 import com.plux.distribution.core.interaction.domain.Participant.BotParticipant;
 import com.plux.distribution.core.interaction.domain.Participant.ChatParticipant;
 import com.plux.distribution.core.interaction.domain.content.InteractionContent;
-import com.plux.distribution.core.workflow.domain.Frame;
 import com.plux.distribution.core.workflow.domain.FrameContext;
 import com.plux.distribution.core.workflow.domain.FrameContextManager;
 import org.jetbrains.annotations.NotNull;
@@ -25,7 +24,7 @@ public class DefaultContextManager implements FrameContextManager {
     }
 
     @Override
-    public InteractionId send(FrameContext context, Frame frame, InteractionContent message) {
+    public @NotNull InteractionId send(@NotNull FrameContext context, @NotNull InteractionContent message) {
         return deliveryUseCase.deliver(new DeliverInteractionCommand(
                 new BotParticipant(),
                 new ChatParticipant(context.getChatId()),
@@ -34,7 +33,7 @@ public class DefaultContextManager implements FrameContextManager {
     }
 
     @Override
-    public void dispatch(FrameContext context, ChatAction action) {
+    public void dispatch(@NotNull FrameContext context, @NotNull ChatAction action) {
         executeActionUseCase.execute(action);
     }
 }

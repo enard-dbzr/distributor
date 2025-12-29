@@ -36,6 +36,7 @@ public class UserEntity {
 
     public void setUserInfo(UserInfo userInfo) {
         this.name = userInfo.name();
+        this.email = userInfo.email();
         this.age = userInfo.age();
         this.city = userInfo.city();
         this.hobby = userInfo.hobby();

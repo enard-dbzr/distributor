@@ -1,8 +1,8 @@
-package com.plux.distribution.core.workflow.application.frame.settings.schedule;
+package com.plux.distribution.core.workflow.application.frame.settings.schedule.data;
 
 import com.plux.distribution.core.session.domain.ScheduleSettings;
 import com.plux.distribution.core.session.domain.ScheduleSettings.HoursRange;
-import com.plux.distribution.core.workflow.application.utils.JsonDataSerializer;
+import com.plux.distribution.core.workflow.application.serializer.JsonDataSerializer;
 
 public class ScheduleSettingsBuilder {
 
@@ -52,9 +52,9 @@ public class ScheduleSettingsBuilder {
         this.sessionsPerDay = sessionsPerDay;
     }
 
-    public static class Serializer extends JsonDataSerializer<ScheduleSettingsBuilder> {
+    public static class ScheduleSettingsBuilderSerializer extends JsonDataSerializer<ScheduleSettingsBuilder> {
 
-        public Serializer() {
+        public ScheduleSettingsBuilderSerializer() {
             super(ScheduleSettingsBuilder.class);
         }
     }

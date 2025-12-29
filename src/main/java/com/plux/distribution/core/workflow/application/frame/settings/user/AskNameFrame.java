@@ -1,17 +1,28 @@
 package com.plux.distribution.core.workflow.application.frame.settings.user;
 
 import com.plux.distribution.core.interaction.domain.content.SimpleMessageContent;
-import com.plux.distribution.core.workflow.domain.Frame;
+import com.plux.distribution.core.workflow.application.frame.settings.user.data.UserBuilder;
+import com.plux.distribution.core.workflow.application.serializer.PoolAwareSerializer;
+import com.plux.distribution.core.workflow.application.serializer.PoolNodeSnapshot;
+import com.plux.distribution.core.workflow.application.serializer.PoolNodeSnapshot.PoolNodeSnapshotBuilder;
+import com.plux.distribution.core.workflow.domain.frame.AbstractFrame;
 import com.plux.distribution.core.workflow.domain.FrameContext;
-import com.plux.distribution.core.workflow.domain.FrameFeedback;
+import com.plux.distribution.core.workflow.domain.frame.FrameFeedback;
 import java.util.List;
 import org.jetbrains.annotations.NotNull;
 
-public class AskNameFrame implements Frame {
+public final class AskNameFrame extends AbstractFrame {
+
+    private final UserBuilder userBuilder;
+
+    public AskNameFrame(UserBuilder userBuilder) {
+        this.userBuilder = userBuilder;
+    }
 
     @Override
-    public void exec(@NotNull FrameContext context) {
-        context.send(
+    public void onEnter(@NotNull FrameContext context) {
+        context.getManager().send(
+                context,
                 new SimpleMessageContent(
                         context.getTextProvider().getString("registration.user.name.ask"),
                         List.of()
@@ -21,11 +32,31 @@ public class AskNameFrame implements Frame {
 
     @Override
     public void handle(@NotNull FrameContext context, @NotNull FrameFeedback feedback) {
-        var userBuilder = context.getData().get(UserBuilder.class);
-
         feedback.text().ifPresent(text -> {
             userBuilder.setName(text);
-            context.changeState();
+
+            markFinished();
         });
+    }
+
+    public static class AskNameFrameFactory extends PoolAwareSerializer<AskNameFrame> {
+
+        @Override
+        public PoolNodeSnapshotBuilder buildSnapshot(@NotNull FrameContext context, AskNameFrame instance,
+                PoolNodeSnapshotBuilder builder) {
+            return super.buildSnapshot(context, instance, builder)
+                    .value("userBuilder", context.getObjectPool().put(context, instance.userBuilder));
+        }
+
+        @Override
+        public AskNameFrame create(@NotNull FrameContext context, PoolNodeSnapshot snapshot) {
+            return new AskNameFrame(
+                    context.getObjectPool().getData(
+                            context,
+                            snapshot.values().get("userBuilder"),
+                            UserBuilder.class
+                    )
+            );
+        }
     }
 }

@@ -1,22 +1,32 @@
 package com.plux.distribution.core.workflow.application.frame.registration;
 
 import com.plux.distribution.core.workflow.application.frame.utils.InfoMessageFrame;
-import com.plux.distribution.core.workflow.domain.Frame;
+import com.plux.distribution.core.workflow.application.serializer.PoolAwareSerializer;
+import com.plux.distribution.core.workflow.application.serializer.PoolNodeSnapshot;
 import com.plux.distribution.core.workflow.domain.FrameContext;
-import com.plux.distribution.core.workflow.domain.FrameFeedback;
+import com.plux.distribution.core.workflow.domain.frame.AbstractFrame;
 import org.jetbrains.annotations.NotNull;
 
-public class ChangeSettingsMessage implements Frame {
+public class ChangeSettingsMessage extends AbstractFrame {
 
     @Override
-    public void exec(@NotNull FrameContext context) {
-        var message = new InfoMessageFrame(context.getTextProvider().getString("settings.schedule.start"));
+    public void onEnter(@NotNull FrameContext context) {
+        new InfoMessageFrame(context.getTextProvider().getString("settings.schedule.start"))
+                .onEnter(context);
 
-        context.changeState(message);
+        markFinished();
     }
 
-    @Override
-    public void handle(@NotNull FrameContext context, @NotNull FrameFeedback feedback) {
+    public static class ChangeSettingsMessageFactory extends PoolAwareSerializer<ChangeSettingsMessage> {
 
+        @Override
+        public ChangeSettingsMessage create(@NotNull FrameContext context, PoolNodeSnapshot snapshot) {
+            return new ChangeSettingsMessage();
+        }
+
+        @Override
+        public @NotNull ChangeSettingsMessage create(@NotNull FrameContext context) {
+            return new ChangeSettingsMessage();
+        }
     }
 }

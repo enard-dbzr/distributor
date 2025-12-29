@@ -1,22 +1,32 @@
 package com.plux.distribution.core.workflow.application.frame.registration;
 
 import com.plux.distribution.core.workflow.application.frame.utils.InfoMessageFrame;
-import com.plux.distribution.core.workflow.domain.Frame;
+import com.plux.distribution.core.workflow.application.serializer.PoolAwareSerializer;
+import com.plux.distribution.core.workflow.application.serializer.PoolNodeSnapshot;
 import com.plux.distribution.core.workflow.domain.FrameContext;
-import com.plux.distribution.core.workflow.domain.FrameFeedback;
+import com.plux.distribution.core.workflow.domain.frame.AbstractFrame;
 import org.jetbrains.annotations.NotNull;
 
-public class RegistrationSuccessMessage implements Frame {
+public class RegistrationSuccessMessage extends AbstractFrame {
 
     @Override
-    public void exec(@NotNull FrameContext context) {
-        var message = new InfoMessageFrame(context.getTextProvider().getString("registration.finish.success"));
+    public void onEnter(@NotNull FrameContext context) {
+        new InfoMessageFrame(context.getTextProvider().getString("registration.finish.success"))
+                .onEnter(context);
 
-        context.changeState(message);
+        markFinished();
     }
 
-    @Override
-    public void handle(@NotNull FrameContext context, @NotNull FrameFeedback feedback) {
+    public static class RegistrationSuccessMessageFactory extends PoolAwareSerializer<RegistrationSuccessMessage> {
 
+        @Override
+        public RegistrationSuccessMessage create(@NotNull FrameContext context, PoolNodeSnapshot snapshot) {
+            return new RegistrationSuccessMessage();
+        }
+
+        @Override
+        public @NotNull RegistrationSuccessMessage create(@NotNull FrameContext context) {
+            return new RegistrationSuccessMessage();
+        }
     }
 }

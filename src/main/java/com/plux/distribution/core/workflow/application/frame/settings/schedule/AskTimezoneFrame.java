@@ -1,45 +1,58 @@
 package com.plux.distribution.core.workflow.application.frame.settings.schedule;
 
 import com.plux.distribution.core.interaction.application.dto.action.ClearButtonsAction;
+import com.plux.distribution.core.interaction.domain.InteractionId;
 import com.plux.distribution.core.interaction.domain.content.MessageAttachment.ButtonAttachment;
 import com.plux.distribution.core.interaction.domain.content.SimpleMessageContent;
+import com.plux.distribution.core.workflow.application.frame.settings.schedule.data.ScheduleSettingsBuilder;
 import com.plux.distribution.core.workflow.application.frame.utils.InfoMessageFrame;
-import com.plux.distribution.core.workflow.application.frame.utils.LastMessageData;
-import com.plux.distribution.core.workflow.domain.Frame;
+import com.plux.distribution.core.workflow.application.serializer.PoolAwareSerializer;
+import com.plux.distribution.core.workflow.application.serializer.PoolNodeSnapshot;
+import com.plux.distribution.core.workflow.application.serializer.PoolNodeSnapshot.PoolNodeSnapshotBuilder;
 import com.plux.distribution.core.workflow.domain.FrameContext;
-import com.plux.distribution.core.workflow.domain.FrameFeedback;
+import com.plux.distribution.core.workflow.domain.frame.AbstractFrame;
+import com.plux.distribution.core.workflow.domain.frame.FrameFeedback;
 import java.util.List;
 import org.jetbrains.annotations.NotNull;
 
-public class AskTimezoneFrame implements Frame {
+public class AskTimezoneFrame extends AbstractFrame {
+
+    private final ScheduleSettingsBuilder settingsBuilder;
+
+    private InteractionId lastMessageId = null;
+
+    public AskTimezoneFrame(ScheduleSettingsBuilder settingsBuilder) {
+        this.settingsBuilder = settingsBuilder;
+    }
 
     @Override
-    public void exec(@NotNull FrameContext context) {
-        var messageId = context.send(new SimpleMessageContent(
-                context.getTextProvider().getString("settings.schedule.timezone.ask"),
-                List.of(
-                        new ButtonAttachment(
-                                context.getTextProvider().getString("settings.schedule.timezone.option.moscow"),
-                                "timezone.moscow"
-                        ),
-                        new ButtonAttachment(
-                                context.getTextProvider().getString("settings.schedule.timezone.option.ekaterinburg"),
-                                "timezone.ekaterinburg"
-                        ),
-                        new ButtonAttachment(
-                                context.getTextProvider().getString("settings.schedule.timezone.option.krasnoyarsk"),
-                                "timezone.krasnoyarsk"
+    public void onEnter(@NotNull FrameContext context) {
+        lastMessageId = context.getManager().send(
+                context,
+                new SimpleMessageContent(
+                        context.getTextProvider().getString("settings.schedule.timezone.ask"),
+                        List.of(
+                                new ButtonAttachment(
+                                        context.getTextProvider().getString("settings.schedule.timezone.option.moscow"),
+                                        "timezone.moscow"
+                                ),
+                                new ButtonAttachment(
+                                        context.getTextProvider()
+                                                .getString("settings.schedule.timezone.option.ekaterinburg"),
+                                        "timezone.ekaterinburg"
+                                ),
+                                new ButtonAttachment(
+                                        context.getTextProvider()
+                                                .getString("settings.schedule.timezone.option.krasnoyarsk"),
+                                        "timezone.krasnoyarsk"
+                                )
                         )
                 )
-        ));
-
-        context.getData().put(LastMessageData.class, new LastMessageData(messageId));
+        );
     }
 
     @Override
     public void handle(@NotNull FrameContext context, @NotNull FrameFeedback feedback) {
-        var settingsBuilder = context.getData().get(ScheduleSettingsBuilder.class);
-
         feedback.buttonTag().ifPresent(value -> {
             switch (value) {
                 case "timezone.moscow" -> settingsBuilder.setTimezone("UTC+3");
@@ -54,30 +67,54 @@ public class AskTimezoneFrame implements Frame {
                 settingsBuilder.setTimezone(text);
                 goNext(context);
             } catch (IllegalArgumentException e) {
-                context.changeState(this, false);
-                context.push(
-                        new InfoMessageFrame(
-                                context.getTextProvider().getString("settings.schedule.timezone.wrong_format")
-                        ),
-                        true
-                );
-                context.exec();
+                new InfoMessageFrame(
+                        context.getTextProvider().getString("settings.schedule.timezone.wrong_format")
+                ).onEnter(context);
             }
         });
     }
 
     private void goNext(@NotNull FrameContext context) {
-        if (context.getData().contains(LastMessageData.class)) {
-            context.dispatch(
+        if (lastMessageId != null) {
+            context.getManager().dispatch(
+                    context,
                     new ClearButtonsAction(
                             context.getChatId(),
-                            context.getData().get(LastMessageData.class).interactionId()
+                            lastMessageId
+                    )
+            );
+        }
+
+        markFinished();
+    }
+
+    public static class AskTimezoneFrameFactory extends PoolAwareSerializer<AskTimezoneFrame> {
+
+        @Override
+        public PoolNodeSnapshotBuilder buildSnapshot(@NotNull FrameContext context, AskTimezoneFrame instance,
+                PoolNodeSnapshotBuilder builder) {
+            return super.buildSnapshot(context, instance, builder)
+                    .value("settingsBuilder", context.getObjectPool().put(context, instance.settingsBuilder))
+                    .value("lastMessageId", context.getObjectPool().put(context, instance.lastMessageId));
+        }
+
+        @Override
+        public AskTimezoneFrame create(@NotNull FrameContext context, PoolNodeSnapshot snapshot) {
+            var instance = new AskTimezoneFrame(
+                    context.getObjectPool().getData(
+                            context,
+                            snapshot.values().get("settingsBuilder"),
+                            ScheduleSettingsBuilder.class
                     )
             );
 
-            context.getData().remove(LastMessageData.class);
-        }
+            instance.lastMessageId = context.getObjectPool().getData(
+                    context,
+                    snapshot.values().get("lastMessageId"),
+                    InteractionId.class
+            );
 
-        context.changeState();
+            return instance;
+        }
     }
 }

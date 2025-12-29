@@ -1,24 +1,23 @@
-package com.plux.distribution.core.workflow.application.frame.settings.user;
+package com.plux.distribution.core.workflow.application.frame.settings.user.data;
 
 import com.plux.distribution.core.user.domain.UserInfo;
-import com.plux.distribution.core.workflow.application.utils.JsonDataSerializer;
+import com.plux.distribution.core.workflow.application.serializer.JsonDataSerializer;
 import org.apache.commons.validator.routines.EmailValidator;
 
 public class UserBuilder {
-
     private String name;
     private String email;
     private Integer age;
     private String city;
     private String hobby;
 
+    public void setName(String name) {
+        this.name = name;
+    }
+
     @SuppressWarnings("unused")
     public String getName() {
         return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
     }
 
     @SuppressWarnings("unused")

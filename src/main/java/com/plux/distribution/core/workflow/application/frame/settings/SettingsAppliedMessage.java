@@ -1,22 +1,34 @@
 package com.plux.distribution.core.workflow.application.frame.settings;
 
 import com.plux.distribution.core.workflow.application.frame.utils.InfoMessageFrame;
-import com.plux.distribution.core.workflow.domain.Frame;
+import com.plux.distribution.core.workflow.application.serializer.PoolAwareSerializer;
+import com.plux.distribution.core.workflow.application.serializer.PoolNodeSnapshot;
 import com.plux.distribution.core.workflow.domain.FrameContext;
-import com.plux.distribution.core.workflow.domain.FrameFeedback;
+import com.plux.distribution.core.workflow.domain.frame.AbstractFrame;
 import org.jetbrains.annotations.NotNull;
 
-public class SettingsAppliedMessage implements Frame {
+public class SettingsAppliedMessage extends AbstractFrame {
 
     @Override
-    public void exec(@NotNull FrameContext context) {
-        var message = new InfoMessageFrame(context.getTextProvider().getString("settings.success"));
+    public void onEnter(@NotNull FrameContext context) {
+        new InfoMessageFrame(context.getTextProvider().getString("settings.success"))
+                .onEnter(context);
 
-        context.changeState(message);
-    }
-
-    @Override
-    public void handle(@NotNull FrameContext context, @NotNull FrameFeedback feedback) {
+        markFinished();
 
     }
+
+    public static class SettingsAppliedMessageFactory extends PoolAwareSerializer<SettingsAppliedMessage> {
+
+        @Override
+        public SettingsAppliedMessage create(@NotNull FrameContext context, PoolNodeSnapshot snapshot) {
+            return new SettingsAppliedMessage();
+        }
+
+        @Override
+        public @NotNull SettingsAppliedMessage create(@NotNull FrameContext context) {
+            return new SettingsAppliedMessage();
+        }
+    }
+
 }

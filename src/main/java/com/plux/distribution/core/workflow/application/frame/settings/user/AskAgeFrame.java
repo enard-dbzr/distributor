@@ -1,32 +1,43 @@
 package com.plux.distribution.core.workflow.application.frame.settings.user;
 
 import com.plux.distribution.core.interaction.application.dto.action.ClearButtonsAction;
+import com.plux.distribution.core.interaction.domain.InteractionId;
 import com.plux.distribution.core.interaction.domain.content.MessageAttachment.ButtonAttachment;
 import com.plux.distribution.core.interaction.domain.content.SimpleMessageContent;
+import com.plux.distribution.core.workflow.application.frame.settings.user.data.UserBuilder;
 import com.plux.distribution.core.workflow.application.frame.utils.InfoMessageFrame;
-import com.plux.distribution.core.workflow.application.frame.utils.LastMessageData;
-import com.plux.distribution.core.workflow.domain.Frame;
+import com.plux.distribution.core.workflow.application.serializer.PoolAwareSerializer;
+import com.plux.distribution.core.workflow.application.serializer.PoolNodeSnapshot;
+import com.plux.distribution.core.workflow.application.serializer.PoolNodeSnapshot.PoolNodeSnapshotBuilder;
 import com.plux.distribution.core.workflow.domain.FrameContext;
-import com.plux.distribution.core.workflow.domain.FrameFeedback;
+import com.plux.distribution.core.workflow.domain.frame.AbstractFrame;
+import com.plux.distribution.core.workflow.domain.frame.FrameFeedback;
 import java.util.List;
 import org.jetbrains.annotations.NotNull;
 
-public class AskAgeFrame implements Frame {
+public class AskAgeFrame extends AbstractFrame {
+
+    private final UserBuilder userBuilder;
+
+    private InteractionId lastMessageId = null;
+
+    public AskAgeFrame(UserBuilder userBuilder) {
+        this.userBuilder = userBuilder;
+    }
 
     @Override
-    public void exec(@NotNull FrameContext context) {
-        var messageId = context.send(new SimpleMessageContent(
-                context.getTextProvider().getString("registration.user.age.ask"),
-                List.of(new ButtonAttachment(context.getTextProvider().getString("utils.skip_button"), "skip"))
-        ));
-
-        context.getData().put(LastMessageData.class, new LastMessageData(messageId));
+    public void onEnter(@NotNull FrameContext context) {
+        lastMessageId = context.getManager().send(
+                context,
+                new SimpleMessageContent(
+                        context.getTextProvider().getString("registration.user.age.ask"),
+                        List.of(new ButtonAttachment(context.getTextProvider().getString("utils.skip_button"), "skip"))
+                )
+        );
     }
 
     @Override
     public void handle(@NotNull FrameContext context, @NotNull FrameFeedback feedback) {
-        var userBuilder = context.getData().get(UserBuilder.class);
-
         feedback.buttonTag().ifPresent(value -> {
             if (value.equals("skip")) {
                 userBuilder.setAge(null);
@@ -39,29 +50,54 @@ public class AskAgeFrame implements Frame {
                 userBuilder.setAge(Integer.valueOf(text));
                 goNext(context);
             } catch (NumberFormatException e) {
-                context.changeState(this, false);
-                context.push(
-                        new InfoMessageFrame(
-                                context.getTextProvider().getString("registration.user.age.wrong_type")
-                        ), true
-                );
-                context.exec();
+                new InfoMessageFrame(
+                        context.getTextProvider().getString("registration.user.age.wrong_type")
+                ).onEnter(context);
             }
         });
     }
 
     private void goNext(@NotNull FrameContext context) {
-        if (context.getData().contains(LastMessageData.class)) {
-            context.dispatch(
+        if (lastMessageId != null) {
+            context.getManager().dispatch(
+                    context,
                     new ClearButtonsAction(
                             context.getChatId(),
-                            context.getData().get(LastMessageData.class).interactionId()
+                            lastMessageId
+                    )
+            );
+        }
+
+        markFinished();
+    }
+
+    public static class AskAgeFrameFactory extends PoolAwareSerializer<AskAgeFrame> {
+
+        @Override
+        public PoolNodeSnapshotBuilder buildSnapshot(@NotNull FrameContext context, AskAgeFrame instance,
+                PoolNodeSnapshotBuilder builder) {
+            return super.buildSnapshot(context, instance, builder)
+                    .value("userBuilder", context.getObjectPool().put(context, instance.userBuilder))
+                    .value("lastMessageId", context.getObjectPool().put(context, instance.lastMessageId));
+        }
+
+        @Override
+        public AskAgeFrame create(@NotNull FrameContext context, PoolNodeSnapshot snapshot) {
+            var instance = new AskAgeFrame(
+                    context.getObjectPool().getData(
+                            context,
+                            snapshot.values().get("userBuilder"),
+                            UserBuilder.class
                     )
             );
 
-            context.getData().remove(LastMessageData.class);
-        }
+            instance.lastMessageId = context.getObjectPool().getData(
+                    context,
+                    snapshot.values().get("lastMessageId"),
+                    InteractionId.class
+            );
 
-        context.changeState();
+            return instance;
+        }
     }
 }

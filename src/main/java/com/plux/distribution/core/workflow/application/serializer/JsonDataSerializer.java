@@ -1,31 +1,33 @@
-package com.plux.distribution.core.workflow.application.utils;
+package com.plux.distribution.core.workflow.application.serializer;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.plux.distribution.core.workflow.application.exception.DataProcessingException;
-import com.plux.distribution.core.workflow.application.port.out.DataSerializer;
+import com.plux.distribution.core.workflow.domain.frame.DataSerializer;
+import com.plux.distribution.core.workflow.domain.FrameContext;
+import org.jetbrains.annotations.NotNull;
 
 public abstract class JsonDataSerializer<T> implements DataSerializer<T> {
 
-    protected final ObjectMapper mapper = new ObjectMapper();
     private final Class<T> type;
+
+    protected final ObjectMapper mapper = new ObjectMapper();
 
     protected JsonDataSerializer(Class<T> type) {
         this.type = type;
     }
 
     @Override
-    public JsonNode serialize(T data) {
+    public @NotNull JsonNode serialize(@NotNull FrameContext context, @NotNull T data) {
         return mapper.valueToTree(data);
     }
 
     @Override
-    public T deserialize(JsonNode data) throws DataProcessingException {
+    public @NotNull T create(@NotNull FrameContext context, @NotNull JsonNode data) {
         try {
             return mapper.treeToValue(data, type);
         } catch (JsonProcessingException e) {
-            throw new DataProcessingException(e.getMessage());
+            throw new RuntimeException(e);
         }
     }
 }

@@ -1,45 +1,56 @@
 package com.plux.distribution.core.workflow.application.frame.settings.schedule;
 
 import com.plux.distribution.core.interaction.application.dto.action.ClearButtonsAction;
+import com.plux.distribution.core.interaction.domain.InteractionId;
 import com.plux.distribution.core.interaction.domain.content.MessageAttachment.ButtonAttachment;
 import com.plux.distribution.core.interaction.domain.content.SimpleMessageContent;
+import com.plux.distribution.core.workflow.application.frame.settings.schedule.data.ScheduleSettingsBuilder;
 import com.plux.distribution.core.workflow.application.frame.utils.InfoMessageFrame;
-import com.plux.distribution.core.workflow.application.frame.utils.LastMessageData;
-import com.plux.distribution.core.workflow.domain.Frame;
+import com.plux.distribution.core.workflow.application.serializer.PoolAwareSerializer;
+import com.plux.distribution.core.workflow.application.serializer.PoolNodeSnapshot;
+import com.plux.distribution.core.workflow.application.serializer.PoolNodeSnapshot.PoolNodeSnapshotBuilder;
 import com.plux.distribution.core.workflow.domain.FrameContext;
-import com.plux.distribution.core.workflow.domain.FrameFeedback;
+import com.plux.distribution.core.workflow.domain.frame.AbstractFrame;
+import com.plux.distribution.core.workflow.domain.frame.FrameFeedback;
 import java.util.List;
 import org.jetbrains.annotations.NotNull;
 
-public class AskHoursFrame implements Frame {
+public class AskHoursFrame extends AbstractFrame {
+
+    private final ScheduleSettingsBuilder settingsBuilder;
+
+    private InteractionId lastMessageId = null;
+
+    public AskHoursFrame(ScheduleSettingsBuilder settingsBuilder) {
+        this.settingsBuilder = settingsBuilder;
+    }
 
     @Override
-    public void exec(@NotNull FrameContext context) {
-        var messageId = context.send(new SimpleMessageContent(
-                context.getTextProvider().getString("settings.schedule.hours.ask"),
-                List.of(
-                        new ButtonAttachment(
-                                context.getTextProvider().getString("settings.schedule.hours.option.all_day"),
-                                "hours.all_day"
-                        ),
-                        new ButtonAttachment(
-                                context.getTextProvider().getString("settings.schedule.hours.option.extended"),
-                                "hours.extended"
-                        ),
-                        new ButtonAttachment(
-                                context.getTextProvider().getString("settings.schedule.hours.option.work_day"),
-                                "hours.work_day"
+    public void onEnter(@NotNull FrameContext context) {
+        lastMessageId = context.getManager().send(
+                context,
+                new SimpleMessageContent(
+                        context.getTextProvider().getString("settings.schedule.hours.ask"),
+                        List.of(
+                                new ButtonAttachment(
+                                        context.getTextProvider().getString("settings.schedule.hours.option.all_day"),
+                                        "hours.all_day"
+                                ),
+                                new ButtonAttachment(
+                                        context.getTextProvider().getString("settings.schedule.hours.option.extended"),
+                                        "hours.extended"
+                                ),
+                                new ButtonAttachment(
+                                        context.getTextProvider().getString("settings.schedule.hours.option.work_day"),
+                                        "hours.work_day"
+                                )
                         )
                 )
-        ));
-
-        context.getData().put(LastMessageData.class, new LastMessageData(messageId));
+        );
     }
 
     @Override
     public void handle(@NotNull FrameContext context, @NotNull FrameFeedback feedback) {
-        var settingsBuilder = context.getData().get(ScheduleSettingsBuilder.class);
-
         feedback.buttonTag().ifPresent(value -> {
             switch (value) {
                 case "hours.all_day" -> settingsBuilder.setRange(0, 24);
@@ -59,30 +70,54 @@ public class AskHoursFrame implements Frame {
 
                 goNext(context);
             } else {
-                context.changeState(this, false);
-                context.push(
-                        new InfoMessageFrame(
-                                context.getTextProvider().getString("settings.schedule.hours.wrong_format")
-                        ),
-                        true
-                );
-                context.exec();
+                new InfoMessageFrame(
+                        context.getTextProvider().getString("settings.schedule.hours.wrong_format")
+                ).onEnter(context);
             }
         });
     }
 
     private void goNext(@NotNull FrameContext context) {
-        if (context.getData().contains(LastMessageData.class)) {
-            context.dispatch(
+        if (lastMessageId != null) {
+            context.getManager().dispatch(
+                    context,
                     new ClearButtonsAction(
                             context.getChatId(),
-                            context.getData().get(LastMessageData.class).interactionId()
+                            lastMessageId
+                    )
+            );
+        }
+
+        markFinished();
+    }
+
+    public static class AskHoursFrameFactory extends PoolAwareSerializer<AskHoursFrame> {
+
+        @Override
+        public PoolNodeSnapshotBuilder buildSnapshot(@NotNull FrameContext context, AskHoursFrame instance,
+                PoolNodeSnapshotBuilder builder) {
+            return super.buildSnapshot(context, instance, builder)
+                    .value("settingsBuilder", context.getObjectPool().put(context, instance.settingsBuilder))
+                    .value("lastMessageId", context.getObjectPool().put(context, instance.lastMessageId));
+        }
+
+        @Override
+        public AskHoursFrame create(@NotNull FrameContext context, PoolNodeSnapshot snapshot) {
+            var instance = new AskHoursFrame(
+                    context.getObjectPool().getData(
+                            context,
+                            snapshot.values().get("settingsBuilder"),
+                            ScheduleSettingsBuilder.class
                     )
             );
 
-            context.getData().remove(LastMessageData.class);
-        }
+            instance.lastMessageId = context.getObjectPool().getData(
+                    context,
+                    snapshot.values().get("lastMessageId"),
+                    InteractionId.class
+            );
 
-        context.changeState();
+            return instance;
+        }
     }
 }

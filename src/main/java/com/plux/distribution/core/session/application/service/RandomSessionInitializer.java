@@ -3,12 +3,12 @@ package com.plux.distribution.core.session.application.service;
 import com.plux.distribution.core.chat.application.port.in.GetAllChatsUseCase;
 import com.plux.distribution.core.chat.domain.ChatId;
 import com.plux.distribution.core.integration.domain.ServiceId;
+import com.plux.distribution.core.session.application.port.in.CheckChatIsBusyUseCase;
 import com.plux.distribution.core.session.application.port.in.GetScheduleSettingsUseCase;
 import com.plux.distribution.core.session.application.port.in.InitSessionsStrategy;
 import com.plux.distribution.core.session.application.port.in.OpenSessionUseCase;
 import com.plux.distribution.core.session.application.port.in.ScheduleSettingsChangedHandler;
 import com.plux.distribution.core.session.domain.ScheduleSettings;
-import com.plux.distribution.core.workflow.application.port.in.CheckChatBusyUseCase;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.ZoneId;
@@ -28,7 +28,7 @@ public class RandomSessionInitializer implements InitSessionsStrategy, ScheduleS
 
     private final @NotNull OpenSessionUseCase openSessionUseCase;
     private final @NotNull GetAllChatsUseCase getAllChatsUseCase;
-    private final @NotNull CheckChatBusyUseCase checkChatBusyUseCase;
+    private final @NotNull CheckChatIsBusyUseCase checkChatIsBusyUseCase;
     private final @NotNull GetScheduleSettingsUseCase getScheduleSettingsUseCase;
     private final @NotNull ServiceId serviceId;  // TODO: Remove this mock
 
@@ -36,12 +36,12 @@ public class RandomSessionInitializer implements InitSessionsStrategy, ScheduleS
     private final Random random = new Random();
 
     public RandomSessionInitializer(@NotNull OpenSessionUseCase openSessionUseCase,
-            @NotNull GetAllChatsUseCase getAllChatsUseCase, @NotNull CheckChatBusyUseCase checkChatBusyUseCase,
+            @NotNull GetAllChatsUseCase getAllChatsUseCase, @NotNull CheckChatIsBusyUseCase checkChatIsBusyUseCase,
             @NotNull GetScheduleSettingsUseCase getScheduleSettingsUseCase,
             @NotNull ServiceId serviceId) {
         this.openSessionUseCase = openSessionUseCase;
         this.getAllChatsUseCase = getAllChatsUseCase;
-        this.checkChatBusyUseCase = checkChatBusyUseCase;
+        this.checkChatIsBusyUseCase = checkChatIsBusyUseCase;
         this.getScheduleSettingsUseCase = getScheduleSettingsUseCase;
         this.serviceId = serviceId;
     }
@@ -112,7 +112,7 @@ public class RandomSessionInitializer implements InitSessionsStrategy, ScheduleS
             var it = schedule.scheduledSessions().iterator();
             while (it.hasNext()) {
                 var scheduledTime = it.next();
-                if (scheduledTime.isBefore(now) && !checkChatBusyUseCase.isBusy(chatId)) {
+                if (scheduledTime.isBefore(now) && !checkChatIsBusyUseCase.isBusy(chatId)) {
                     openSessionUseCase.open(chatId, serviceId);
                     it.remove();
                     log.info("Created session for chat {}", chatId);
