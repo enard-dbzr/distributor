@@ -77,7 +77,7 @@ public class WorkflowService implements WorkflowUseCase, CheckWorkflowIsEmptyUse
         try {
             machineSnapshot = mapper.readValue(serializedSnapshot, MachineSnapshot.class);
         } catch (JsonProcessingException e) {
-            log.error("Failed to deserialize frame context, returning empty", e);
+            log.warn("Failed to deserialize frame context, returning empty: {}", serializedSnapshot);
             context.setRoot(rootFrameFactory.create(context));
             return context;
         }
