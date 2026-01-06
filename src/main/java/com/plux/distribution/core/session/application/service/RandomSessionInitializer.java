@@ -67,17 +67,21 @@ public class RandomSessionInitializer implements InitSessionsStrategy, ScheduleS
         var chats = getAllChatsUseCase.getAllChatIds();
 
         for (var chatId : chats) {
-            var schedule = chatSchedules.get(chatId);
-            var settings = getScheduleSettingsUseCase.get(chatId);
+            try {
+                var schedule = chatSchedules.get(chatId);
+                var settings = getScheduleSettingsUseCase.get(chatId);
 
-            var zoneId = ZoneId.of(settings.timezone());
-            var zonedNow = ZonedDateTime.now(zoneId);
-            var today = zonedNow.toLocalDate();
+                var zoneId = ZoneId.of(settings.timezone());
+                var zonedNow = ZonedDateTime.now(zoneId);
+                var today = zonedNow.toLocalDate();
 
-            if (schedule == null || !schedule.generationTime().toLocalDate().equals(today)) {
-                List<ZonedDateTime> newSchedule = generateDailySchedule(today, settings);
-                chatSchedules.put(chatId, new ChatSchedule(zonedNow, newSchedule));
-                log.info("Scheduled for {}: {}", chatId, newSchedule);
+                if (schedule == null || !schedule.generationTime().toLocalDate().equals(today)) {
+                    List<ZonedDateTime> newSchedule = generateDailySchedule(today, settings);
+                    chatSchedules.put(chatId, new ChatSchedule(zonedNow, newSchedule));
+                    log.info("Scheduled for {}: {}", chatId, newSchedule);
+                }
+            } catch (Exception e) {
+                log.error("Failed to generate schedule for {}", chatId, e);
             }
         }
     }
@@ -109,14 +113,18 @@ public class RandomSessionInitializer implements InitSessionsStrategy, ScheduleS
             var chatId = entry.getKey();
             var schedule = entry.getValue();
 
-            var it = schedule.scheduledSessions().iterator();
-            while (it.hasNext()) {
-                var scheduledTime = it.next();
-                if (scheduledTime.isBefore(now) && !checkChatIsBusyUseCase.isBusy(chatId)) {
-                    openSessionUseCase.open(chatId, serviceId);
-                    it.remove();
-                    log.info("Created session for chat {}", chatId);
+            try {
+                var it = schedule.scheduledSessions().iterator();
+                while (it.hasNext()) {
+                    var scheduledTime = it.next();
+                    if (scheduledTime.isBefore(now) && !checkChatIsBusyUseCase.isBusy(chatId)) {
+                        openSessionUseCase.open(chatId, serviceId);
+                        it.remove();
+                        log.info("Created session for chat {}", chatId);
+                    }
                 }
+            } catch (Exception e) {
+                log.error("Failed to open sessions for chat {}", chatId, e);
             }
         }
     }
@@ -130,7 +138,5 @@ public class RandomSessionInitializer implements InitSessionsStrategy, ScheduleS
         });
     }
 
-    private record ChatSchedule(ZonedDateTime generationTime, List<ZonedDateTime> scheduledSessions) {
-
-    }
+    private record ChatSchedule(ZonedDateTime generationTime, List<ZonedDateTime> scheduledSessions) {}
 }
