@@ -3,6 +3,8 @@ package com.plux.distribution.core.workflow.application.frame.settings.schedule.
 import com.plux.distribution.core.session.domain.ScheduleSettings;
 import com.plux.distribution.core.session.domain.ScheduleSettings.HoursRange;
 import com.plux.distribution.core.workflow.application.serializer.JsonDataSerializer;
+import java.time.DateTimeException;
+import java.time.ZoneId;
 
 public class ScheduleSettingsBuilder {
 
@@ -11,8 +13,12 @@ public class ScheduleSettingsBuilder {
     private Integer toHour;
     private Integer sessionsPerDay;
 
-    public ScheduleSettings buildSettings() {
-        return new ScheduleSettings(new HoursRange(fromHour, toHour), timezone, sessionsPerDay);
+    public ScheduleSettings build() {
+        if (timezone == null ||  fromHour == null || toHour == null || sessionsPerDay == null) {
+            throw new IllegalStateException("timezone or fromHour or toHour or sessionsPerDay is null");
+        }
+
+        return new ScheduleSettings(new HoursRange(fromHour, toHour), ZoneId.of(timezone), sessionsPerDay);
     }
 
     @SuppressWarnings("unused")
@@ -22,7 +28,12 @@ public class ScheduleSettingsBuilder {
 
     public void setTimezone(String timezone) throws IllegalArgumentException {
         if (timezone != null) {
-            ScheduleSettings.checkTimezoneValid(timezone);
+            try {
+                //noinspection ResultOfMethodCallIgnored
+                ZoneId.of(timezone);
+            } catch (DateTimeException e) {
+                throw new IllegalArgumentException("Invalid timezone: " + timezone);
+            }
         }
         this.timezone = timezone;
     }
@@ -48,7 +59,10 @@ public class ScheduleSettingsBuilder {
         return sessionsPerDay;
     }
 
-    public void setSessionsPerDay(Integer sessionsPerDay) {
+    public void setSessionsPerDay(Integer sessionsPerDay) throws IllegalArgumentException {
+        if (sessionsPerDay != null) {
+            ScheduleSettings.checkSessionsPerDateValid(sessionsPerDay);
+        }
         this.sessionsPerDay = sessionsPerDay;
     }
 

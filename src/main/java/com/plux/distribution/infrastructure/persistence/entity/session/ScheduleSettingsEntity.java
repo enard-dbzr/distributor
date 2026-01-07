@@ -7,6 +7,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import java.time.ZoneId;
 
 @Entity
 @Table(name = "schedule_settings")
@@ -45,12 +46,12 @@ public class ScheduleSettingsEntity {
                 chatId.value(),
                 settings.hoursRange().from(),
                 settings.hoursRange().to(),
-                settings.timezone(),
+                settings.timezone().getId(),
                 settings.sessionsPerDay()
         );
     }
 
     public ScheduleSettings toModel() {
-        return new ScheduleSettings(new HoursRange(fromHour, toHour), timezone, spd);
+        return new ScheduleSettings(new HoursRange(fromHour, toHour), ZoneId.of(timezone), spd);
     }
 }

@@ -11,7 +11,6 @@ import com.plux.distribution.core.session.application.port.in.ScheduleSettingsCh
 import com.plux.distribution.core.session.domain.ScheduleSettings;
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.time.ZoneId;
 import java.time.ZonedDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -55,7 +54,7 @@ public class RandomSessionInitializer implements InitSessionsStrategy, ScheduleS
 
     @Override
     public void onSettingsChanged(ChatId chatId, ScheduleSettings settings) {
-        var zonedNow = ZonedDateTime.now(ZoneId.of(settings.timezone()));
+        var zonedNow = ZonedDateTime.now(settings.timezone());
         var today = zonedNow.toLocalDate();
 
         List<ZonedDateTime> newSchedule = generateDailySchedule(today, settings);
@@ -71,7 +70,7 @@ public class RandomSessionInitializer implements InitSessionsStrategy, ScheduleS
                 var schedule = chatSchedules.get(chatId);
                 var settings = getScheduleSettingsUseCase.get(chatId);
 
-                var zoneId = ZoneId.of(settings.timezone());
+                var zoneId = settings.timezone();
                 var zonedNow = ZonedDateTime.now(zoneId);
                 var today = zonedNow.toLocalDate();
 
@@ -89,7 +88,7 @@ public class RandomSessionInitializer implements InitSessionsStrategy, ScheduleS
     private List<ZonedDateTime> generateDailySchedule(LocalDate date, ScheduleSettings settings) {
         List<ZonedDateTime> schedule = new ArrayList<>();
 
-        var zoneId = ZoneId.of(settings.timezone());
+        var zoneId = settings.timezone();
 
         for (int i = 0; i < settings.sessionsPerDay(); i++) {
             var randomTime = LocalTime.of(

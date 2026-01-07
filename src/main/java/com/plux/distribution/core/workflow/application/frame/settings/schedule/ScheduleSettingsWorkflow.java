@@ -52,7 +52,7 @@ public class ScheduleSettingsWorkflow implements Frame {
     public void onExit(@NotNull FrameContext context) {
         workflow.onExit(context);
 
-        setScheduleSettingsUseCase.set(context.getChatId(), settingsBuilder.buildSettings());
+        setScheduleSettingsUseCase.set(context.getChatId(), settingsBuilder.build());
     }
 
     @Override
@@ -78,6 +78,7 @@ public class ScheduleSettingsWorkflow implements Frame {
 
         @Override
         public ScheduleSettingsWorkflow create(@NotNull FrameContext context, PoolNodeSnapshot snapshot) {
+            // TODO: Добавить проверку на исключения
             return new ScheduleSettingsWorkflow(
                     context.getObjectPool()
                             .getData(context, snapshot.values().get("settings_builder"), ScheduleSettingsBuilder.class),

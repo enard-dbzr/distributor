@@ -66,9 +66,15 @@ public class AskHoursFrame extends AbstractFrame {
                 int startHour = Integer.parseInt(parts[0]);
                 int endHour = Integer.parseInt(parts[1]);
 
-                settingsBuilder.setRange(startHour, endHour);
+                try {
+                    settingsBuilder.setRange(startHour, endHour);
 
-                goNext(context);
+                    goNext(context);
+                } catch (IllegalArgumentException e) {
+                    new InfoMessageFrame(
+                            context.getTextProvider().getString("settings.schedule.hours.wrong_format")
+                    ).onEnter(context);
+                }
             } else {
                 new InfoMessageFrame(
                         context.getTextProvider().getString("settings.schedule.hours.wrong_format")

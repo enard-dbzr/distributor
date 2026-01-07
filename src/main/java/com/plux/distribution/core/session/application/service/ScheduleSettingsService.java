@@ -7,6 +7,7 @@ import com.plux.distribution.core.session.application.port.in.SetScheduleSetting
 import com.plux.distribution.core.session.application.port.out.ScheduleSettingsRepository;
 import com.plux.distribution.core.session.domain.ScheduleSettings;
 import com.plux.distribution.core.session.domain.ScheduleSettings.HoursRange;
+import java.time.ZoneId;
 import org.jetbrains.annotations.NotNull;
 
 public class ScheduleSettingsService implements SetScheduleSettingsUseCase, GetScheduleSettingsUseCase {
@@ -21,7 +22,9 @@ public class ScheduleSettingsService implements SetScheduleSettingsUseCase, GetS
 
     @Override
     public @NotNull ScheduleSettings get(@NotNull ChatId chatId) {
-        return repository.get(chatId).orElse(new ScheduleSettings(new HoursRange(0, 24), "UTC+5", 3));
+        return repository.get(chatId).orElse(
+                new ScheduleSettings(new HoursRange(0, 24), ZoneId.of("UTC+5"), 3)
+        );
     }
 
     @Override
