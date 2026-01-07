@@ -1,22 +1,16 @@
 package com.plux.distribution.core.session.domain;
 
+import java.time.ZoneId;
 import org.jetbrains.annotations.NotNull;
 
 public record ScheduleSettings(
         @NotNull HoursRange hoursRange,
-        @NotNull String timezone,  // TODO: make ZoneId typed
+        @NotNull ZoneId timezone,
         @NotNull Integer sessionsPerDay
 ) {
 
     public ScheduleSettings {
-        checkTimezoneValid(timezone);
         checkSessionsPerDateValid(sessionsPerDay);
-    }
-
-    public static void checkTimezoneValid(String timezone) throws IllegalArgumentException {
-        if (!timezone.matches("^UTC[+-]\\d{1,2}$")) {
-            throw new IllegalArgumentException("Invalid time zone");
-        }
     }
 
     public static void checkSessionsPerDateValid(@NotNull Integer sessionsPerDay) throws IllegalArgumentException {
