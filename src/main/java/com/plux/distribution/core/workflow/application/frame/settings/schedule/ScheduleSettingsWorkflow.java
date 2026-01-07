@@ -52,7 +52,7 @@ public class ScheduleSettingsWorkflow implements Frame {
     public void onExit(@NotNull FrameContext context) {
         workflow.onExit(context);
 
-        setScheduleSettingsUseCase.set(context.getChatId(), settingsBuilder.buildSettings());
+        setScheduleSettingsUseCase.set(context.getChatId(), settingsBuilder.build());
     }
 
     @Override

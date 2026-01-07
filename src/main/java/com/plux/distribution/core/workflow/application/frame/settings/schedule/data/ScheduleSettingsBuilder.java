@@ -11,7 +11,11 @@ public class ScheduleSettingsBuilder {
     private Integer toHour;
     private Integer sessionsPerDay;
 
-    public ScheduleSettings buildSettings() {
+    public ScheduleSettings build() {
+        if (timezone == null ||  fromHour == null || toHour == null || sessionsPerDay == null) {
+            throw new IllegalStateException("timezone or fromHour or toHour or sessionsPerDay is null");
+        }
+
         return new ScheduleSettings(new HoursRange(fromHour, toHour), timezone, sessionsPerDay);
     }
 
@@ -48,7 +52,10 @@ public class ScheduleSettingsBuilder {
         return sessionsPerDay;
     }
 
-    public void setSessionsPerDay(Integer sessionsPerDay) {
+    public void setSessionsPerDay(Integer sessionsPerDay) throws IllegalArgumentException {
+        if (sessionsPerDay != null) {
+            ScheduleSettings.checkSessionsPerDateValid(sessionsPerDay);
+        }
         this.sessionsPerDay = sessionsPerDay;
     }
 

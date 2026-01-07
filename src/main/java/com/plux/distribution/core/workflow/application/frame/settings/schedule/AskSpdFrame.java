@@ -39,14 +39,11 @@ public class AskSpdFrame extends AbstractFrame {
         feedback.text().ifPresent(text -> {
             try {
                 int count = Integer.parseInt(text);
-                if (count <= 0) {
-                    throw new NumberFormatException("must be positive");
-                }
 
                 settingsBuilder.setSessionsPerDay(count);
                 markFinished();
 
-            } catch (NumberFormatException e) {
+            } catch (IllegalArgumentException e) {
                 new InfoMessageFrame(
                         context.getTextProvider().getString("settings.schedule.spd.wrong_format")
                 ).onEnter(context);
