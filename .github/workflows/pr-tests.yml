@@ -3,8 +3,6 @@ name: PR Build and Test
 on:
   pull_request:
     branches: [ master ]
-  push:
-    branches: [ master ]
 
 jobs:
   build-and-test:
@@ -13,6 +11,9 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Build Docker image
+        run: docker build .
 
       - name: Set up JDK
         uses: actions/setup-java@v4
@@ -23,6 +24,3 @@ jobs:
 
       - name: Run unit tests
         run: mvn test
-
-      - name: Build Docker image
-        run: docker build .
