@@ -12,6 +12,7 @@ import com.plux.distribution.core.interaction.application.service.ExecuteActionS
 import com.plux.distribution.core.interaction.application.service.InteractionDeliveryService;
 import com.plux.distribution.core.interaction.application.service.InteractionService;
 import com.plux.distribution.core.interaction.domain.InteractionId;
+import com.plux.distribution.core.mediastorage.application.service.MediaStorageService;
 import com.plux.distribution.core.session.application.service.CheckChatIsBusyService;
 import com.plux.distribution.core.session.application.service.RandomSessionCloser;
 import com.plux.distribution.core.session.application.service.RandomSessionInitializer;
@@ -19,6 +20,7 @@ import com.plux.distribution.core.session.application.service.ScheduleSettingsSe
 import com.plux.distribution.core.session.application.service.SessionFeedbackProcessor;
 import com.plux.distribution.core.session.application.service.SessionSchedulerRunner;
 import com.plux.distribution.core.session.application.service.SessionService;
+import com.plux.distribution.core.storage.application.service.StorageService;
 import com.plux.distribution.core.user.application.service.UserService;
 import com.plux.distribution.core.workflow.application.frame.message.HelpFrame;
 import com.plux.distribution.core.workflow.application.frame.message.HelpFrame.HelpFrameFactory;
@@ -73,6 +75,7 @@ import com.plux.distribution.infrastructure.persistence.DbChatRepository;
 import com.plux.distribution.infrastructure.persistence.DbFrameRepository;
 import com.plux.distribution.infrastructure.persistence.DbIntegrationRepository;
 import com.plux.distribution.infrastructure.persistence.DbInteractionRepository;
+import com.plux.distribution.infrastructure.persistence.DbMediaRepository;
 import com.plux.distribution.infrastructure.persistence.DbScheduleSettingsRepository;
 import com.plux.distribution.infrastructure.persistence.DbServiceSendingRepository;
 import com.plux.distribution.infrastructure.persistence.DbSessionInteractionsRepository;
@@ -80,11 +83,14 @@ import com.plux.distribution.infrastructure.persistence.DbSessionRepository;
 import com.plux.distribution.infrastructure.persistence.DbTgChatLinker;
 import com.plux.distribution.infrastructure.persistence.DbTgMessageLinker;
 import com.plux.distribution.infrastructure.persistence.DbUserRepository;
+import com.plux.distribution.infrastructure.persistence.MinioStorage;
 import com.plux.distribution.infrastructure.persistence.config.HibernateConfig;
 import com.plux.distribution.infrastructure.telegram.TelegramActionExecutor;
 import com.plux.distribution.infrastructure.telegram.TelegramHandler;
 import com.plux.distribution.infrastructure.telegram.sender.TelegramInteractionSender;
 import jakarta.servlet.DispatcherType;
+import jakarta.servlet.MultipartConfigElement;
+import java.time.Duration;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Locale;
@@ -128,6 +134,7 @@ public class Main {
         var chatRepo = new DbChatRepository(hibernateConfig.getSessionFactory());
         var userRepo = new DbUserRepository(hibernateConfig.getSessionFactory());
         var frameRepo = new DbFrameRepository(hibernateConfig.getSessionFactory());
+        var mediaRepo = new DbMediaRepository(hibernateConfig.getSessionFactory());
         var sessionRepo = new DbSessionRepository(hibernateConfig.getSessionFactory());
         var integrationRepo = new DbIntegrationRepository(hibernateConfig.getSessionFactory());
         var interactionsRepo = new DbInteractionRepository(hibernateConfig.getSessionFactory());
@@ -148,6 +155,16 @@ public class Main {
 
         var chatService = new ChatService(chatRepo, chatRepo, chatRepo);
         var userService = new UserService(userRepo);
+
+        var mediaFileStorage = new MinioStorage(
+                System.getenv("S3_ENDPOINT"),
+                System.getenv("S3_ACCESS_KEY"),
+                System.getenv("S3_SECRET_KEY"),
+                System.getenv("S3_BUCKET")
+        );
+        var mediaFileStorageService = new StorageService(mediaFileStorage, Duration.ofMinutes(1));
+        var mediaService = new MediaStorageService(mediaFileStorageService, mediaFileStorageService,
+                mediaFileStorageService, mediaFileStorageService, mediaRepo);
 
         var integrationService = new IntegrationService(integrationRepo);
         var findInteractionSourceService = new FindInteractionSourceService(serviceSendingRepo);
@@ -211,6 +228,7 @@ public class Main {
             beanFactory.registerSingleton("sendServiceMessageUseCase", sendIntegrationMessageService);
             beanFactory.registerSingleton("createIntegrationUseCase", integrationService);
             beanFactory.registerSingleton("executeActionUseCase", executeActionService);
+            beanFactory.registerSingleton("crudMediaUseCase", mediaService);
         });
 
         UrlHandlerFilter filter = UrlHandlerFilter.trailingSlashHandler("/**").wrapRequest().build();
@@ -222,7 +240,16 @@ public class Main {
         context.setContextPath("/");
         context.addFilter(fh, "/*", EnumSet.of(DispatcherType.REQUEST));
 
-        context.addServlet(new ServletHolder(new DispatcherServlet(springContext)), "/");
+        var servletHolder = new ServletHolder(new DispatcherServlet(springContext));
+
+        servletHolder.getRegistration().setMultipartConfig(new MultipartConfigElement(
+                System.getProperty("java.io.tmpdir"),
+                50 * 1024 * 1024,
+                50 * 1024 * 1024,
+                2 * 1024
+        ));
+
+        context.addServlet(servletHolder, "/");
 
         jettyServer.setHandler(context);
         springContext.setServletContext(context.getServletContext());
