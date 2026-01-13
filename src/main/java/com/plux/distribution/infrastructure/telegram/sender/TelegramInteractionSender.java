@@ -9,6 +9,7 @@ import com.plux.distribution.core.interaction.domain.content.ButtonClickContent;
 import com.plux.distribution.core.interaction.domain.content.InteractionContent;
 import com.plux.distribution.core.interaction.domain.content.MessageAttachment.ButtonAttachment;
 import com.plux.distribution.core.interaction.domain.content.MessageAttachment.MediaAttachment;
+import com.plux.distribution.core.interaction.domain.content.MessageAttachment.MediaAttachment.DisplayType;
 import com.plux.distribution.core.interaction.domain.content.ReplyMessageContent;
 import com.plux.distribution.core.interaction.domain.content.SimpleMessageContent;
 import com.plux.distribution.core.mediastorage.application.dto.StoredMedia;
@@ -38,6 +39,8 @@ import org.telegram.telegrambots.meta.generics.TelegramClient;
 
 public class TelegramInteractionSender implements InteractionSenderPort {
 
+    private static final int MAX_MEDIA_GROUP_SIZE = 10;
+
     private final @NotNull TelegramClient client;
     private final @NotNull TgChatLinker tgChatLinker;
     private final @NotNull TgMessageLinker tgMessageLinker;
@@ -65,6 +68,7 @@ public class TelegramInteractionSender implements InteractionSenderPort {
         var context = new RenderingContext(tgChatId);
 
         constructContent(context, interactionContent);
+        validateContent(context);
 
         try {
             Message result = sendMessage(context);
@@ -93,6 +97,32 @@ public class TelegramInteractionSender implements InteractionSenderPort {
             }
             case ButtonClickContent _ -> throw new UnsupportedOperationException();
         }
+    }
+
+    private void validateContent(RenderingContext context) {
+        if (context.mediaAttachments.size() > MAX_MEDIA_GROUP_SIZE) {
+            throw new UnsupportedOperationException(
+                    "Cannot send more than " + MAX_MEDIA_GROUP_SIZE + " media attachments"
+            );
+        }
+
+        if (context.mediaAttachments.size() > 1 && !context.buttons.isEmpty()) {
+            throw new UnsupportedOperationException(
+                    "Cannot send media with buttons in a grouped Telegram message"
+            );
+        }
+
+        if (context.mediaAttachments.size() > 1 && hasMixedMediaTypes(context.mediaAttachments)) {
+            throw new UnsupportedOperationException(
+                    "Cannot mix photos and documents in a single Telegram message"
+            );
+        }
+    }
+
+    private boolean hasMixedMediaTypes(List<MediaAttachment> attachments) {
+        boolean hasPhoto = attachments.stream().anyMatch(a -> a.displayType() == DisplayType.PHOTO);
+        boolean hasDocument = attachments.stream().anyMatch(a -> a.displayType() == DisplayType.DOCUMENT);
+        return hasPhoto && hasDocument;
     }
 
     private Message sendMessage(RenderingContext context) throws TelegramApiException {
