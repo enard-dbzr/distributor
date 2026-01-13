@@ -10,7 +10,7 @@ public interface UploadMediaUseCase {
     @NotNull MediaId upload(
             @NotNull InputStream data,
             @NotNull String contentType,
-            long size,
+            @NotNull String filename, long size,
             @Nullable String scope
     );
 }

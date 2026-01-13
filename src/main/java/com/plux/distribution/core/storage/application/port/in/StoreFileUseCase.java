@@ -3,6 +3,7 @@ package com.plux.distribution.core.storage.application.port.in;
 import com.plux.distribution.core.storage.domain.StorageKey;
 import java.io.InputStream;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public interface StoreFileUseCase {
 
@@ -10,6 +11,6 @@ public interface StoreFileUseCase {
             @NotNull String basePath,
             @NotNull InputStream data,
             @NotNull String contentType,
-            long size
+            @Nullable String extension, long size
     );
 }

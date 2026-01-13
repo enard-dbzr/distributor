@@ -1,13 +1,14 @@
 package com.plux.distribution.core.mediastorage.application.service;
 
+import com.plux.distribution.core.mediastorage.application.dto.MediaMetadata;
+import com.plux.distribution.core.mediastorage.application.dto.StoredMedia;
+import com.plux.distribution.core.mediastorage.application.dto.StoredMediaUrl;
 import com.plux.distribution.core.mediastorage.application.exception.DuplicateMediaIdException;
 import com.plux.distribution.core.mediastorage.application.exception.MediaNotFoundException;
 import com.plux.distribution.core.mediastorage.application.port.in.CrudMediaUseCase;
 import com.plux.distribution.core.mediastorage.application.port.out.MediaRepositoryPort;
 import com.plux.distribution.core.mediastorage.domain.Media;
 import com.plux.distribution.core.mediastorage.domain.MediaId;
-import com.plux.distribution.core.storage.application.dto.StoredFile;
-import com.plux.distribution.core.storage.application.dto.StoredFileUrl;
 import com.plux.distribution.core.storage.application.port.in.DeleteFileUseCase;
 import com.plux.distribution.core.storage.application.port.in.GenerateFileUrlUseCase;
 import com.plux.distribution.core.storage.application.port.in.LoadFileUseCase;
@@ -15,6 +16,7 @@ import com.plux.distribution.core.storage.application.port.in.StoreFileUseCase;
 import com.plux.distribution.core.storage.domain.StorageKey;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
+import java.util.Optional;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.jetbrains.annotations.NotNull;
@@ -42,13 +44,15 @@ public class MediaStorageService implements CrudMediaUseCase {
     }
 
     @Override
-    public @NotNull MediaId upload(@NotNull InputStream data, @NotNull String contentType, long size,
-            @Nullable String scope) {
+    public @NotNull MediaId upload(@NotNull InputStream data, @NotNull String contentType, @NotNull String filename,
+            long size, @Nullable String scope) {
 
         scope = (scope != null && !scope.isEmpty()) ? scope : "default";
         String fullStoragePath = MEDIA_BASE_PATH + "/" + scope;
 
-        StorageKey storageKey = storeFileUseCase.store(fullStoragePath, data, contentType, size);
+        String ext = getFileExtension(filename);
+
+        StorageKey storageKey = storeFileUseCase.store(fullStoragePath, data, contentType, ext, size);
 
         while (true) {
             Media media = new Media(MediaId.generate(), storageKey);
@@ -79,12 +83,13 @@ public class MediaStorageService implements CrudMediaUseCase {
     }
 
     @Override
-    public @NotNull StoredFile download(@NotNull MediaId id) throws MediaNotFoundException {
+    public @NotNull StoredMedia download(@NotNull MediaId id) throws MediaNotFoundException {
         Media media = mediaRepository.findById(id)
                 .orElseThrow(() -> new MediaNotFoundException(id));
 
         try {
-            return loadFileUseCase.load(media.storageKey());
+            var file = loadFileUseCase.load(media.storageKey());
+            return new StoredMedia(file, composeMetadata(media));
         } catch (FileNotFoundException e) {
             log.error("Media metadata found for ID: {} but file not found in storage at path: {}", id.value(),
                     media.storageKey().path(), e);
@@ -93,16 +98,36 @@ public class MediaStorageService implements CrudMediaUseCase {
     }
 
     @Override
-    public @NotNull StoredFileUrl generateUrl(@NotNull MediaId id) throws MediaNotFoundException {
+    public @NotNull StoredMediaUrl generateUrl(@NotNull MediaId id) throws MediaNotFoundException {
         Media media = mediaRepository.findById(id)
                 .orElseThrow(() -> new MediaNotFoundException(id));
 
         try {
-            return generateFileUrlUseCase.generateUrl(media.storageKey());
+            var fileUrl = generateFileUrlUseCase.generateUrl(media.storageKey());
+            return new StoredMediaUrl(fileUrl, composeMetadata(media));
         } catch (FileNotFoundException e) {
             log.error("Media metadata found for ID: {} but file not found in storage at path: {}", id.value(),
                     media.storageKey().path(), e);
             throw new MediaNotFoundException(id);
+        }
+    }
+
+    private static MediaMetadata composeMetadata(Media media) {
+        String ext = Optional.ofNullable(getFileExtension(media.storageKey().path()))
+                .orElse("");
+
+        var filename = media.id().value() + ext;
+
+        return new MediaMetadata(filename);
+    }
+
+    private static @Nullable String getFileExtension(String fileName) {
+        int dotIndex = fileName.lastIndexOf('.');
+
+        if (dotIndex > 0 && dotIndex < fileName.length() - 1) {
+            return fileName.substring(dotIndex);
+        } else {
+            return null;
         }
     }
 }

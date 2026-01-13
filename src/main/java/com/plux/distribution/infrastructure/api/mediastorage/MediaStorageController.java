@@ -1,10 +1,11 @@
 package com.plux.distribution.infrastructure.api.mediastorage;
 
+import com.plux.distribution.core.mediastorage.application.dto.StoredMedia;
+import com.plux.distribution.core.mediastorage.application.dto.StoredMediaUrl;
 import com.plux.distribution.core.mediastorage.application.exception.MediaNotFoundException;
 import com.plux.distribution.core.mediastorage.application.port.in.CrudMediaUseCase;
 import com.plux.distribution.core.mediastorage.domain.MediaId;
-import com.plux.distribution.core.storage.application.dto.StoredFile;
-import com.plux.distribution.core.storage.application.dto.StoredFileUrl;
+import com.plux.distribution.infrastructure.api.mediastorage.response.MediaMetadataView;
 import com.plux.distribution.infrastructure.api.mediastorage.response.MediaUrlResponse;
 import com.plux.distribution.infrastructure.api.mediastorage.response.UploadMediaResponse;
 import io.swagger.v3.oas.annotations.Operation;
@@ -71,9 +72,9 @@ public class MediaStorageController {
         MediaId mediaId = crudMediaUseCase.upload(
                 file.getInputStream(),
                 file.getContentType(),
+                file.getName(),
                 file.getSize(),
-                scope
-        );
+                scope);
         return ResponseEntity.status(HttpStatus.CREATED).body(UploadMediaResponse.of(mediaId));
     }
 
@@ -90,12 +91,12 @@ public class MediaStorageController {
             @Parameter(description = "Media ID", required = true)
             @PathVariable("id") UUID id
     ) throws MediaNotFoundException {
-        StoredFile storedFile = crudMediaUseCase.download(new MediaId(id));
+        StoredMedia storedFile = crudMediaUseCase.download(new MediaId(id));
 
         return ResponseEntity.ok()
-                .contentType(MediaType.parseMediaType(storedFile.metadata().contentType()))
-                .contentLength(storedFile.metadata().size())
-                .body(new InputStreamResource(storedFile.data()));
+                .contentType(MediaType.parseMediaType(storedFile.file().metadata().contentType()))
+                .contentLength(storedFile.file().metadata().size())
+                .body(new InputStreamResource(storedFile.file().data()));
     }
 
     @GetMapping("/{id}/url")
@@ -112,11 +113,12 @@ public class MediaStorageController {
             @PathVariable("id")
             UUID id
     ) throws MediaNotFoundException {
-        StoredFileUrl storedFileUrl = crudMediaUseCase.generateUrl(new MediaId(id));
+        StoredMediaUrl storedFileUrl = crudMediaUseCase.generateUrl(new MediaId(id));
 
         return ResponseEntity.ok(new MediaUrlResponse(
-                storedFileUrl.url().toString(),
-                storedFileUrl.metadata().contentType()
+                storedFileUrl.fileUrl().url().toString(),
+                storedFileUrl.fileUrl().metadata().contentType(),
+                new MediaMetadataView(storedFileUrl.metadata().filename())
         ));
     }
 
