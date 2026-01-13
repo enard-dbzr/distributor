@@ -1,5 +1,19 @@
 package com.plux.distribution.core.mediastorage.application.service;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import com.plux.distribution.core.mediastorage.application.dto.StoredMedia;
+import com.plux.distribution.core.mediastorage.application.dto.StoredMediaUrl;
 import com.plux.distribution.core.mediastorage.application.exception.DuplicateMediaIdException;
 import com.plux.distribution.core.mediastorage.application.exception.MediaNotFoundException;
 import com.plux.distribution.core.mediastorage.application.port.out.MediaRepositoryPort;
@@ -13,12 +27,6 @@ import com.plux.distribution.core.storage.application.port.in.LoadFileUseCase;
 import com.plux.distribution.core.storage.application.port.in.StoreFileUseCase;
 import com.plux.distribution.core.storage.domain.FileMetadata;
 import com.plux.distribution.core.storage.domain.StorageKey;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-
 import java.io.ByteArrayInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -27,22 +35,19 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
 import java.util.Optional;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.anyString;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
 class MediaStorageServiceTest {
 
     private static final String TEST_CONTENT = "test content";
     private static final String CONTENT_TYPE_TEXT = "text/plain";
+    private static final String FILENAME = "file.txt";
+    private static final String FILE_EXTENSION = ".txt";
     private static final long TEST_FILE_SIZE = 12L;
 
     private static final String STORAGE_KEY = "media/default/file.txt";
@@ -87,15 +92,15 @@ class MediaStorageServiceTest {
         StorageKey storageKey = new StorageKey(STORAGE_KEY);
         String basePathDocuments = "media/documents";
 
-        when(storeFileUseCase.store(anyString(), eq(data), eq(contentType), null, eq(size)))
+        when(storeFileUseCase.store(anyString(), eq(data), eq(contentType), eq(FILE_EXTENSION), eq(size)))
                 .thenReturn(storageKey);
 
         // Act
-        MediaId result = mediaStorageService.upload(data, contentType, size, scope);
+        MediaId result = mediaStorageService.upload(data, contentType, FILENAME, size, scope);
 
         // Assert
         assertNotNull(result);
-        verify(storeFileUseCase).store(eq(basePathDocuments), eq(data), eq(contentType), null, eq(size));
+        verify(storeFileUseCase).store(eq(basePathDocuments), eq(data), eq(contentType), eq(FILE_EXTENSION), eq(size));
         verify(mediaRepository).save(any(Media.class));
     }
 
@@ -109,15 +114,15 @@ class MediaStorageServiceTest {
 
         StorageKey storageKey = new StorageKey(STORAGE_KEY);
 
-        when(storeFileUseCase.store(anyString(), eq(data), eq(contentType), null, eq(size)))
+        when(storeFileUseCase.store(anyString(), eq(data), eq(contentType), eq(FILE_EXTENSION), eq(size)))
                 .thenReturn(storageKey);
 
         // Act
-        MediaId result = mediaStorageService.upload(data, contentType, size, scope);
+        MediaId result = mediaStorageService.upload(data, contentType, FILENAME, size, scope);
 
         // Assert
         assertNotNull(result);
-        verify(storeFileUseCase).store(eq(BASE_PATH_DEFAULT), eq(data), eq(contentType), null, eq(size));
+        verify(storeFileUseCase).store(eq(BASE_PATH_DEFAULT), eq(data), eq(contentType), eq(FILE_EXTENSION), eq(size));
         verify(mediaRepository).save(any(Media.class));
     }
 
@@ -131,15 +136,15 @@ class MediaStorageServiceTest {
 
         StorageKey storageKey = new StorageKey(STORAGE_KEY);
 
-        when(storeFileUseCase.store(anyString(), eq(data), eq(contentType), null, eq(size)))
+        when(storeFileUseCase.store(anyString(), eq(data), eq(contentType), eq(FILE_EXTENSION), eq(size)))
                 .thenReturn(storageKey);
 
         // Act
-        MediaId result = mediaStorageService.upload(data, contentType, size, scope);
+        MediaId result = mediaStorageService.upload(data, contentType, FILENAME, size, scope);
 
         // Assert
         assertNotNull(result);
-        verify(storeFileUseCase).store(eq(BASE_PATH_DEFAULT), eq(data), eq(contentType), null, eq(size));
+        verify(storeFileUseCase).store(eq(BASE_PATH_DEFAULT), eq(data), eq(contentType), eq(FILE_EXTENSION), eq(size));
         verify(mediaRepository).save(any(Media.class));
     }
 
@@ -152,18 +157,18 @@ class MediaStorageServiceTest {
         StorageKey storageKey = new StorageKey(STORAGE_KEY);
         MediaId firstId = MediaId.generate();
 
-        when(storeFileUseCase.store(anyString(), eq(data), eq(contentType), null, eq(size)))
+        when(storeFileUseCase.store(anyString(), eq(data), eq(contentType), eq(FILE_EXTENSION), eq(size)))
                 .thenReturn(storageKey);
         doThrow(new DuplicateMediaIdException(firstId))
                 .doNothing()
                 .when(mediaRepository).save(any(Media.class));
 
         // Act
-        MediaId result = mediaStorageService.upload(data, contentType, size, null);
+        MediaId result = mediaStorageService.upload(data, contentType, FILENAME, size, null);
 
         // Assert
         assertNotNull(result);
-        verify(storeFileUseCase).store(eq(BASE_PATH_DEFAULT), eq(data), eq(contentType), null, eq(size));
+        verify(storeFileUseCase).store(eq(BASE_PATH_DEFAULT), eq(data), eq(contentType), eq(FILE_EXTENSION), eq(size));
         verify(mediaRepository, times(2)).save(any(Media.class));
     }
 
@@ -214,11 +219,11 @@ class MediaStorageServiceTest {
         when(loadFileUseCase.load(storageKey)).thenReturn(expectedStoredFile);
 
         // Act
-        StoredFile result = mediaStorageService.download(mediaId);
+        StoredMedia result = mediaStorageService.download(mediaId);
 
         // Assert
         assertNotNull(result);
-        assertEquals(expectedStoredFile, result);
+        assertEquals(expectedStoredFile, result.file());
         verify(mediaRepository).findById(mediaId);
         verify(loadFileUseCase).load(storageKey);
     }
@@ -266,11 +271,11 @@ class MediaStorageServiceTest {
         when(generateFileUrlUseCase.generateUrl(storageKey)).thenReturn(expectedStoredFileUrl);
 
         // Act
-        StoredFileUrl result = mediaStorageService.generateUrl(mediaId);
+        StoredMediaUrl result = mediaStorageService.generateUrl(mediaId);
 
         // Assert
         assertNotNull(result);
-        assertEquals(expectedStoredFileUrl, result);
+        assertEquals(expectedStoredFileUrl, result.fileUrl());
         verify(mediaRepository).findById(mediaId);
         verify(generateFileUrlUseCase).generateUrl(storageKey);
     }

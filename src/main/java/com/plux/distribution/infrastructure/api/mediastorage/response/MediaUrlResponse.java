@@ -4,5 +4,6 @@ import org.jetbrains.annotations.NotNull;
 
 public record MediaUrlResponse(
         @NotNull String url,
-        @NotNull String contentType
+        @NotNull String contentType,
+        @NotNull MediaMetadataView metadata
 ) {}
