@@ -54,7 +54,7 @@ class StorageServiceTest {
         long size = 12L;
 
         // Act
-        StorageKey result = storageService.store(basePath, data, contentType, size);
+        StorageKey result = storageService.store(basePath, data, contentType, null, size);
 
         // Assert
         assertNotNull(result);
@@ -72,7 +72,7 @@ class StorageServiceTest {
         long size = 16L;
 
         // Act
-        StorageKey result = storageService.store(basePath, data, contentType, size);
+        StorageKey result = storageService.store(basePath, data, contentType, null, size);
 
         // Assert
         assertNotNull(result);
@@ -90,7 +90,7 @@ class StorageServiceTest {
         long size = 11L;
 
         // Act
-        StorageKey result = storageService.store(basePath, data, contentType, size);
+        StorageKey result = storageService.store(basePath, data, contentType, null, size);
 
         // Assert
         assertNotNull(result);
@@ -111,7 +111,7 @@ class StorageServiceTest {
             .when(storagePort).save(anyString(), any(InputStream.class), anyString(), anyLong());
 
         // Act
-        StorageKey result = storageService.store(basePath, data, contentType, size);
+        StorageKey result = storageService.store(basePath, data, contentType, null, size);
 
         // Assert
         assertNotNull(result);
@@ -127,7 +127,7 @@ class StorageServiceTest {
         long size = 4L;
 
         // Act
-        StorageKey result = storageService.store(basePath, data, contentType, size);
+        StorageKey result = storageService.store(basePath, data, contentType, null, size);
 
         // Assert
         assertNotNull(result);
@@ -145,11 +145,85 @@ class StorageServiceTest {
         long size = 7L;
 
         // Act
-        StorageKey result = storageService.store(basePath, data, contentType, size);
+        StorageKey result = storageService.store(basePath, data, contentType, null, size);
 
         // Assert
         assertNotNull(result);
         assertTrue(result.path().startsWith("/"));
+        verify(storagePort).save(anyString(), eq(data), eq(contentType), eq(size));
+    }
+
+    @Test
+    void store_withExplicitExtensionWithoutDot_shouldNormalizeExtension() {
+        // Arrange
+        String basePath = "images";
+        InputStream data = new ByteArrayInputStream("content".getBytes());
+        String contentType = "image/jpeg";
+        String explicitExtension = "jpeg";
+        long size = 7L;
+
+        // Act
+        StorageKey result = storageService.store(basePath, data, contentType, explicitExtension, size);
+
+        // Assert
+        assertNotNull(result);
+        assertTrue(result.path().endsWith(".jpeg"));
+        verify(storagePort).save(anyString(), eq(data), eq(contentType), eq(size));
+    }
+
+    @Test
+    void store_withExplicitExtensionWithDot_shouldKeepExtensionAsIs() {
+        // Arrange
+        String basePath = "docs";
+        InputStream data = new ByteArrayInputStream("content".getBytes());
+        String contentType = "application/pdf";
+        String explicitExtension = ".pdf";
+        long size = 7L;
+
+        // Act
+        StorageKey result = storageService.store(basePath, data, contentType, explicitExtension, size);
+
+        // Assert
+        assertNotNull(result);
+        assertTrue(result.path().endsWith(".pdf"));
+        assertFalse(result.path().endsWith("..pdf"));
+        verify(storagePort).save(anyString(), eq(data), eq(contentType), eq(size));
+    }
+
+    @Test
+    void store_withBlankExplicitExtension_shouldSaveWithoutExtension() {
+        // Arrange
+        String basePath = "misc";
+        InputStream data = new ByteArrayInputStream("content".getBytes());
+        String contentType = "text/plain";
+        String explicitExtension = "";
+        long size = 7L;
+
+        // Act
+        StorageKey result = storageService.store(basePath, data, contentType, explicitExtension, size);
+
+        // Assert
+        assertNotNull(result);
+        String path = result.path();
+        assertFalse(path.endsWith("."));
+        assertFalse(path.endsWith(".txt"));
+        verify(storagePort).save(anyString(), eq(data), eq(contentType), eq(size));
+    }
+
+    @Test
+    void store_withUnknownContentTypeAndNullExtension_shouldSaveWithoutExtension() {
+        // Arrange
+        String basePath = "unknown";
+        InputStream data = new ByteArrayInputStream("mystery data".getBytes());
+        String contentType = "application/x-unknown-custom-type";
+        long size = 10L;
+
+        // Act
+        StorageKey result = storageService.store(basePath, data, contentType, null, size);
+
+        // Assert
+        assertNotNull(result);
+        assertFalse(result.path().endsWith("."));
         verify(storagePort).save(anyString(), eq(data), eq(contentType), eq(size));
     }
 

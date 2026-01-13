@@ -87,7 +87,7 @@ class MediaStorageServiceTest {
         StorageKey storageKey = new StorageKey(STORAGE_KEY);
         String basePathDocuments = "media/documents";
 
-        when(storeFileUseCase.store(anyString(), eq(data), eq(contentType), eq(size)))
+        when(storeFileUseCase.store(anyString(), eq(data), eq(contentType), null, eq(size)))
                 .thenReturn(storageKey);
 
         // Act
@@ -95,7 +95,7 @@ class MediaStorageServiceTest {
 
         // Assert
         assertNotNull(result);
-        verify(storeFileUseCase).store(eq(basePathDocuments), eq(data), eq(contentType), eq(size));
+        verify(storeFileUseCase).store(eq(basePathDocuments), eq(data), eq(contentType), null, eq(size));
         verify(mediaRepository).save(any(Media.class));
     }
 
@@ -109,7 +109,7 @@ class MediaStorageServiceTest {
 
         StorageKey storageKey = new StorageKey(STORAGE_KEY);
 
-        when(storeFileUseCase.store(anyString(), eq(data), eq(contentType), eq(size)))
+        when(storeFileUseCase.store(anyString(), eq(data), eq(contentType), null, eq(size)))
                 .thenReturn(storageKey);
 
         // Act
@@ -117,7 +117,7 @@ class MediaStorageServiceTest {
 
         // Assert
         assertNotNull(result);
-        verify(storeFileUseCase).store(eq(BASE_PATH_DEFAULT), eq(data), eq(contentType), eq(size));
+        verify(storeFileUseCase).store(eq(BASE_PATH_DEFAULT), eq(data), eq(contentType), null, eq(size));
         verify(mediaRepository).save(any(Media.class));
     }
 
@@ -131,7 +131,7 @@ class MediaStorageServiceTest {
 
         StorageKey storageKey = new StorageKey(STORAGE_KEY);
 
-        when(storeFileUseCase.store(anyString(), eq(data), eq(contentType), eq(size)))
+        when(storeFileUseCase.store(anyString(), eq(data), eq(contentType), null, eq(size)))
                 .thenReturn(storageKey);
 
         // Act
@@ -139,7 +139,7 @@ class MediaStorageServiceTest {
 
         // Assert
         assertNotNull(result);
-        verify(storeFileUseCase).store(eq(BASE_PATH_DEFAULT), eq(data), eq(contentType), eq(size));
+        verify(storeFileUseCase).store(eq(BASE_PATH_DEFAULT), eq(data), eq(contentType), null, eq(size));
         verify(mediaRepository).save(any(Media.class));
     }
 
@@ -152,7 +152,7 @@ class MediaStorageServiceTest {
         StorageKey storageKey = new StorageKey(STORAGE_KEY);
         MediaId firstId = MediaId.generate();
 
-        when(storeFileUseCase.store(anyString(), eq(data), eq(contentType), eq(size)))
+        when(storeFileUseCase.store(anyString(), eq(data), eq(contentType), null, eq(size)))
                 .thenReturn(storageKey);
         doThrow(new DuplicateMediaIdException(firstId))
                 .doNothing()
@@ -163,7 +163,7 @@ class MediaStorageServiceTest {
 
         // Assert
         assertNotNull(result);
-        verify(storeFileUseCase).store(eq(BASE_PATH_DEFAULT), eq(data), eq(contentType), eq(size));
+        verify(storeFileUseCase).store(eq(BASE_PATH_DEFAULT), eq(data), eq(contentType), null, eq(size));
         verify(mediaRepository, times(2)).save(any(Media.class));
     }
 

@@ -48,7 +48,7 @@ public class MediaStorageService implements CrudMediaUseCase {
         scope = (scope != null && !scope.isEmpty()) ? scope : "default";
         String fullStoragePath = MEDIA_BASE_PATH + "/" + scope;
 
-        StorageKey storageKey = storeFileUseCase.store(fullStoragePath, data, contentType, size);
+        StorageKey storageKey = storeFileUseCase.store(fullStoragePath, data, contentType, null, size);
 
         while (true) {
             Media media = new Media(MediaId.generate(), storageKey);

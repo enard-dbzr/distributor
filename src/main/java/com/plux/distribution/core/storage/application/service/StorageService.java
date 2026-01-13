@@ -1,6 +1,6 @@
 package com.plux.distribution.core.storage.application.service;
 
-import com.plux.distribution.core.storage.domain.FileMetadata;
+import com.plux.distribution.core.storage.application.dto.StoredFile;
 import com.plux.distribution.core.storage.application.dto.StoredFileUrl;
 import com.plux.distribution.core.storage.application.exception.ObjectAlreadyExistsException;
 import com.plux.distribution.core.storage.application.port.in.DeleteFileUseCase;
@@ -8,16 +8,18 @@ import com.plux.distribution.core.storage.application.port.in.GenerateFileUrlUse
 import com.plux.distribution.core.storage.application.port.in.LoadFileUseCase;
 import com.plux.distribution.core.storage.application.port.in.StoreFileUseCase;
 import com.plux.distribution.core.storage.application.port.out.StoragePort;
+import com.plux.distribution.core.storage.domain.FileMetadata;
 import com.plux.distribution.core.storage.domain.StorageKey;
-import com.plux.distribution.core.storage.application.dto.StoredFile;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.net.URL;
 import java.time.Duration;
+import java.util.Optional;
 import java.util.UUID;
 import org.apache.tika.mime.MimeTypeException;
 import org.apache.tika.mime.MimeTypes;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 public class StorageService implements StoreFileUseCase, LoadFileUseCase, DeleteFileUseCase, GenerateFileUrlUseCase {
 
@@ -31,20 +33,15 @@ public class StorageService implements StoreFileUseCase, LoadFileUseCase, Delete
 
     @Override
     public @NotNull StorageKey store(@NotNull String basePath, @NotNull InputStream data, @NotNull String contentType,
-            long size) {
+            @Nullable String extension, long size) {
         while (true) {
             try {
                 String uuid = UUID.randomUUID().toString();
 
-                String ext;
+                String ext = Optional.ofNullable(extension)
+                        .orElseGet(() -> extractExtension(contentType));
 
-                try {
-                    ext = MimeTypes.getDefaultMimeTypes().forName(contentType).getExtension();
-                } catch (MimeTypeException e) {
-                    ext = "";
-                }
-
-                String fullPath = normalize(basePath) + "/" + uuid + ext;
+                String fullPath = normalizePath(basePath) + "/" + uuid + normalizeExtension(ext);
 
                 StorageKey key = new StorageKey(fullPath);
 
@@ -80,7 +77,7 @@ public class StorageService implements StoreFileUseCase, LoadFileUseCase, Delete
         return new StoredFileUrl(url, metadata);
     }
 
-    private String normalize(String path) {
+    private static String normalizePath(String path) {
         if (path.endsWith("/")) {
             path = path.substring(0, path.length() - 1);
         }
@@ -88,5 +85,25 @@ public class StorageService implements StoreFileUseCase, LoadFileUseCase, Delete
             path = path.substring(1);
         }
         return path;
+    }
+
+    private static String normalizeExtension(String extension) {
+        if (extension.isBlank()) {
+            return "";
+        }
+
+        if (!extension.startsWith(".")) {
+            extension = "." + extension;
+        }
+
+        return extension;
+    }
+
+    private static String extractExtension(@NotNull String contentType) {
+        try {
+            return MimeTypes.getDefaultMimeTypes().forName(contentType).getExtension();
+        } catch (MimeTypeException e) {
+            return "";
+        }
     }
 }
