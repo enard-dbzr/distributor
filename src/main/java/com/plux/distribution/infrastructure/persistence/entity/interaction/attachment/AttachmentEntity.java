@@ -2,6 +2,7 @@ package com.plux.distribution.infrastructure.persistence.entity.interaction.atta
 
 import com.plux.distribution.core.interaction.domain.content.MessageAttachment;
 import com.plux.distribution.core.interaction.domain.content.MessageAttachment.ButtonAttachment;
+import com.plux.distribution.core.interaction.domain.content.MessageAttachment.MediaAttachment;
 import jakarta.persistence.DiscriminatorColumn;
 import jakarta.persistence.DiscriminatorType;
 import jakarta.persistence.Entity;
@@ -26,6 +27,7 @@ public abstract class AttachmentEntity {
     public static AttachmentEntity fromModel(MessageAttachment model) {
         return switch (model) {
             case ButtonAttachment a -> new ButtonAttachmentEntity(a.text(), a.tag());
+            case MediaAttachment a -> new MediaAttachmentEntity(a.mediaId().value(), a.displayType());
         };
     }
 
