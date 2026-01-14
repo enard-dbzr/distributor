@@ -17,13 +17,15 @@ import io.swagger.v3.oas.annotations.media.Schema;
 )
 @JsonSubTypes({
         @Type(value = ButtonAttachmentRequest.class, name = "button"),
+        @Type(value = MediaAttachmentRequest.class, name = "media"),
 })
 @Schema(
         discriminatorMapping = {
                 @DiscriminatorMapping(value = "button", schema = ButtonAttachmentRequest.class),
+                @DiscriminatorMapping(value = "media", schema = MediaAttachmentRequest.class),
         }
 )
-public sealed interface MessageAttachmentRequest permits ButtonAttachmentRequest {
+public sealed interface MessageAttachmentRequest permits ButtonAttachmentRequest, MediaAttachmentRequest {
 
     MessageAttachment toModel();
 }

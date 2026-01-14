@@ -142,17 +142,6 @@ public class Main {
         var scheduleSettingsRepo = new DbScheduleSettingsRepository(hibernateConfig.getSessionFactory());
         var sessionInteractionsRepo = new DbSessionInteractionsRepository(hibernateConfig.getSessionFactory());
 
-        var tgChatLinker = new DbTgChatLinker(hibernateConfig.getSessionFactory());
-        var tgMessageLinker = new DbTgMessageLinker(hibernateConfig.getSessionFactory());
-        var tgClient = new OkHttpTelegramClient(botToken);
-
-        var sender = new TelegramInteractionSender(tgClient, tgChatLinker, tgMessageLinker);
-        var executor = new TelegramActionExecutor(tgClient, tgChatLinker, tgMessageLinker);
-
-        var interactionService = new InteractionService(interactionsRepo);
-        var interactionDeliveryService = new InteractionDeliveryService(interactionsRepo, sender);
-        var executeActionService = new ExecuteActionService(executor);
-
         var chatService = new ChatService(chatRepo, chatRepo, chatRepo);
         var userService = new UserService(userRepo);
 
@@ -165,6 +154,17 @@ public class Main {
         var mediaFileStorageService = new StorageService(mediaFileStorage, Duration.ofMinutes(1));
         var mediaService = new MediaStorageService(mediaFileStorageService, mediaFileStorageService,
                 mediaFileStorageService, mediaFileStorageService, mediaRepo);
+
+        var tgChatLinker = new DbTgChatLinker(hibernateConfig.getSessionFactory());
+        var tgMessageLinker = new DbTgMessageLinker(hibernateConfig.getSessionFactory());
+        var tgClient = new OkHttpTelegramClient(botToken);
+
+        var sender = new TelegramInteractionSender(tgClient, tgChatLinker, tgMessageLinker, mediaService);
+        var executor = new TelegramActionExecutor(tgClient, tgChatLinker, tgMessageLinker);
+
+        var interactionService = new InteractionService(interactionsRepo);
+        var interactionDeliveryService = new InteractionDeliveryService(interactionsRepo, sender);
+        var executeActionService = new ExecuteActionService(executor);
 
         var integrationService = new IntegrationService(integrationRepo);
         var findInteractionSourceService = new FindInteractionSourceService(serviceSendingRepo);
@@ -219,7 +219,8 @@ public class Main {
         schedulerRunner.start();
         log.info("Session scheduler successfully started");
 
-        var tgHandler = new TelegramHandler(interactionDeliveryService, chatService, tgMessageLinker, tgChatLinker);
+        var tgHandler = new TelegramHandler(tgClient, interactionDeliveryService, chatService, mediaService,
+                tgMessageLinker, tgChatLinker);
 
         AnnotationConfigWebApplicationContext springContext = new AnnotationConfigWebApplicationContext();
 

@@ -1,19 +1,22 @@
 package com.plux.distribution.infrastructure.telegram.sender;
 
-import org.jetbrains.annotations.NotNull;
-import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
-import org.telegram.telegrambots.meta.api.objects.replykeyboard.InlineKeyboardMarkup;
+import com.plux.distribution.core.interaction.domain.content.MessageAttachment.ButtonAttachment;
+import com.plux.distribution.core.interaction.domain.content.MessageAttachment.MediaAttachment;
+import java.util.ArrayList;
+import java.util.List;
+import org.jetbrains.annotations.Nullable;
 
 class RenderingContext {
 
-    @NotNull
-    final SendMessage.SendMessageBuilder<?, ?> sendMessageBuilder;
-    @NotNull
-    final InlineKeyboardMarkup.InlineKeyboardMarkupBuilder<?, ?> inlineKeyboardMarkupBuilder;
-    boolean hasButtons = false;
+    final long tgChatId;
 
-    RenderingContext() {
-        sendMessageBuilder = SendMessage.builder();
-        inlineKeyboardMarkupBuilder = InlineKeyboardMarkup.builder();
+    @Nullable String text;
+    @Nullable Integer replyToMessageId;
+
+    final List<ButtonAttachment> buttons = new ArrayList<>();
+    final List<MediaAttachment> mediaAttachments = new ArrayList<>();
+
+    RenderingContext(long tgChatId) {
+        this.tgChatId = tgChatId;
     }
 }

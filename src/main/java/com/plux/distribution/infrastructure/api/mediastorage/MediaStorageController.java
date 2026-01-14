@@ -69,10 +69,15 @@ public class MediaStorageController {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Content-Type is required");
         }
 
+        String filename = file.getOriginalFilename();
+        if (filename == null || filename.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "filename is required");
+        }
+
         MediaId mediaId = crudMediaUseCase.upload(
                 file.getInputStream(),
-                file.getContentType(),
-                file.getName(),
+                contentType,
+                filename,
                 file.getSize(),
                 scope);
         return ResponseEntity.status(HttpStatus.CREATED).body(UploadMediaResponse.of(mediaId));
