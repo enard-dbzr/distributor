@@ -219,7 +219,8 @@ public class Main {
         schedulerRunner.start();
         log.info("Session scheduler successfully started");
 
-        var tgHandler = new TelegramHandler(interactionDeliveryService, chatService, tgMessageLinker, tgChatLinker);
+        var tgHandler = new TelegramHandler(tgClient, interactionDeliveryService, chatService, mediaService,
+                tgMessageLinker, tgChatLinker);
 
         AnnotationConfigWebApplicationContext springContext = new AnnotationConfigWebApplicationContext();
 
