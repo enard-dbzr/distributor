@@ -1,4 +1,4 @@
-package com.plux.distribution.infrastructure.telegram;
+package com.plux.distribution.infrastructure.telegram.handler;
 
 import com.plux.distribution.core.chat.application.port.in.CreateChatUseCase;
 import com.plux.distribution.core.interaction.application.command.DeliverInteractionCommand;
@@ -22,20 +22,19 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import org.jetbrains.annotations.NotNull;
-import org.telegram.telegrambots.longpolling.util.LongPollingSingleThreadUpdateConsumer;
 import org.telegram.telegrambots.meta.api.methods.GetFile;
 import org.telegram.telegrambots.meta.api.objects.CallbackQuery;
 import org.telegram.telegrambots.meta.api.objects.Document;
 import org.telegram.telegrambots.meta.api.objects.File;
-import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.api.objects.message.Message;
 import org.telegram.telegrambots.meta.api.objects.photo.PhotoSize;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import org.telegram.telegrambots.meta.generics.TelegramClient;
 
-public class TelegramHandler implements LongPollingSingleThreadUpdateConsumer {
+public class UpdateProcessor {
 
     private final @NotNull TelegramClient telegramClient;
     private final @NotNull InteractionDeliveryUseCase interactionDeliveryUseCase;
@@ -44,7 +43,7 @@ public class TelegramHandler implements LongPollingSingleThreadUpdateConsumer {
     private final @NotNull TgMessageLinker tgMessageLinker;
     private final @NotNull TgChatLinker tgChatLinker;
 
-    public TelegramHandler(@NotNull TelegramClient telegramClient,
+    public UpdateProcessor(@NotNull TelegramClient telegramClient,
             @NotNull InteractionDeliveryUseCase interactionDeliveryUseCase,
             @NotNull CreateChatUseCase createChatUseCase, @NotNull UploadMediaUseCase uploadMediaUseCase,
             @NotNull TgMessageLinker tgMessageLinker, @NotNull TgChatLinker tgChatLinker) {
@@ -56,44 +55,52 @@ public class TelegramHandler implements LongPollingSingleThreadUpdateConsumer {
         this.tgChatLinker = tgChatLinker;
     }
 
+    public void processMessageGroup(List<Message> parts) {
+        parts = parts.stream()
+                .sorted(Comparator.comparingInt(Message::getMessageId))
+                .toList();
 
-    @Override
-    public void consume(Update update) {
+        Message primary = parts.getFirst();
 
-        if (update.hasMessage()) {
-            processMessage(update.getMessage());
-
-            return;
-        }
-
-        if (update.hasCallbackQuery()) {
-            processCallback(update.getCallbackQuery());
-        }
-    }
-
-    private void processMessage(Message message) {
-        var chatId = tgChatLinker.getChatId(message.getChatId());
-
+        var chatId = tgChatLinker.getChatId(primary.getChatId());
         if (chatId == null) {
             chatId = createChatUseCase.create().id();
 
-            tgChatLinker.link(chatId, message.getChatId());
+            tgChatLinker.link(chatId, primary.getChatId());
         }
 
+        String text = parts.stream()
+                .map(Message::getText)
+                .filter(t -> t != null && !t.isBlank())
+                .findFirst()
+                .orElse("");
+
         List<MessageAttachment> attachments = new ArrayList<>();
-        attachments.addAll(processPhotos(message));
-        attachments.addAll(processDocument(message));
 
-        InteractionContent content = new SimpleMessageContent(
-                Optional.ofNullable(message.getText()).orElse(""),
-                attachments
-        );
+        attachments.addAll(parts.stream()
+                .map(this::extractPhoto)
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .toList());
 
-        if (message.isReply()) {
+        attachments.addAll(parts.stream()
+                .map(this::extractDocument)
+                .filter(Optional::isPresent)
+                .map(Optional::get)
+                .toList());
+
+        InteractionContent content = new SimpleMessageContent(text, attachments);
+
+        Optional<Message> replyToMsg = parts.stream()
+                .map(Message::getReplyToMessage)
+                .filter(Objects::nonNull)
+                .findFirst();
+
+        if (replyToMsg.isPresent()) {
             var replyTo = tgMessageLinker.getInteractionId(
                     new TgMessageGlobalId(
-                            message.getReplyToMessage().getMessageId(),
-                            message.getChatId()
+                            replyToMsg.get().getMessageId(),
+                            replyToMsg.get().getChatId()
                     )
             );
 
@@ -106,46 +113,67 @@ public class TelegramHandler implements LongPollingSingleThreadUpdateConsumer {
                 content
         );
 
-        var messageId = interactionDeliveryUseCase.deliver(command);
+        var interactionId = interactionDeliveryUseCase.deliver(command);
 
-        tgMessageLinker.link(messageId, new TgMessageGlobalId(message.getMessageId(), message.getChatId()));
+        for (Message p : parts) {
+            tgMessageLinker.link(
+                    interactionId,
+                    new TgMessageGlobalId(p.getMessageId(), p.getChatId())
+            );
+        }
     }
 
-    private List<MessageAttachment> processPhotos(Message message) {
+    public void processCallback(CallbackQuery callbackQuery) {
+        var tag = callbackQuery.getData();
+
+        var tgChatId = callbackQuery.getMessage().getChatId();
+        var tgMessageId = callbackQuery.getMessage().getMessageId();
+
+        var chatId = Optional.ofNullable(tgChatLinker.getChatId(tgChatId)).orElseThrow();
+        var interactionId = tgMessageLinker.getInteractionId(new TgMessageGlobalId(tgMessageId, tgChatId));
+
+        interactionDeliveryUseCase.deliver(new DeliverInteractionCommand(
+                new ChatParticipant(chatId),
+                new BotParticipant(),
+                new ButtonClickContent(interactionId, tag)
+        ));
+    }
+
+    private Optional<MessageAttachment> extractPhoto(Message message) {
         if (message.getPhoto() == null || message.getPhoto().isEmpty()) {
-            return List.of();
+            return Optional.empty();
         }
 
         var largestPhoto = message.getPhoto().stream()
                 .max(Comparator.comparingInt(PhotoSize::getFileSize))
                 .orElseThrow();
 
-        MediaId mediaId = downloadAndUpload(
+        MediaId mediaId = uploadAttachment(
                 largestPhoto.getFileId(),
                 "image/jpeg",
                 largestPhoto.getFileSize()
         );
 
-        return List.of(new MediaAttachment(mediaId, DisplayType.PHOTO));
+        return Optional.of(new MediaAttachment(mediaId, DisplayType.PHOTO));
     }
 
-    private List<MessageAttachment> processDocument(Message message) {
+    private Optional<MessageAttachment> extractDocument(Message message) {
         if (!message.hasDocument()) {
-            return List.of();
+            return Optional.empty();
         }
 
         Document doc = message.getDocument();
 
-        MediaId mediaId = downloadAndUpload(
+        MediaId mediaId = uploadAttachment(
                 doc.getFileId(),
                 Optional.ofNullable(doc.getMimeType()).orElse("application/octet-stream"),
                 doc.getFileSize()
         );
 
-        return List.of(new MediaAttachment(mediaId, DisplayType.DOCUMENT));
+        return Optional.of(new MediaAttachment(mediaId, DisplayType.DOCUMENT));
     }
 
-    private MediaId downloadAndUpload(String fileId, String mimeType, long fileSize) {
+    private MediaId uploadAttachment(String fileId, String mimeType, long fileSize) {
         try {
             File file = telegramClient.execute(new GetFile(fileId));
 
@@ -164,21 +192,5 @@ public class TelegramHandler implements LongPollingSingleThreadUpdateConsumer {
             throw new RuntimeException(e);
         }
 
-    }
-
-    private void processCallback(CallbackQuery callbackQuery) {
-        var tag = callbackQuery.getData();
-
-        var tgChatId = callbackQuery.getMessage().getChatId();
-        var tgMessageId = callbackQuery.getMessage().getMessageId();
-
-        var chatId = Optional.ofNullable(tgChatLinker.getChatId(tgChatId)).orElseThrow();
-        var interactionId = tgMessageLinker.getInteractionId(new TgMessageGlobalId(tgMessageId, tgChatId));
-
-        interactionDeliveryUseCase.deliver(new DeliverInteractionCommand(
-                new ChatParticipant(chatId),
-                new BotParticipant(),
-                new ButtonClickContent(interactionId, tag)
-        ));
     }
 }

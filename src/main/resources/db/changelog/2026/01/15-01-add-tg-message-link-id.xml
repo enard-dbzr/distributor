@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<databaseChangeLog
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                      http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.33.xsd"
+        objectQuotingStrategy="QUOTE_ONLY_RESERVED_WORDS">
+    <changeSet id="1768479342207-add-id-column" author="enard">
+        <addColumn tableName="tg_message_links">
+            <column autoIncrement="true" name="id" type="BIGINT"/>
+        </addColumn>
+
+        <sql>
+            UPDATE tg_message_links
+            SET id = nextval('tg_message_links_id_seq');
+        </sql>
+
+        <dropPrimaryKey tableName="tg_message_links" constraintName="pk_tg_message_links"/>
+        <addPrimaryKey columnNames="id" constraintName="pk_tg_message_links" tableName="tg_message_links"/>
+    </changeSet>
+
+</databaseChangeLog>

@@ -1,5 +1,6 @@
 package com.plux.distribution;
 
+import com.plux.distribution.core.aggregator.application.service.AggregatorService;
 import com.plux.distribution.core.chat.application.service.ChatService;
 import com.plux.distribution.core.feedback.application.service.FeedbackBotHandler;
 import com.plux.distribution.core.feedback.application.service.FeedbackResolver;
@@ -85,8 +86,11 @@ import com.plux.distribution.infrastructure.persistence.DbTgMessageLinker;
 import com.plux.distribution.infrastructure.persistence.DbUserRepository;
 import com.plux.distribution.infrastructure.persistence.MinioStorage;
 import com.plux.distribution.infrastructure.persistence.config.HibernateConfig;
+import com.plux.distribution.infrastructure.redis.aggegator.JedisGroupBuffer;
 import com.plux.distribution.infrastructure.telegram.TelegramActionExecutor;
-import com.plux.distribution.infrastructure.telegram.TelegramHandler;
+import com.plux.distribution.infrastructure.telegram.handler.TelegramGroupFlushScheduler;
+import com.plux.distribution.infrastructure.telegram.handler.TelegramHandler;
+import com.plux.distribution.infrastructure.telegram.handler.UpdateProcessor;
 import com.plux.distribution.infrastructure.telegram.sender.TelegramInteractionSender;
 import jakarta.servlet.DispatcherType;
 import jakarta.servlet.MultipartConfigElement;
@@ -109,6 +113,8 @@ import org.springframework.web.servlet.DispatcherServlet;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping;
 import org.telegram.telegrambots.client.okhttp.OkHttpTelegramClient;
 import org.telegram.telegrambots.longpolling.TelegramBotsLongPollingApplication;
+import org.telegram.telegrambots.meta.api.objects.message.Message;
+import redis.clients.jedis.JedisPool;
 
 public class Main {
 
@@ -155,6 +161,12 @@ public class Main {
         var mediaService = new MediaStorageService(mediaFileStorageService, mediaFileStorageService,
                 mediaFileStorageService, mediaFileStorageService, mediaRepo);
 
+        JedisPool jedisPool = new JedisPool(System.getenv("REDIS_ENDPOINT"));
+
+        var tgMessageGroupBuffer = new JedisGroupBuffer<>("tg:media", jedisPool, Message.class,
+                Duration.ofMinutes(1), Duration.ofMinutes(1));
+        var tgMessageGroupAggregatorService = new AggregatorService<>(tgMessageGroupBuffer, Duration.ofMillis(200));
+
         var tgChatLinker = new DbTgChatLinker(hibernateConfig.getSessionFactory());
         var tgMessageLinker = new DbTgMessageLinker(hibernateConfig.getSessionFactory());
         var tgClient = new OkHttpTelegramClient(botToken);
@@ -188,8 +200,6 @@ public class Main {
                 integrationFeedbackProcessor
         ), interactionService);
 
-
-
         var textProvider = new BundleTextProvider(Locale.of("ru"));
         var frameContextManager = new DefaultContextManager(interactionDeliveryService, executeActionService);
         var serializerRegistry = makeSerializerRegistry(pin, userService, chatService, scheduleSettingsService);
@@ -219,8 +229,14 @@ public class Main {
         schedulerRunner.start();
         log.info("Session scheduler successfully started");
 
-        var tgHandler = new TelegramHandler(tgClient, interactionDeliveryService, chatService, mediaService,
+        var tgUpdateProcessor = new UpdateProcessor(tgClient, interactionDeliveryService, chatService, mediaService,
                 tgMessageLinker, tgChatLinker);
+        var tgHandler = new TelegramHandler(tgUpdateProcessor, tgMessageGroupAggregatorService);
+        var tgMessageGroupScheduler = new TelegramGroupFlushScheduler(tgMessageGroupAggregatorService,
+                tgUpdateProcessor, Duration.ofMillis(200));
+
+        tgMessageGroupScheduler.start();
+        log.info("TelegramGroupFlushScheduler successfully started");
 
         AnnotationConfigWebApplicationContext springContext = new AnnotationConfigWebApplicationContext();
 

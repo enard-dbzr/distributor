@@ -16,7 +16,6 @@ public class DbTgMessageLinker implements TgMessageLinker {
         this.sessionFactory = sessionFactory;
     }
 
-
     @Override
     public @NotNull InteractionId getInteractionId(@NotNull TgMessageGlobalId tgGlobalId) {
         try (var session = sessionFactory.openSession()) {
@@ -36,10 +35,13 @@ public class DbTgMessageLinker implements TgMessageLinker {
     @Override
     public TgMessageGlobalId getTgMessageId(@NotNull InteractionId interactionId) {
         try (var session = sessionFactory.openSession()) {
-            var entity = session.find(TgMessageLinkEntity.class, interactionId.value());
-            if (entity == null) {
-                return null;
-            }
+            var query = session.createQuery(
+                    "from TgMessageLinkEntity where interactionId = :iid",
+                    TgMessageLinkEntity.class
+            );
+            query.setParameter("iid", interactionId.value());
+
+            var entity = query.uniqueResult();
             return new TgMessageGlobalId(entity.getTgMessageId(), entity.getTgChatId());
         }
     }
