@@ -338,7 +338,7 @@ public class Main {
 
         registry.register("workflow.registration", null, new SequenceCreator(List.of(
                 registry.findById("frame.registration.hello_frame", Frame.class),
-                registry.findById("frame.registration.check_pin", Frame.class),
+//                registry.findById("frame.registration.check_pin", Frame.class),
                 registry.findById("frame.user.update_info", Frame.class),
                 registry.findById("frame.registration.change_settings", Frame.class),
                 registry.findById("frame.schedule_settings", Frame.class),
